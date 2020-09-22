@@ -1,0 +1,33 @@
+{
+  "db": {
+    "database": "peerid-test"
+  },
+  "port": 5432,
+  "cors": true,
+  "logLevel": "info",
+  "backendUrl": "http://localhost:3000",
+  "frontendUrl": "http://localhost:8082",
+  "peerplays": {
+    "peerplaysWS": "wss://api.ppy.blckchnd.com",
+    "peerplaysFaucetURL": "https://beatrice-faucet.peerplays.download/faucet",
+    "referrer": "1.2.0",
+    "paymentAccountID": "1.2.41",
+    "paymentAccountWIF": "5J52sE1gTD2EfkAPWxCaTBvS3ihYTwdSmNsYktVPVYigS24Q3CP"
+  },
+  "google": {
+    "clientId": "457241315847-53tlujrnj4oj66sehd37rqqjjmgdh1r6.apps.googleusercontent.com",
+    "clientSecret": "1vkXPzTcNew4Q4pKmiPgVFFp"
+  },
+  "facebook": {
+    "clientId": "2534442443233970",
+    "clientSecret": "271bd8b8a045cf88f42b6ba36765a337"
+  },
+  "raven": {
+    "enabled": true,
+    "url": ""
+  },
+  "swagger": {
+    "host": "localhost:3000",
+    "schemes": ["http"]
+  }
+}

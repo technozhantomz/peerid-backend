@@ -1,0 +1,10 @@
+coverage/
+.scannerwork/
+.sonarlint/
+.well-known/
+apidoc/
+config/
+docs/
+migrations/
+node_modules/
+sonar-scanner/

@@ -1,0 +1,11 @@
+{
+  "modules": {
+    "api": {
+      "auth": {},
+      "profile": {
+        "peerplaysAccount": "testAccount",
+        "validPeerplaysName": "test123"
+      }
+    }
+  }
+}
