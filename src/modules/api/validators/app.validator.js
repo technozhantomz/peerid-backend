@@ -3,6 +3,7 @@ const { ChainTypes } = require('peerplaysjs-lib');
 const BaseValidator = require('./abstract/base.validator');
 const ValidateError = require('../../../errors/validate.error');
 const url = require('url');
+const psl = require('psl');
 
 class AppValidator extends BaseValidator {
   /**
@@ -12,6 +13,9 @@ class AppValidator extends BaseValidator {
     super();
 
     this.appRepository = opts.appRepository;
+    this.permissionRepository = opts.permissionRepository;
+    this.accessTokenRepository = opts.accessTokenRepository;
+    this.operationRepository = opts.operationRepository;
 
     this.registerApp = this.registerApp.bind(this);
     this.deleteApp = this.deleteApp.bind(this);
@@ -121,7 +125,7 @@ class AppValidator extends BaseValidator {
       const allOpsExist = transaction.operations.every((op) => OpsArr.indexOf(op[0]) >= 0);
 
       if(!allOpsExist) {
-        throw new ValidateError('403', 'operations invalid');
+        throw new ValidateError('400', 'operations invalid');
       }
 
       return transaction;
@@ -166,24 +170,25 @@ class AppValidator extends BaseValidator {
       }
 
       // validate redirect_uri
-      let match = false, uri = url.URL(redirect_uri);
+      let match = false, uri = new url.URL(redirect_uri);
+      let domain = psl.parse(uri.hostname).domain;
 
-      for (let i = 0; i < App.domains.length; i++) {
-        if (uri.host == App.domains[i] || (uri.protocol == App.domains[i] && uri.protocol != 'http' && uri.protocol != 'https')) {
+      for (let i = 0; i < AppExists.domains.length; i++) {
+        if (domain === AppExists.domains[i]) {
           match = true;
           break;
         }
       }
 
       if(!match) {
-        throw new ValidateError(403, 'Validate error', {
+        throw new ValidateError(400, 'Validate error', {
           redirect_uri: 'You must supply a redirect_uri that is a domain or url scheme owned by your app'
         });
       }
 
       // validate custom_account_auth_trx
       if(!custom_account_auth_trx.operations.every((op) => op[0] === ChainTypes.operations.custom_account_authority_create)) {
-        throw new ValidateError(403, 'Validate error', {
+        throw new ValidateError(400, 'Validate error', {
           custom_account_auth_trx: 'Invalid operation'
         });
       }
@@ -194,10 +199,10 @@ class AppValidator extends BaseValidator {
   
       const OpsArr = Ops.map(({operation_requested}) => operation_requested);
 
-      const allOpsExist = transaction.operations.every((op) => OpsArr.indexOf(op[1].operation_type) >= 0);
+      const allOpsExist = custom_account_auth_trx.operations.every((op) => OpsArr.indexOf(op[1].operation_type) >= 0);
 
       if(!allOpsExist) {
-        throw new ValidateError('403', 'Validate error', { custom_account_auth_trx: 'Invalid operation_type' });
+        throw new ValidateError('400', 'Validate error', { custom_account_auth_trx: 'Invalid operation_type' });
       }
 
       return { app: AppExists, custom_account_auth_trx };

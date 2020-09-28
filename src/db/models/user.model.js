@@ -37,7 +37,8 @@ class UserModel extends Model {
       email: this.email || '',
       googleName: this.googleName,
       facebook: this.facebook,
-      peerplaysAccountName: this.peerplaysAccountName
+      peerplaysAccountName: this.peerplaysAccountName,
+      peerplaysAccountId: this.peerplaysAccountId
     };
   }
 

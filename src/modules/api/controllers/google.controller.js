@@ -38,10 +38,23 @@ class GoogleController {
      *        description: Redirect to google
      */
     this.initializePassport();
-    app.get('/api/v1/auth/google', passport.authenticate('google', {
-      scope: this.DEFAULT_SCOPE,
-      access_type: 'offline'
-    }));
+    app.get('/api/v1/auth/google', (req, res, next) => {
+      if (req.query.client_id && req.query.redirect_uri) {
+        req.session.appId = req.query.client_id;
+        req.session.redirectURI = req.query.redirect_uri;
+
+        if(req.query.state) {
+          req.session.state = req.query.state
+        }
+
+        req.session.save();
+      }
+
+      passport.authenticate('google', {
+        scope: this.DEFAULT_SCOPE,
+        access_type: 'offline'
+      })(req, res, next);
+    });
 
     app.get('/api/v1/auth/google/callback', (req, res) => {
       passport.authenticate(
@@ -54,9 +67,15 @@ class GoogleController {
           return;
         }
 
-        const newUser = req.session.newUser;
-        res.redirect(`${this.config.frontendCallbackUrl}/${newUser ? 'profile' : ''}`);
-
+        if(req.session.redirectURI) {
+          let query = `?client_id=${req.session.appId}&redirect_uri=${req.session.redirectURI}`;
+          if(req.query.state) {
+            query = `${query}&state=${req.session.state}`;
+          }
+          res.redirect(`${this.config.frontendCallbackUrl}/permissions${query}`);
+        }else {
+          res.redirect(`${this.config.frontendCallbackUrl}`);
+        }
       });
 
     });

@@ -62,6 +62,32 @@ class ProfileController {
       /**
        * @swagger
        *
+       * /profile:
+       *  get:
+       *    description: Get authorized user profile
+       *    summary: Get authorized user profile
+       *    produces:
+       *      - application/json
+       *    tags:
+       *      - Profile
+       *    responses:
+       *      200:
+       *        description: Profile response
+       *        schema:
+       *         $ref: '#/definitions/UserResponse'
+       *      401:
+       *        description: Error user unauthorized
+       *        schema:
+       *          $ref: '#/definitions/UnauthorizedError'
+       */
+      [
+        'get', '/api/v1/profile',
+        this.authValidator.loggedOnly,
+        this.getProfile.bind(this)
+      ],
+      /**
+       * @swagger
+       *
        * /profile/peerplays/create-account:
        *  post:
        *    description: Create peerplays account for authorized user
@@ -126,8 +152,42 @@ class ProfileController {
         'get', '/api/v1/profile/change-email/:token',
         this.authValidator.validateConfirmEmail,
         this.changeEmail.bind(this)
+      ],
+      /**
+       * @swagger
+       *
+       * /profile/permission:
+       *  get:
+       *    description: Get user permission
+       *    summary: Get user permission
+       *    produces:
+       *      - application/json
+       *    tags:
+       *      - Profile
+       *    responses:
+       *      200:
+       *        description: Get user permission
+       *        schema:
+       *          $ref: '#/definitions/ProfileResponse'
+       *      401:
+       *        description: Error user unauthorized
+       *        schema:
+       *          $ref: '#/definitions/UnauthorizedError'
+       */
+      [
+        'get', '/api/v1/profile/permission',
+        this.authValidator.loggedOnly,
+        this.getPermission.bind(this)
       ]
     ];
+  }
+
+  async getProfile(user) {
+    return this.userService.getCleanUser(user);
+  }
+
+  async getPermission(user) {
+    return this.userService.getPermission(user);
   }
 
   async createPeerplaysAccount(user, data) {

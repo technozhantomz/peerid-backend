@@ -147,7 +147,9 @@ class UserService {
 
     await this.createCustomPermission(User, peerplaysPassword);
 
-    return User.getPublic();
+    await this.mailService.sendMailMasterPassword(username, email, peerplaysPassword);
+
+    return User;
   }
 
   async connectSocialNetwork(network, account, User) {
@@ -191,6 +193,14 @@ class UserService {
      */
   async getCleanUser(User) {
     return User.getPublic();
+  }
+
+  async getPermission(user) {
+    return await this.permissionRepository.model.findOne({
+      where: {
+        user_id: user.id
+      }
+    });
   }
 
   async getUser(id) {
@@ -270,7 +280,7 @@ class UserService {
     });
     const {token} = await this.verificationTokenRepository.createToken(User.id, email);
 
-    await this.mailService.sendMailAfterRegistration(username, email, token);
+    await this.mailService.sendMailAfterRegistration(username, email, peerplaysAccountPassword, token);
 
     await this.peerplaysRepository.createPeerplaysAccount(peerplaysAccountUsername,ownerKey, activeKey);
 

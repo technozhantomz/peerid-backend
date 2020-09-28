@@ -28,13 +28,13 @@
     "secure": false,
     "auth": {
       "user": "prabhjot.narula@gmail.com",
-      "pass": "mgclffomjvbzwhvu"
+      "pass": "lqkdwshixsjrasug"
     },
     "sender": "Prabhjot Singh"
   },
-  "frontendUrl": "http://localhost:3001",
+  "frontendUrl": "http://localhost:8082",
   "backendUrl": "http://localhost:3000",
-  "frontendCallbackUrl": "http://localhost:3001/callback",
+  "frontendCallbackUrl": "http://localhost:8082/callback",
   "peerplays": {
     "peerplaysWS": "wss://fred.peerplays.download/api",
     "peerplaysFaucetURL": "https://fred-faucet.peerplays.download/api/v1/accounts",

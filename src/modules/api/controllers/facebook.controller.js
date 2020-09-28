@@ -33,7 +33,20 @@ class FacebookController {
      *        description: Redirect to facebook
      */
     this.initializePassport();
-    app.get('/api/v1/auth/facebook', passport.authenticate('facebook',{scope: 'email'}));
+    app.get('/api/v1/auth/facebook', (req, res, next) => {
+      if (req.query.client_id && req.query.redirect_uri) {
+        req.session.appId = req.query.client_id;
+        req.session.redirectURI = req.query.redirect_uri;
+
+        if(req.query.state) {
+          req.session.state = req.query.state
+        }
+
+        req.session.save();
+      }
+
+      passport.authenticate('facebook',{scope: ['email']})(req, res, next);
+    });
 
     app.get('/api/v1/auth/facebook/callback', (req, res) => {
       passport.authenticate(
@@ -45,9 +58,16 @@ class FacebookController {
           res.redirect(`${this.config.frontendUrl}/error?facebook-auth-error=${err.message}`);
           return;
         }
-        
-        const newUser = req.session.newUser;
-        res.redirect(`${this.config.frontendCallbackUrl}/${newUser ? 'profile' : ''}`);
+
+        if(req.session.redirectURI) {
+          let query = `?client_id=${req.session.appId}&redirect_uri=${req.session.redirectURI}`;
+          if(req.query.state) {
+            query = `${query}&state=${req.session.state}`;
+          }
+          res.redirect(`${this.config.frontendCallbackUrl}/permissions${query}`);
+        }else {
+          res.redirect(`${this.config.frontendCallbackUrl}`);
+        }
       });
 
     });

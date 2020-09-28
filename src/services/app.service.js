@@ -10,6 +10,7 @@ class AppService {
      * @param {AccessTokenRepository} opts.accessTokenRepository
      * @param {PeerplaysRepository} opts.peerplaysRepository
      * @param {PermissionRepository} opts.permissionRepository
+     * @param {GrantCodeRepository} opts.grantCodeRepository
      */
   constructor(opts) {
     this.config = opts.config;
@@ -19,6 +20,7 @@ class AppService {
     this.accessTokenRepository = opts.accessTokenRepository;
     this.peerplaysRepository = opts.peerplaysRepository;
     this.permissionRepository = opts.permissionRepository;
+    this.grantCodeRepository = opts.grantCodeRepository;
   }
 
   async registerApp(data, user_id) {
@@ -51,11 +53,12 @@ class AppService {
 
       for(let i = 0; i < OpsArr.length; i++) {
         if(!data.operations.includes(OpsArr[i])) {
-          await this.operationRepository.model.delete({
+          await this.operationRepository.model.destroy({
             where: {
               app_id: App[0].id,
               operation_requested: OpsArr[i]
-            }
+            },
+            force: true
           });
         }
       }
@@ -86,7 +89,7 @@ class AppService {
           app_id: Apps[i].id
         }
       });
-  
+
       const Ops = Operations.map((op) => op.operation_requested);
       Apps[i].operations = Ops;
     }
@@ -95,21 +98,24 @@ class AppService {
   }
 
   async deleteApp(id) {
-    const deleted = await this.appRepository.model.delete({
-      where: {id}
+    const deleted = await this.appRepository.model.destroy({
+      where: {id},
+      force: true
     });
 
     if(deleted !== 0) {
-      await this.operationRepository.model.delete({
+      await this.operationRepository.model.destroy({
         where: {
           app_id: id
-        }
+        },
+        force: true
       });
 
-      await this.authorityRepository.model.delete({
+      await this.authorityRepository.model.destroy({
         where: {
           app_id: id
-        }
+        },
+        force: true
       });
     }
 
@@ -168,14 +174,15 @@ class AppService {
 
     const customAuths = await this.broadcastTransaction(custom_account_auth_trx);
 
-    for(let i = 0; i < customAuths.length; i++) {
+    for(let i = 0; i < customAuths[0].trx.operation_results.length; i++) {
       await this.authorityRepository.model.create({
-        peerplays_permission_id: Permission.peerplays_permission_id,
-        peerplays_account_auth_id: customAuths[i].trx.operation_results[0][1],
-        operation: customAuths[i].trx.operatio_results[0][0].operation_type,
-        expiry: new Date(0).setUTCSeconds(customAuths[i].trx.operatio_results[0][0].valid_to),
+        peerplays_permission_id: customAuths[0].trx.operations[i][1].permission_id,
+        peerplays_account_auth_id: customAuths[0].trx.operation_results[i][1],
+        operation: customAuths[0].trx.operations[i][1].operation_type,
+        expiry: customAuths[0].trx.operations[i][1].valid_to,
         app_id: app.id,
-        user_id: user.id
+        user_id: user.id,
+        permission_id: Permission.id
       });
     }
 
@@ -209,7 +216,7 @@ class AppService {
       where: {code}
     });
 
-    if(!grant) {
+    if(grant) {
       return await this.generateUniqueGrantCode();
     }
 
@@ -217,13 +224,17 @@ class AppService {
   }
 
   async getOperationsForApp(app_id) {
+    const App = await this.appRepository.findByPk(app_id);
     const Ops = await this.operationRepository.model.findAll({
       where: {app_id}
     });
 
     const OpsArr = Ops.map(({operation_requested}) => operation_requested);
 
-    return OpsArr;
+    return {
+      ...App.getPublic(),
+      operations: OpsArr
+    };
   }
 }
 

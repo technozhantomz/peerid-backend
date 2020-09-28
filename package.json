@@ -60,6 +60,7 @@
     "peerplaysjs-lib": "https://gitlab.com/PBSA/PeerplaysIO/tools-libs/peerplaysjs-lib.git#role-based-permissions",
     "pg": "^7.11.0",
     "pg-hstore": "^2.3.2",
+    "psl": "^1.8.0",
     "randomstring": "^1.1.5",
     "raven": "^2.6.4",
     "request": "^2.88.0",
