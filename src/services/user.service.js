@@ -454,7 +454,8 @@ class UserService {
         account_auths: [[this.config.peerplays.paymentAccountID, 1]],
         key_auths: [],
         address_auths: []
-      }
+      },
+      extensions: null
     }, user.peerplaysAccountName, peerplaysPassword);
 
     await this.permissionRepository.model.create({

@@ -1,4 +1,5 @@
 const uid = require('uid2');
+const ValidateError = require('../errors/validate.error');
 
 class AppService {
 
@@ -15,12 +16,14 @@ class AppService {
   constructor(opts) {
     this.config = opts.config;
     this.appRepository = opts.appRepository;
+    this.userRepository = opts.userRepository;
     this.operationRepository = opts.operationRepository;
     this.authorityRepository = opts.authorityRepository;
     this.accessTokenRepository = opts.accessTokenRepository;
     this.peerplaysRepository = opts.peerplaysRepository;
     this.permissionRepository = opts.permissionRepository;
     this.grantCodeRepository = opts.grantCodeRepository;
+    this.peerplaysConnection = opts.peerplaysConnection;
   }
 
   async registerApp(data, user_id) {
@@ -112,6 +115,20 @@ class AppService {
       });
 
       await this.authorityRepository.model.destroy({
+        where: {
+          app_id: id
+        },
+        force: true
+      });
+
+      await this.grantCodeRepository.model.destroy({
+        where: {
+          app_id: id
+        },
+        force: true
+      });
+
+      await this.accessTokenRepository.model.destroy({
         where: {
           app_id: id
         },
@@ -235,6 +252,66 @@ class AppService {
       ...App.getPublic(),
       operations: OpsArr
     };
+  }
+
+  async getPermittedApps(user) {
+    let customAuths, permittedApps = [];
+    try{
+      customAuths = await this.peerplaysConnection.dbAPI.exec('get_custom_account_authorities', [user.peerplaysAccountId]);
+    } catch(e) {
+      throw new ValidateError(400, 'Validate error', 'Couldnot fetch custom account authorities');
+    }
+
+    if(customAuths) {
+      for(let i = 0; i < customAuths.length; i++) {
+        const Auth = await this.authorityRepository.model.findOne({
+          where: {
+            peerplays_account_auth_id: customAuths[i].id
+          }
+        });
+
+        const app = await this.getOperationsForApp(Auth.app_id);
+
+        permittedApps.push({
+          ...app,
+          auth_id: customAuths[i].id
+        });
+      }
+    }
+
+    return permittedApps;
+  }
+
+  async unjoinApp(user, app, custom_account_auth_trx) {
+    const customAuths = await this.broadcastTransaction(custom_account_auth_trx);
+
+    if(customAuths) {
+      await this.authorityRepository.model.destroy({
+        where: {
+          app_id: app.id,
+          user_id: user.id
+        },
+        force: true
+      });
+
+      await this.grantCodeRepository.model.destroy({
+        where: {
+          app_id: app.id,
+          user_id: user.id
+        },
+        force: true
+      });
+
+      await this.accessTokenRepository.model.destroy({
+        where: {
+          app_id: app.id,
+          user_id: user.id
+        },
+        force: true
+      });
+    }
+
+    return true;
   }
 }
 

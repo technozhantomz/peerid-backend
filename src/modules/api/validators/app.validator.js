@@ -22,6 +22,7 @@ class AppValidator extends BaseValidator {
     this.validateTransaction = this.validateTransaction.bind(this);
     this.joinApp = this.joinApp.bind(this);
     this.getAppOperations = this.getAppOperations.bind(this);
+    this.unjoinApp = this.unjoinApp.bind(this);
   }
 
   registerApp() {
@@ -203,6 +204,53 @@ class AppValidator extends BaseValidator {
 
       if(!allOpsExist) {
         throw new ValidateError('400', 'Validate error', { custom_account_auth_trx: 'Invalid operation_type' });
+      }
+
+      return { app: AppExists, custom_account_auth_trx };
+    });
+  }
+
+  unjoinApp() {
+    const bodySchema = {
+      app_id: Joi.number().integer().required(),
+      custom_account_auth_trx: Joi.object().keys({
+        ref_block_num: Joi.number().required(),
+        ref_block_prefix: Joi.number().required(),
+        expiration: Joi.string().required(),
+        operations: Joi.array().min(1).items(Joi.array().length(2).items(Joi.number().integer(), Joi.object())).required(),
+        extensions: Joi.array().optional(),
+        signatures: Joi.array().required()
+      }).required()
+    };
+
+    return this.validate(null, bodySchema, async (req, query, body) => {
+      let {app_id, custom_account_auth_trx} = body;
+
+      const Permission = await this.permissionRepository.model.findOne({where: { user_id: req.user.id }});
+      if(!Permission) {
+        throw new ValidateError(401, 'Unauthorized', {
+          custom_account_auth_trx: 'Permission does not exist for this user'
+        });
+      }
+
+      //validate client id
+      const AppExists = await this.appRepository.model.findOne({
+        where: {
+          id: app_id
+        }
+      });
+
+      if(!AppExists) {
+        throw new ValidateError(400, 'Validate error', {
+          app_id: 'App does not exist'
+        });
+      }
+
+      // validate custom_account_auth_trx
+      if(!custom_account_auth_trx.operations.every((op) => op[0] === ChainTypes.operations.custom_account_authority_delete)) {
+        throw new ValidateError(400, 'Validate error', {
+          custom_account_auth_trx: 'Invalid operation'
+        });
       }
 
       return { app: AppExists, custom_account_auth_trx };

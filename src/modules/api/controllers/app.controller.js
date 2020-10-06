@@ -66,6 +66,19 @@ class AppController {
         this.authValidator.loggedOnly,
         this.appValidator.getAppOperations,
         this.getAppOperations.bind(this)
+      ],
+      [
+        'get',
+        '/api/v1/apps/permitted',
+        this.authValidator.loggedOnly,
+        this.getPermittedApps.bind(this)
+      ],
+      [
+        'post',
+        '/api/v1/app/unjoin',
+        this.authValidator.loggedOnly,
+        this.appValidator.unjoinApp,
+        this.unjoinApp.bind(this)
       ]
     ];
   }
@@ -96,6 +109,14 @@ class AppController {
 
   async getAppOperations(user, app_id) {
     return await this.appService.getOperationsForApp(app_id);
+  }
+
+  async getPermittedApps(user) {
+    return await this.appService.getPermittedApps(user);
+  }
+
+  async unjoinApp(user, { app, custom_account_auth_trx }) {
+    return await this.appService.unjoinApp(user, app, custom_account_auth_trx);
   }
 }
 
