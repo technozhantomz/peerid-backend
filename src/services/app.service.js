@@ -270,12 +270,14 @@ class AppService {
           }
         });
 
-        const app = await this.getOperationsForApp(Auth.app_id);
+        if(Auth) {
+          const app = await this.getOperationsForApp(Auth.app_id);
 
-        permittedApps.push({
-          ...app,
-          auth_id: customAuths[i].id
-        });
+          permittedApps.push({
+            ...app,
+            auth_id: customAuths[i].id
+          });
+        }
       }
     }
 
