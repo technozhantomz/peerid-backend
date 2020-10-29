@@ -111,6 +111,27 @@ class UsersController {
         this.userValidator.getUsers,
         this.getUsers.bind(this)
       ],
+      /**
+       * @swagger
+       *
+       * /profile/permission:
+       *  get:
+       *    description: Get user permissions
+       *    summary: Get user permissions
+       *    produces:
+       *      - application/json
+       *    tags:
+       *      - Profile
+       *    responses:
+       *      200:
+       *        description: Get user permissions
+       *        schema:
+       *          $ref: '#/definitions/Permissions'
+       *      401:
+       *        description: Error user unauthorized
+       *        schema:
+       *          $ref: '#/definitions/UnauthorizedError'
+       */
       [
         'get', '/api/v1/permission',
         this.authValidator.loggedOnly,

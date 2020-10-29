@@ -17,6 +17,7 @@ class UserService {
      * @param {ResetTokenRepository} opts.resetTokenRepository
      * @param {MailService} opts.mailService
      * @param {PermissionRepository} opts.permissionRepository
+     * @param {AuthorityRepository} opts.authorityRepository
      * @param {PeerplaysConnection} opts.peerplaysConnection
      */
   constructor(opts) {
@@ -28,6 +29,7 @@ class UserService {
     this.resetTokenRepository = opts.resetTokenRepository;
     this.mailService = opts.mailService;
     this.permissionRepository = opts.permissionRepository;
+    this.authorityRepository = opts.authorityRepository;
 
     this.errors = {
       USER_NOT_FOUND: 'USER_NOT_FOUND',
@@ -262,9 +264,31 @@ class UserService {
     return Promise.all(users.map(async (User) => this.getCleanUserForSearch(User)));
   }
 
-  async signUpWithPassword(email, username, unhashedPassword) {
+  makepassword(length) {
+    var result = '';
+    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%*';
+    var charactersLength = characters.length;
+
+    for ( var i = 0; i < length; i++ ) {
+       result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+
+    return result;
+ }
+
+  async signUpWithPassword(email, username, unhashedPassword, mobile) {
+    let password = unhashedPassword;
+
+    if(!unhashedPassword) {
+      password = this.makepassword(16);
+    }
+
+    if(!username) {
+      username = this.makepassword(20);
+    }
+
     const peerplaysAccountUsername = `pi-${username}`;
-    const peerplaysAccountPassword = await bcrypt.hash(`pi-${unhashedPassword}${(new Date()).getTime()}`, 10);
+    const peerplaysAccountPassword = await bcrypt.hash(`pi-${password}${(new Date()).getTime()}`, 10);
     const keys = Login.generateKeys(
       peerplaysAccountUsername,
       peerplaysAccountPassword,
@@ -274,9 +298,9 @@ class UserService {
     const ownerKey = keys.pubKeys.owner;
     const activeKey = keys.pubKeys.active;
 
-    const password = await bcrypt.hash(unhashedPassword, 10);
+    password = await bcrypt.hash(password, 10);
     const User = await this.userRepository.model.create({
-      email, username, password
+      email, username, password, mobile
     });
     const {token} = await this.verificationTokenRepository.createToken(User.id, email);
 
@@ -296,14 +320,13 @@ class UserService {
   async confirmEmail(ActiveToken) {
     const User = await this.userRepository.findByPk(ActiveToken.userId);
     User.isEmailVerified = true;
-    // User.email = ActiveToken.email;
     await User.save();
     ActiveToken.isActive = false;
     await ActiveToken.save();
     return this.getCleanUser(User);
   }
 
-  async getSignInUser(login, password) {
+  async getSignInUser(login, password, mobile) {
     const User = await this.userRepository.getByLogin(login);
 
     if (!User) {
@@ -314,8 +337,12 @@ class UserService {
       throw new Error('Please verify your email address first');
     }
 
-    if (!await bcrypt.compare(password, User.password)) {
+    if (password && !await bcrypt.compare(password, User.password)) {
       throw new Error('Invalid password');
+    }
+
+    if (mobile && User.mobile != mobile) {
+      throw new Error('Mobile doesn\'t match email');
     }
 
     return this.getCleanUser(User);
@@ -442,28 +469,65 @@ class UserService {
 
   async createCustomPermission(user, peerplaysPassword) {
     let permissionName = `pid${this.randomizePermissionName()}`;
-    const customPermission = await this.peerplaysRepository.createAndSendTransaction('custom_permission_create',{
-      fee: {
-        amount: 0,
-        asset_id: this.config.peerplays.feeAssetId
-      },
-      owner_account: user.peerplaysAccountId,
-      permission_name: permissionName,
-      auth: {
-        weight_threshold: 1,
-        account_auths: [[this.config.peerplays.paymentAccountID, 1]],
-        key_auths: [],
-        address_auths: []
-      },
-      extensions: null
-    }, user.peerplaysAccountName, peerplaysPassword);
+    try {
+      const customPermission = await this.peerplaysRepository.createAndSendTransaction('custom_permission_create',{
+        fee: {
+          amount: 0,
+          asset_id: this.config.peerplays.feeAssetId
+        },
+        owner_account: user.peerplaysAccountId,
+        permission_name: permissionName,
+        auth: {
+          weight_threshold: 1,
+          account_auths: [[this.config.peerplays.paymentAccountID, 1]],
+          key_auths: [],
+          address_auths: []
+        },
+        extensions: null
+      }, user.peerplaysAccountName, peerplaysPassword);
 
-    await this.permissionRepository.model.create({
-      peerplays_permission_id: customPermission.trx.operation_results[0][1],
-      permission_name: permissionName,
-      peerplays_account_id: user.peerplaysAccountId,
-      user_id: user.id
-    });
+      const Permission = await this.permissionRepository.model.create({
+        peerplays_permission_id: customPermission.trx.operation_results[0][1],
+        permission_name: permissionName,
+        peerplays_account_id: user.peerplaysAccountId,
+        user_id: user.id
+      });
+
+      let today = new Date();
+      let year = today.getFullYear();
+      let month = today.getMonth();
+      let day = today.getDate();
+      let threeMonthsFromNow = new Date(year, month + 3, day);
+      const Ops = [85, 86, 87];
+
+      for(let i = 0; i < Ops.length; i++) {
+        const customAuth = await this.peerplaysRepository.createAndSendTransaction('custom_account_authority_create', {
+          fee: {
+            amount: 0,
+            asset_id: this.config.peerplays.feeAssetId
+          },
+          permission_id: customPermission.trx.operation_results[0][1],
+          operation_type: Ops[i],
+          valid_from: Math.floor(new Number(today)/1000),
+          valid_to: Math.floor(new Number(threeMonthsFromNow)/1000),
+          owner_account: user.peerplaysAccountId,
+          extensions: null
+        }, user.peerplaysAccountName, peerplaysPassword);
+
+        await this.authorityRepository.model.create({
+          peerplays_permission_id: Permission.peerplays_permission_id,
+          peerplays_account_auth_id: customAuth.trx.operation_results[0][1],
+          operation: Ops[i],
+          expiry: threeMonthsFromNow,
+          app_id: app.id,
+          user_id: user.id,
+          permission_id: Permission.id
+        });
+      }
+    } catch(err) {
+      logger.error(err);
+      throw new Error('Peerplays HRP Error');
+    }
   }
 
   async getPermission(user) {

@@ -8,7 +8,30 @@ const {Model} = Sequelize;
  * @property {Number} app_id
  */
 class OperationModel extends Model {
-
+  /**
+   * @swagger
+   *
+   * definitions:
+   *  Operation:
+   *    type: object
+   *    required:
+   *    - operation_requested
+   *    - app_id
+   *    properties:
+   *      id:
+   *        type: integer
+   *        example: 1
+   *      operation_requested:
+   *        type: integer
+   *        example: 35
+   *      app_id:
+   *        type: integer
+   *        example: 2
+   *  Operations:
+   *    type: array
+   *    items:
+   *      $ref: '#/definitions/Operation'
+   */
 }
 const attributes = {
   operation_requested: {

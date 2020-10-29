@@ -13,7 +13,50 @@ const {Model} = Sequelize;
  * @property {Number} permission_id
  */
 class AuthorityModel extends Model {
-
+  /**
+   * @swagger
+   *
+   * definitions:
+   *  Authority:
+   *    type: object
+   *    required:
+   *    - peerplays_permission_id
+   *    - peerplays_account_auth_id
+   *    - operation
+   *    - expiry
+   *    - app_id
+   *    - user_id
+   *    - permission_id
+   *    properties:
+   *      id:
+   *        type: integer
+   *        example: 1
+   *      peerplays_permission_id:
+   *        type: string
+   *        example: 1.27.35
+   *      peerplays_account_auth_id:
+   *        type: string
+   *        example: 1.28.38
+   *      expiry:
+   *        type: string
+   *        format: date
+   *      operation:
+   *        type: integer
+   *        example: 34
+   *      app_id:
+   *        type: integer
+   *        example: 2
+   *      user_id:
+   *        type: integer
+   *        example: 24
+   *      permission_id:
+   *        type: integer
+   *        example: 222
+   *  Authorities:
+   *    type: array
+   *    items:
+   *      $ref: '#/definitions/Authority'
+   */
 }
 const attributes = {
   peerplays_permission_id: {

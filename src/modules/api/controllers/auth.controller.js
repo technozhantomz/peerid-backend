@@ -9,8 +9,6 @@ const RestError = require('../../../errors/rest.error');
  *    type: object
  *    required:
  *      - email
- *      - username
- *      - password
  *    properties:
  *      email:
  *        type: string
@@ -20,17 +18,22 @@ const RestError = require('../../../errors/rest.error');
  *      password:
  *        type: string
  *        format: password
+ *      mobile:
+ *        type: string
+ *        example: 999-999-9999
  *  AuthSignInUser:
  *    type: object
  *    required:
  *      - login
- *      - password
  *    properties:
  *      login:
  *        type: string
  *      password:
  *        type: string
  *        format: password
+ *      mobile:
+ *        type: string
+ *        example: 999-999-9999
  *  AuthForgotPassword:
  *    type: object
  *    required:
@@ -66,6 +69,40 @@ const RestError = require('../../../errors/rest.error');
  *            type: array
  *            items:
  *              $ref: '#/definitions/User'
+ *  ExchangeCode:
+ *    type: object
+ *    required:
+ *      - code
+ *      - client_id
+ *      - client_secret
+ *    properties:
+ *      code:
+ *        type: string
+ *        format: uuid
+ *        example: 2kj2un2u-22nnj-m2n2n-6edu3he
+ *      client_id:
+ *        type: integer
+ *        example: 20
+ *      client_secret:
+ *        type: string
+ *        example: asdf0l0aksf97ja93yh
+ *  RefreshTokenRequest:
+ *    type: object
+ *    required:
+ *      - refresh_token
+ *      - client_id
+ *      - client_secret
+ *    properties:
+ *      refresh_token:
+ *        type: string
+ *        format: uuid
+ *        example: 2kj2un2u-22nnj-m2n2n-6edu3he
+ *      client_id:
+ *        type: integer
+ *        example: 20
+ *      client_secret:
+ *        type: string
+ *        example: asdf0l0aksf97ja93yh
  */
 
 class AuthController {
@@ -212,7 +249,7 @@ class AuthController {
        *      - Auth
        *    parameters:
        *      - name: token
-       *        in:  body
+       *        in: body
        *        required: true
        *        schema:
        *          $ref: '#/definitions/AuthForgotPassword'
@@ -264,7 +301,7 @@ class AuthController {
        *      - Auth
        *    parameters:
        *      - name: token
-       *        in:  body
+       *        in: body
        *        required: true
        *        schema:
        *          $ref: '#/definitions/AuthResetPassword'
@@ -306,7 +343,7 @@ class AuthController {
        *      - Auth
        *    parameters:
        *      - name: peerplays
-       *        in:  body
+       *        in: body
        *        required: true
        *        schema:
        *          $ref: '#/definitions/AuthSignInUser'
@@ -326,11 +363,69 @@ class AuthController {
         this.authValidator.validatePeerplaysLogin,
         this.peerplaysLogin.bind(this)
       ],
+      /**
+       * @swagger
+       *
+       * /auth/exchange:
+       *  post:
+       *    description: Exchange grant code with access token
+       *    produces:
+       *      - application/json
+       *    tags:
+       *      - Auth
+       *    parameters:
+       *      - name: code
+       *        in: body
+       *        required: true
+       *        schema:
+       *          $ref: '#/definitions/ExchangeCode'
+       *    responses:
+       *      200:
+       *        description: Access Token response
+       *        schema:
+       *         $ref: '#/definitions/AccessToken'
+       *      400:
+       *        description: Error form validation
+       *        schema:
+       *          $ref: '#/definitions/ValidateError'
+       */
       [
         'post',
         '/api/v1/auth/exchange',
         this.authValidator.validateCode,
         this.exchangeCode.bind(this)
+      ],
+      /**
+       * @swagger
+       *
+       * /auth/refreshtoken:
+       *  post:
+       *    description: Refresh the access token if its expired
+       *    produces:
+       *      - application/json
+       *    tags:
+       *      - Auth
+       *    parameters:
+       *      - name: refreshtoken
+       *        in:  body
+       *        required: true
+       *        schema:
+       *          $ref: '#/definitions/RefreshTokenRequest'
+       *    responses:
+       *      200:
+       *        description: Refresh Token response
+       *        schema:
+       *         $ref: '#/definitions/AccessToken'
+       *      400:
+       *        description: Error form validation
+       *        schema:
+       *          $ref: '#/definitions/ValidateError'
+       */
+      [
+        'post',
+        'api/v1/auth/refreshtoken',
+        this.authValidator.validateRefreshToken,
+        this.refreshToken.bind(this)
       ]
     ];
   }
@@ -340,8 +435,8 @@ class AuthController {
     return true;
   }
 
-  async signUp(user, {email, password, username}) {
-    return this.userService.signUpWithPassword(email.toLowerCase(), username, password);
+  async signUp(user, {email, mobile, password, username}) {
+    return this.userService.signUpWithPassword(email.toLowerCase(), username, password, mobile);
   }
 
   async confirmEmail(user, ActiveToken, req) {
@@ -355,11 +450,11 @@ class AuthController {
     return res;
   }
 
-  async signIn(_, {login, password}, req) {
+  async signIn(_, {login, password, mobile}, req) {
     let user;
 
     try {
-      user = await this.userService.getSignInUser(login, password);
+      user = await this.userService.getSignInUser(login, password, mobile);
     } catch (e) {
       throw new ValidateError(400, 'Invalid email/username or password');
     }
@@ -406,6 +501,10 @@ class AuthController {
 
   async exchangeCode(user, {grantCodeId, appId, scope}) {
     return await this.appService.createAccessToken(grantCodeId, appId, user.id, scope);
+  }
+
+  async refreshToken(user, {app_id, AccessToken}) {
+    return await this.appService.refreshAccessToken(user, app_id, AccessToken);
   }
 }
 

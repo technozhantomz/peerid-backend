@@ -156,11 +156,21 @@ class AppService {
   }
 
   async createAccessToken(grantCodeId, appId, userId, scope) {
+    const Auth = await this.authorityRepository.model.findOne({
+      where: {
+        user_id: userId,
+        app_id: appId
+      }
+    });
+
     const token = await this.generateUniqueAccessToken();
+    const refresh_token = await this.generateUniqueRefreshToken();
     return this.accessTokenRepository.model.create({
       app_id: appId,
       grantcode_id: grantCodeId,
       user_id: userId,
+      refresh_token,
+      expires: Auth.expiry,
       scope,
       token
     });
@@ -182,28 +192,76 @@ class AppService {
     return uuid;
   }
 
+  async generateUniqueRefreshToken() {
+    const uuid = uid(124);
+
+    const RefreshTokenExists = await this.accessTokenRepository.model.findOne({
+      where: {
+        refresh_token: uuid
+      }
+    });
+
+    if(RefreshTokenExists) {
+      return await this.generateUniqueRefreshToken();
+    }
+
+    return uuid;
+  }
+
   async broadcastTransaction(transaction) {
     return this.peerplaysRepository.broadcastSerializedTx(transaction);
   }
 
-  async joinApp(user, app, custom_account_auth_trx) {
+  async joinApp(user, app) {
     const Permission = await this.permissionRepository.model.findOne({where: { user_id: user.id }});
 
-    const customAuths = await this.broadcastTransaction(custom_account_auth_trx);
+    const Ops = await this.operationRepository.model.findAll({
+      where: {app_id: app.id}
+    });
 
-    for(let i = 0; i < customAuths[0].trx.operation_results.length; i++) {
-      await this.authorityRepository.model.create({
-        peerplays_permission_id: customAuths[0].trx.operations[i][1].permission_id,
-        peerplays_account_auth_id: customAuths[0].trx.operation_results[i][1],
-        operation: customAuths[0].trx.operations[i][1].operation_type,
-        expiry: customAuths[0].trx.operations[i][1].valid_to,
-        app_id: app.id,
-        user_id: user.id,
-        permission_id: Permission.id
-      });
+    let customAuths;
+    try{
+      let today = new Date();
+      let year = today.getFullYear();
+      let month = today.getMonth();
+      let day = today.getDate();
+      let threeMonthsFromNow = new Date(year, month + 3, day);
+
+      for(let i = 0; i < Ops.length; i++) {
+        const customAuth = await this.peerplaysRepository.createSendTransaction('custom_account_authority_create', {
+          fee: {
+            amount: 0,
+            asset_id: this.config.peerplays.feeAssetId
+          },
+          permission_id: Permission.peerplays_permission_id,
+          operation_type: Ops[i].operation_requested,
+          valid_from: Math.floor(new Number(today)/1000),
+          valid_to: Math.floor(new Number(threeMonthsFromNow)/1000),
+          owner_account: user.peerplaysAccountId,
+          extensions: null
+        });
+
+        await this.authorityRepository.model.create({
+          peerplays_permission_id: customAuth.trx.operations[0][1].permission_id,
+          peerplays_account_auth_id: customAuth.trx.operation_results[0][1],
+          operation: customAuth.trx.operations[0][1].operation_type,
+          expiry: customAuth.trx.operations[0][1].valid_to,
+          app_id: app.id,
+          user_id: user.id,
+          permission_id: Permission.id
+        });
+
+        customAuths.push(customAuth);
+      }
+    } catch(err) {
+      console.error(err);
+      throw new Error('Peerplays HRP Error');
     }
 
-    const code = await this.getGrantCode(app, user);
+    let code = '';
+    if(customAuths && customAuths.length > 0)
+      code = await this.getGrantCode(app, user);
+
     return code;
   }
 
@@ -284,10 +342,31 @@ class AppService {
     return permittedApps;
   }
 
-  async unjoinApp(user, app, custom_account_auth_trx) {
-    const customAuths = await this.broadcastTransaction(custom_account_auth_trx);
+  async unjoinApp(user, app) {
+    let customAuths;
 
-    if(customAuths) {
+    const Authorities = await this.authorityRepository.model.findAll({where: { user_id: user.id, app_id: app.id }});
+
+    try {
+      for(let i = 0; i < Authorities.length; i++) {
+        const customAuth = await this.peerplaysRepository.createSendTransaction('custom_account_authority_delete', {
+          fee: {
+            amount: 0,
+            asset_id: this.config.peerplays.feeAssetId
+          },
+          auth_id: Authorities[i].peerplays_account_auth_id,
+          owner_account: user.peerplaysAccountId,
+          extensions: null
+        });
+
+        customAuths.push(customAuth);
+      }
+    } catch(err) {
+      console.error(err);
+      throw new Error('Peerplays HRP Error');
+    }
+
+    if(customAuths && customAuths.length > 0) {
       await this.authorityRepository.model.destroy({
         where: {
           app_id: app.id,
@@ -314,6 +393,54 @@ class AppService {
     }
 
     return true;
+  }
+
+  async refreshAccessToken(user, app_id, AccessToken) {
+    let customAuths;
+
+    const Authorities = await this.authorityRepository.model.findAll({where: { user_id: user.id, app_id }});
+
+    let today = new Date();
+    let year = today.getFullYear();
+    let month = today.getMonth();
+    let day = today.getDate();
+    let threeMonthsFromNow = new Date(year, month + 3, day);
+
+    try {
+      for(let i = 0; i < Authorities.length; i++) {
+        const customAuth = await this.peerplaysRepository.createSendTransaction('custom_account_authority_update', {
+          fee: {
+            amount: 0,
+            asset_id: this.config.peerplays.feeAssetId
+          },
+          auth_id: Authorities[i].peerplays_account_auth_id,
+          new_valid_from: Math.floor(new Number(today)/1000),
+          new_valid_to: Math.floor(new Number(threeMonthsFromNow)/1000),
+          owner_account: user.peerplaysAccountId,
+          extensions: null
+        });
+
+        Authorities[i].expiry = customAuth.trx.operations[0][1].valid_to;
+        Authorities[i].save();
+
+        customAuths.push(customAuth);
+      }
+    } catch(err) {
+      console.error(err);
+      throw new Error('Peerplays HRP Error');
+    }
+
+    if(customAuths && customAuths.length > 0) {
+      const token = await this.generateUniqueAccessToken();
+      const refresh_token = await this.generateUniqueRefreshToken();
+
+      AccessToken.token = token;
+      AccessToken.refresh_token = refresh_token;
+      AccessToken.expires = threeMonthsFromNow;
+      AccessToken.save();
+    }
+
+    return AccessToken;
   }
 }
 

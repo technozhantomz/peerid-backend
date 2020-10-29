@@ -35,6 +35,7 @@ class AuthValidator extends BaseValidator {
     this.validatePeerplaysLogin = this.validatePeerplaysLogin.bind(this);
     this.validateCode = this.validateCode.bind(this);
     this.validateAccessToken = this.validateAccessToken.bind(this);
+    this.validateRefreshToken = this.validateRefreshToken.bind(this);
   }
 
   loggedOnly() {
@@ -51,14 +52,22 @@ class AuthValidator extends BaseValidator {
   validateSignUp() {
     const bodySchema = {
       email: Joi.string().email().required(),
-      username: Joi.string().regex(/^[a-z][a-z0-9-]+[a-z0-9]$/).min(3).max(60).required(),
-      password: Joi.string().regex(/^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])[a-zA-Z0-9!@#\$%\^&\*]+$/).min(6).max(60).required()
+      mobile: Joi.string().regex(/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/).optional(),
+      username: Joi.string().regex(/^[a-z][a-z0-9-]+[a-z0-9]$/).min(3).max(60).optional(),
+      password: Joi.string().regex(/^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])[a-zA-Z0-9!@#\$%\^&\*]+$/).min(6).max(60).optional()
     };
 
     return this.validate(null, bodySchema, async (req, query, body) => {
-      const {username, password, email} = body;
+      const {username, password, email, mobile} = body;
 
-      if (username.match(/-dividend-distribution/)) {
+      if(!password && !mobile) {
+        throw new ValidateError(400, 'Validate error', {
+          mobile: 'Either mobile or password is required',
+          password: 'Either mobile or password is required'
+        });
+      }
+
+      if (username && username.match(/-dividend-distribution/)) {
         throw new ValidateError(400, 'Validate error', {
           username: 'Should not include "-dividend-distribution"'
         });
@@ -70,29 +79,17 @@ class AuthValidator extends BaseValidator {
         });
       }
 
-      const alreadyExists = await this.userRepository.getByEmailOrUsername(email.toLowerCase(), username);
+      if(username) {
+        const peerplaysUser = await this.peerplaysRepository.getAccountId(`pi-${username}`);
 
-      if (alreadyExists && alreadyExists.email === email.toLowerCase()) {
-        throw new ValidateError(400, 'Validate error', {
-          email: 'This email is already used'
-        });
+        if(peerplaysUser!=null) {
+          throw new ValidateError(400,'Validate error', {
+            username: `Peerplays account exists with the username pi-${username}`
+          });
+        }
       }
 
-      if (alreadyExists && alreadyExists.username === username) {
-        throw new ValidateError(400, 'Validate error', {
-          username: 'This username is already used'
-        });
-      }
-
-      const peerplaysUser = await this.peerplaysRepository.getAccountId(`se-${username}`);
-
-      if(peerplaysUser!=null) {
-        throw new ValidateError(400,'Validate error', {
-          username: `Peerplays account exists with the username se-${username}`
-        });
-      }
-
-      return {email, password, username};
+      return {email, mobile, password, username};
     });
   }
 
@@ -117,16 +114,24 @@ class AuthValidator extends BaseValidator {
   validateSignIn() {
     const bodySchema = {
       login: Joi.string().required(),
-      password: Joi.string().required()
+      password: Joi.string().optional(),
+      mobile: Joi.string().optional()
     };
 
     return this.validate(null, bodySchema, async (req, query, body) => {
-      const {login} = body;
+      const {login, password, mobile} = body;
 
       const user = await this.userRepository.getByLogin(login);
 
       if(user && user.isEmailVerified === false){
         throw new ValidateError(403, 'Please verify your email address first');
+      }
+
+      if(!password && !mobile) {
+        throw new ValidateError(400, 'Validate error', {
+          mobile: 'Either mobile or password is required',
+          password: 'Either mobile or password is required'
+        });
       }
 
       return body;
@@ -239,6 +244,45 @@ class AuthValidator extends BaseValidator {
       }
 
       return null;
+    });
+  }
+
+  validateRefreshToken() {
+    const bodySchema = {
+      refresh_token: Joi.string().required(),
+      client_id: Joi.number().integer().required(),
+      client_secret: Joi.string().required()
+    };
+
+    return this.validate(null, bodySchema, async(req, query, body) => {
+      const {refresh_token, client_id, client_secret} = body;
+
+      const AppExists = await this.appRepository.model.findOne({where:
+      {
+        id: client_id,
+        app_secret: client_secret
+      }});
+
+      if(!AppExists) {
+        throw new ValidateError(400, 'Validate error', {
+          client_id: 'client_id or client_secret invalid'
+        });
+      }
+
+      const RefreshTokenExists = await this.accessTokenRepository.model.findOne({
+        where:{
+          app_id: client_id,
+          refresh_token
+        }
+      });
+
+      if(!RefreshTokenExists) {
+        throw new ValidateError(400, 'Validate error', {
+          refresh_token: 'invalid refresh token'
+        });
+      }
+
+      return { app_id: client_id, AccessToken: RefreshTokenExists };
     });
   }
 }

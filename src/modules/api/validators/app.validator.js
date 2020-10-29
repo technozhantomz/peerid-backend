@@ -136,24 +136,16 @@ class AppValidator extends BaseValidator {
   joinApp() {
     const bodySchema = {
       client_id: Joi.number().integer().required(),
-      redirect_uri: Joi.string().uri().required(),
-      custom_account_auth_trx: Joi.object().keys({
-        ref_block_num: Joi.number().required(),
-        ref_block_prefix: Joi.number().required(),
-        expiration: Joi.string().required(),
-        operations: Joi.array().min(1).items(Joi.array().length(2).items(Joi.number().integer(), Joi.object())).required(),
-        extensions: Joi.array().optional(),
-        signatures: Joi.array().required()
-      }).required()
+      redirect_uri: Joi.string().uri().required()
     };
 
     return this.validate(null, bodySchema, async (req, query, body) => {
-      let {client_id, redirect_uri, custom_account_auth_trx} = body;
+      let {client_id, redirect_uri} = body;
 
       const Permission = await this.permissionRepository.model.findOne({where: { user_id: req.user.id }});
       if(!Permission) {
         throw new ValidateError(401, 'Unauthorized', {
-          custom_account_auth_trx: 'Permission does not exist for this user'
+          user: 'Permission does not exist for this user'
         });
       }
 
@@ -172,10 +164,10 @@ class AppValidator extends BaseValidator {
 
       // validate redirect_uri
       let match = false, uri = new url.URL(redirect_uri);
-      let domain = psl.parse(uri.hostname).domain;
+      let domain = psl.parse(uri.hostname).domain.toLowerCase();
 
       for (let i = 0; i < AppExists.domains.length; i++) {
-        if (domain === AppExists.domains[i]) {
+        if (domain === AppExists.domains[i].toLowerCase()) {
           match = true;
           break;
         }
@@ -187,51 +179,17 @@ class AppValidator extends BaseValidator {
         });
       }
 
-      // validate custom_account_auth_trx
-      if(!custom_account_auth_trx.operations.every((op) => op[0] === ChainTypes.operations.custom_account_authority_create)) {
-        throw new ValidateError(400, 'Validate error', {
-          custom_account_auth_trx: 'Invalid operation'
-        });
-      }
-
-      const Ops = await this.operationRepository.model.findAll({
-        where: {app_id: AppExists.id}
-      });
-  
-      const OpsArr = Ops.map(({operation_requested}) => operation_requested);
-
-      const allOpsExist = custom_account_auth_trx.operations.every((op) => OpsArr.indexOf(op[1].operation_type) >= 0);
-
-      if(!allOpsExist) {
-        throw new ValidateError('400', 'Validate error', { custom_account_auth_trx: 'Invalid operation_type' });
-      }
-
-      return { app: AppExists, custom_account_auth_trx };
+      return AppExists;
     });
   }
 
   unjoinApp() {
     const bodySchema = {
-      app_id: Joi.number().integer().required(),
-      custom_account_auth_trx: Joi.object().keys({
-        ref_block_num: Joi.number().required(),
-        ref_block_prefix: Joi.number().required(),
-        expiration: Joi.string().required(),
-        operations: Joi.array().min(1).items(Joi.array().length(2).items(Joi.number().integer(), Joi.object())).required(),
-        extensions: Joi.array().optional(),
-        signatures: Joi.array().required()
-      }).required()
+      app_id: Joi.number().integer().required()
     };
 
     return this.validate(null, bodySchema, async (req, query, body) => {
-      let {app_id, custom_account_auth_trx} = body;
-
-      const Permission = await this.permissionRepository.model.findOne({where: { user_id: req.user.id }});
-      if(!Permission) {
-        throw new ValidateError(401, 'Unauthorized', {
-          custom_account_auth_trx: 'Permission does not exist for this user'
-        });
-      }
+      let {app_id} = body;
 
       //validate client id
       const AppExists = await this.appRepository.model.findOne({
@@ -246,14 +204,7 @@ class AppValidator extends BaseValidator {
         });
       }
 
-      // validate custom_account_auth_trx
-      if(!custom_account_auth_trx.operations.every((op) => op[0] === ChainTypes.operations.custom_account_authority_delete)) {
-        throw new ValidateError(400, 'Validate error', {
-          custom_account_auth_trx: 'Invalid operation'
-        });
-      }
-
-      return { app: AppExists, custom_account_auth_trx };
+      return { app: AppExists };
     });
   }
 
