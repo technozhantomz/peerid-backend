@@ -1,0 +1,1154 @@
+info:
+  title: PeerID
+  version: '1'
+  description: APIs for PeerID
+host: virtserver.swaggerhub.com
+basePath: /api/v1
+schemes:
+  - https
+swagger: '2.0'
+paths:
+  /app:
+    post:
+      description: Create or edit an app
+      produces:
+        - application/json
+      tags:
+        - App
+      parameters:
+        - name: app
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/NewApp'
+      responses:
+        '200':
+          description: App create response
+          schema:
+            $ref: '#/definitions/AppResponse'
+        '400':
+          description: Error form validation
+          schema:
+            $ref: '#/definitions/ValidateError'
+    delete:
+      description: Delete an app created by user
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          in: query
+          required: true
+          description: id of the app to be deleted
+          type: integer
+      tags:
+        - App
+      responses:
+        '200':
+          description: App delete response
+          schema:
+            $ref: '#/definitions/SuccessResponse'
+        '400':
+          description: Error in id validation
+          schema:
+            $ref: '#/definitions/ValidateError'
+    get:
+      description: Get app with operations
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          in: query
+          required: true
+          description: id of the app
+          type: integer
+      tags:
+        - App
+      responses:
+        '200':
+          description: App response with operations
+          schema:
+            $ref: '#/definitions/AppOperationsResponse'
+        '400':
+          description: Error in id validation
+          schema:
+            $ref: '#/definitions/ValidateError'
+  /apps:
+    get:
+      description: Get apps created by user
+      produces:
+        - application/json
+      tags:
+        - App
+      responses:
+        '200':
+          description: App create response
+          schema:
+            $ref: '#/definitions/AppsResponse'
+  /app/secret:
+    get:
+      description: Get app secret
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          in: query
+          required: true
+          description: id of the app
+          type: integer
+      tags:
+        - App
+      responses:
+        '200':
+          description: App response with app_secret
+          schema:
+            $ref: '#/definitions/AppResponse'
+        '400':
+          description: Error in id validation
+          schema:
+            $ref: '#/definitions/ValidateError'
+  /app/join:
+    post:
+      description: Join an app
+      produces:
+        - application/json
+      parameters:
+        - name: app
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/JoinAppRequest'
+      tags:
+        - App
+      responses:
+        '200':
+          description: Grant code response
+          schema:
+            $ref: '#/definitions/GrantCodeResponse'
+        '400':
+          description: Error in id validation
+          schema:
+            $ref: '#/definitions/ValidateError'
+  /apps/permitted:
+    get:
+      description: Get apps permitted by user
+      produces:
+        - application/json
+      tags:
+        - App
+      responses:
+        '200':
+          description: App response with operations
+          schema:
+            $ref: '#/definitions/AppOperationsResponse'
+        '400':
+          description: Error in id validation
+          schema:
+            $ref: '#/definitions/ValidateError'
+  /app/unjoin:
+    post:
+      description: Revoke app permissions
+      produces:
+        - application/json
+      parameters:
+        - name: app
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/UnjoinAppRequest'
+      tags:
+        - App
+      responses:
+        '200':
+          description: Success response
+          schema:
+            $ref: '#/definitions/SuccessResponse'
+        '400':
+          description: Error in id validation
+          schema:
+            $ref: '#/definitions/ValidateError'
+  /auth/logout:
+    post:
+      description: Logout
+      produces:
+        - application/json
+      tags:
+        - Auth
+      responses:
+        '200':
+          description: Logout response
+          schema:
+            $ref: '#/definitions/SuccessEmptyResponse'
+        '400':
+          description: Error form validation
+          schema:
+            $ref: '#/definitions/ValidateError'
+        '401':
+          description: Error user unauthorized
+          schema:
+            $ref: '#/definitions/UnauthorizedError'
+  /auth/sign-up:
+    post:
+      description: Sign up
+      produces:
+        - application/json
+      tags:
+        - Auth
+      parameters:
+        - name: user
+          description: User object
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/AuthSignUpUser'
+      responses:
+        '200':
+          description: User response
+          schema:
+            $ref: '#/definitions/UserResponse'
+        '400':
+          description: Error form validation
+          schema:
+            $ref: '#/definitions/ValidateError'
+  '/auth/confirm-email/{token}':
+    post:
+      description: Confirm email
+      produces:
+        - application/json
+      tags:
+        - Auth
+      parameters:
+        - name: token
+          in: path
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Confirm-email response
+          schema:
+            $ref: '#/definitions/UserResponse'
+        '400':
+          description: Error form validation
+          schema:
+            $ref: '#/definitions/ValidateError'
+  /auth/sign-in:
+    post:
+      description: Sign in
+      produces:
+        - application/json
+      tags:
+        - Auth
+      parameters:
+        - name: token
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/AuthSignInUser'
+      responses:
+        '200':
+          description: Sign in response
+          schema:
+            $ref: '#/definitions/UserResponse'
+        '400':
+          description: Error form validation
+          schema:
+            $ref: '#/definitions/ValidateError'
+  /auth/forgot-password:
+    post:
+      description: Forgot password
+      produces:
+        - application/json
+      tags:
+        - Auth
+      parameters:
+        - name: token
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/AuthForgotPassword'
+      responses:
+        '200':
+          description: Forgot-password response
+          schema:
+            $ref: '#/definitions/SuccessEmptyResponse'
+        '400':
+          description: Error form validation
+          schema:
+            $ref: '#/definitions/ValidateError'
+        '404':
+          description: Error user not found
+          schema:
+            properties:
+              status:
+                type: number
+                example: 404
+              error:
+                type: string
+                example: User not found
+        '429':
+          description: Error too many requests
+          schema:
+            properties:
+              status:
+                type: number
+                example: 429
+              error:
+                type: string
+                example: Too many requests
+  /auth/reset-password:
+    post:
+      description: Reset password
+      produces:
+        - application/json
+      tags:
+        - Auth
+      parameters:
+        - name: token
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/AuthResetPassword'
+      responses:
+        '200':
+          description: Reset-password response
+          schema:
+            $ref: '#/definitions/UserResponse'
+        '400':
+          description: Error form validation
+          schema:
+            $ref: '#/definitions/ValidateError'
+        '404':
+          description: Error token not found
+          schema:
+            properties:
+              status:
+                type: number
+                example: 404
+              error:
+                type: string
+                example: Token not found
+  /auth/peerplays:
+    post:
+      description: Login with Peerplays
+      produces:
+        - application/json
+      tags:
+        - Auth
+      parameters:
+        - name: peerplays
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/AuthSignInUser'
+      responses:
+        '200':
+          description: Login response
+          schema:
+            $ref: '#/definitions/UserResponse'
+        '400':
+          description: Error form validation
+          schema:
+            $ref: '#/definitions/ValidateError'
+  /auth/exchange:
+    post:
+      description: Exchange grant code with access token
+      produces:
+        - application/json
+      tags:
+        - Auth
+      parameters:
+        - name: code
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ExchangeCode'
+      responses:
+        '200':
+          description: Access Token response
+          schema:
+            $ref: '#/definitions/AccessToken'
+        '400':
+          description: Error form validation
+          schema:
+            $ref: '#/definitions/ValidateError'
+  /auth/refreshtoken:
+    post:
+      description: Refresh the access token if its expired
+      produces:
+        - application/json
+      tags:
+        - Auth
+      parameters:
+        - name: refreshtoken
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/RefreshTokenRequest'
+      responses:
+        '200':
+          description: Refresh Token response
+          schema:
+            $ref: '#/definitions/AccessToken'
+        '400':
+          description: Error form validation
+          schema:
+            $ref: '#/definitions/ValidateError'
+  /auth/facebook:
+    get:
+      description: Auth by facebook
+      summary: Auth by facebook
+      produces:
+        - application/json
+      tags:
+        - SocNetwork
+      responses:
+        '302':
+          description: Redirect to facebook
+  /auth/google:
+    get:
+      description: Auth by google
+      summary: Auth by google
+      produces:
+        - application/json
+      tags:
+        - SocNetwork
+      responses:
+        '302':
+          description: Redirect to google
+  /profile:
+    get:
+      description: Get authorized user profile
+      summary: Get authorized user profile
+      produces:
+        - application/json
+      tags:
+        - Profile
+      responses:
+        '200':
+          description: Profile response
+          schema:
+            $ref: '#/definitions/UserResponse'
+        '401':
+          description: Error user unauthorized
+          schema:
+            $ref: '#/definitions/UnauthorizedError'
+  /profile/peerplays/create-account:
+    post:
+      description: Create peerplays account for authorized user
+      summary: Create peerplays account for authorized user
+      produces:
+        - application/json
+      tags:
+        - Profile
+      parameters:
+        - name: ProfileCreatePeerplaysAccount
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ProfileCreatePeerplaysAccount'
+      responses:
+        '200':
+          description: Create-account response
+          schema:
+            $ref: '#/definitions/ProfileResponse'
+        '400':
+          description: Error form validation
+          schema:
+            $ref: '#/definitions/ValidateError'
+        '401':
+          description: Error user unauthorized
+          schema:
+            $ref: '#/definitions/UnauthorizedError'
+  '/profile/change-email/{token}':
+    get:
+      description: Change user email
+      summary: Change user email
+      produces:
+        - application/json
+      tags:
+        - Profile
+      parameters:
+        - name: token
+          in: path
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Change user email response
+          schema:
+            $ref: '#/definitions/ProfileResponse'
+        '401':
+          description: Error user unauthorized
+          schema:
+            $ref: '#/definitions/UnauthorizedError'
+  '/users/{id}':
+    get:
+      description: Get user by id
+      produces:
+        - application/json
+      tags:
+        - User
+      parameters:
+        - name: id
+          description: User id
+          in: path
+          required: true
+          type: string
+      responses:
+        '200':
+          description: User response
+          schema:
+            $ref: '#/definitions/UserResponse'
+        '400':
+          description: Error form validation
+          schema:
+            $ref: '#/definitions/ValidateError'
+        '401':
+          description: Error user unauthorized
+          schema:
+            $ref: '#/definitions/UnauthorizedError'
+        '404':
+          description: Error user not found
+          schema:
+            properties:
+              status:
+                type: number
+                example: 404
+              error:
+                type: string
+                example: User not found
+  /users:
+    get:
+      description: Get users list
+      produces:
+        - application/json
+      tags:
+        - User
+      parameters:
+        - name: search
+          description: Filter by PeerPlays Account Name
+          in: query
+          required: false
+          type: string
+        - name: limit
+          description: Limit of rows
+          in: query
+          required: true
+          type: integer
+        - name: skip
+          description: Number of rows to skip
+          in: query
+          required: false
+          type: integer
+      responses:
+        '200':
+          description: Users response
+          schema:
+            $ref: '#/definitions/UsersResponse'
+        '400':
+          description: Error form validation
+          schema:
+            $ref: '#/definitions/ValidateError'
+        '401':
+          description: Error user unauthorized
+          schema:
+            $ref: '#/definitions/UnauthorizedError'
+  /profile/permission:
+    get:
+      description: Get user permissions
+      summary: Get user permissions
+      produces:
+        - application/json
+      tags:
+        - Profile
+      responses:
+        '200':
+          description: Get user permissions
+          schema:
+            $ref: '#/definitions/Permissions'
+        '401':
+          description: Error user unauthorized
+          schema:
+            $ref: '#/definitions/UnauthorizedError'
+definitions:
+  ValidateError:
+    type: object
+    properties:
+      status:
+        type: number
+        example: 400
+      error:
+        type: object
+  UnauthorizedError:
+    type: object
+    properties:
+      status:
+        type: number
+        example: 401
+      error:
+        type: string
+        example: unauthorized
+  ForbiddenError:
+    type: object
+    properties:
+      status:
+        type: number
+        example: 403
+      error:
+        type: string
+        example: forbidden
+  UnProcessableError:
+    type: object
+    properties:
+      status:
+        type: number
+        example: 422
+      error:
+        type: string
+        example: unprocessable
+  NewApp:
+    allOf:
+      - $ref: '#/definitions/App'
+      - type: object
+        properties:
+          operations:
+            type: array
+            items:
+              type: integer
+  JoinAppRequest:
+    type: object
+    required:
+      - client_id
+      - redirect_uri
+    properties:
+      client_id:
+        type: integer
+        example: 4
+      redirect_uri:
+        type: string
+        format: uri
+        example: 'https://www.abc.com/auth'
+  UnjoinAppRequest:
+    type: object
+    required:
+      - app_id
+    properties:
+      app_id:
+        type: integer
+        example: 4
+  AppResponse:
+    allOf:
+      - $ref: '#/definitions/SuccessResponse'
+      - type: object
+        properties:
+          result:
+            $ref: '#/definitions/App'
+  AppsResponse:
+    allOf:
+      - $ref: '#/definitions/SuccessResponse'
+      - type: object
+        properties:
+          result:
+            $ref: '#/definitions/Apps'
+  GrantCodeResponse:
+    allOf:
+      - $ref: '#/definitions/SuccessResponse'
+      - type: object
+        properties:
+          result:
+            type: string
+  AppOperationsResponse:
+    allOf:
+      - $ref: '#/definitions/SuccessResponse'
+      - type: object
+        properties:
+          result:
+            $ref: '#/definitions/NewApp'
+  AuthSignUpUser:
+    type: object
+    required:
+      - email
+    properties:
+      email:
+        type: string
+        format: email
+      username:
+        type: string
+      password:
+        type: string
+        format: password
+      mobile:
+        type: string
+        example: 999-999-9999
+  AuthSignInUser:
+    type: object
+    required:
+      - login
+    properties:
+      login:
+        type: string
+      password:
+        type: string
+        format: password
+      mobile:
+        type: string
+        example: 999-999-9999
+  AuthForgotPassword:
+    type: object
+    required:
+      - email
+    properties:
+      email:
+        type: string
+        format: email
+  AuthResetPassword:
+    type: object
+    required:
+      - token
+      - password
+    properties:
+      token:
+        type: string
+      password:
+        type: string
+        format: password
+  UserResponse:
+    allOf:
+      - $ref: '#/definitions/SuccessResponse'
+      - type: object
+        properties:
+          result:
+            $ref: '#/definitions/User'
+  UsersResponse:
+    allOf:
+      - $ref: '#/definitions/SuccessResponse'
+      - type: object
+        properties:
+          result:
+            type: array
+            items:
+              $ref: '#/definitions/User'
+  ExchangeCode:
+    type: object
+    required:
+      - code
+      - client_id
+      - client_secret
+    properties:
+      code:
+        type: string
+        format: uuid
+        example: 2kj2un2u-22nnj-m2n2n-6edu3he
+      client_id:
+        type: integer
+        example: 20
+      client_secret:
+        type: string
+        example: asdf0l0aksf97ja93yh
+  RefreshTokenRequest:
+    type: object
+    required:
+      - refresh_token
+      - client_id
+      - client_secret
+    properties:
+      refresh_token:
+        type: string
+        format: uuid
+        example: 2kj2un2u-22nnj-m2n2n-6edu3he
+      client_id:
+        type: integer
+        example: 20
+      client_secret:
+        type: string
+        example: asdf0l0aksf97ja93yh
+  ProfileCreatePeerplaysAccount:
+    type: object
+    required:
+      - name
+      - activeKey
+      - ownerKey
+    properties:
+      name:
+        type: string
+      activeKey:
+        type: string
+      ownerKey:
+        type: string
+  ProfileResponse:
+    allOf:
+      - $ref: '#/definitions/SuccessResponse'
+      - type: object
+        properties:
+          result:
+            $ref: '#/definitions/User'
+  SuccessResponse:
+    type: object
+    properties:
+      status:
+        type: number
+        default: 200
+        example: 200
+  SuccessEmptyResponse:
+    allOf:
+      - $ref: '#/definitions/SuccessResponse'
+      - type: object
+        properties:
+          result:
+            type: boolean
+            example: true
+  AccessToken:
+    type: object
+    required:
+      - token
+      - scope
+      - expires
+      - refresh_token
+      - app_id
+      - user_id
+      - grantcode_id
+    properties:
+      id:
+        type: integer
+        example: 1
+      token:
+        type: string
+        format: uuid
+        example: 2kj2un2u-22nnj-m2n2n-6edu3he
+      scope:
+        type: array
+        items:
+          type: integer
+        example:
+          - 33
+          - 45
+      expires:
+        type: string
+        format: date
+      refresh_token:
+        type: string
+        format: uuid
+        example: 2kj2un2u-22nnj-m2n2n-6edu3he
+      app_id:
+        type: integer
+        example: 2
+      user_id:
+        type: integer
+        example: 24
+      grantcode_id:
+        type: integer
+        example: 222
+  AccessTokens:
+    type: array
+    items:
+      $ref: '#/definitions/AccessToken'
+  App:
+    type: object
+    required:
+      - appname
+      - contactname
+      - description
+      - organization_name
+      - province
+      - city
+      - address_line1
+      - postal_code
+      - email
+      - phone
+      - domains
+      - country
+    properties:
+      id:
+        type: integer
+        example: 1
+      appname:
+        type: string
+        minLength: 3
+        maxLength: 255
+        example: Test App
+      contactname:
+        type: string
+        example: Alex
+      description:
+        type: string
+        example: This is a test app
+      organization_name:
+        type: string
+        example: ABC Ltd
+      country:
+        type: string
+        example: Canada
+      province:
+        type: string
+        example: AB
+      city:
+        type: string
+        example: Calgary
+      address_line1:
+        type: string
+        example: 222 Lyman St
+      address_line2:
+        type: string
+        example: Suite 2
+      postal_code:
+        type: string
+        example: M0B2V3
+      email:
+        type: string
+        format: email
+      phone:
+        type: string
+        example: 999-999-9999
+      domains:
+        type: array
+        items:
+          type: string
+          format: hostname
+        example:
+          - abc.com
+      app_secret:
+        type: string
+        example: jsn3nn3ind87in3i
+      registrar_id:
+        type: integer
+        example: 24
+  Apps:
+    type: array
+    items:
+      $ref: '#/definitions/App'
+  Authority:
+    type: object
+    required:
+      - peerplays_permission_id
+      - peerplays_account_auth_id
+      - operation
+      - expiry
+      - app_id
+      - user_id
+      - permission_id
+    properties:
+      id:
+        type: integer
+        example: 1
+      peerplays_permission_id:
+        type: string
+        example: 1.27.35
+      peerplays_account_auth_id:
+        type: string
+        example: 1.28.38
+      expiry:
+        type: string
+        format: date
+      operation:
+        type: integer
+        example: 34
+      app_id:
+        type: integer
+        example: 2
+      user_id:
+        type: integer
+        example: 24
+      permission_id:
+        type: integer
+        example: 222
+  Authorities:
+    type: array
+    items:
+      $ref: '#/definitions/Authority'
+  GrantCode:
+    type: object
+    required:
+      - code
+      - scope
+      - active
+      - app_id
+      - user_id
+    properties:
+      id:
+        type: integer
+        example: 1
+      code:
+        type: string
+        example: 2kj2un2u-22nnj-m2n2n-6edu3he
+      scope:
+        type: array
+        items:
+          type: integer
+        example:
+          - 0
+          - 25
+          - 46
+      active:
+        type: boolean
+        example: true
+      app_id:
+        type: integer
+        example: 2
+      user_id:
+        type: integer
+        example: 24
+  GrantCodes:
+    type: array
+    items:
+      $ref: '#/definitions/GrantCode'
+  Operation:
+    type: object
+    required:
+      - operation_requested
+      - app_id
+    properties:
+      id:
+        type: integer
+        example: 1
+      operation_requested:
+        type: integer
+        example: 35
+      app_id:
+        type: integer
+        example: 2
+  Operations:
+    type: array
+    items:
+      $ref: '#/definitions/Operation'
+  Permission:
+    type: object
+    required:
+      - peerplays_permission_id
+      - permission_name
+      - peerplays_account_id
+      - user_id
+    properties:
+      id:
+        type: integer
+        example: 1
+      peerplays_permission_id:
+        type: string
+        example: 1.27.35
+      permission_name:
+        type: string
+        example: pidimdebnosw
+      peerplays_account_id:
+        type: string
+        example: 1.2.40
+      user_id:
+        type: integer
+        example: 24
+  Permissions:
+    type: array
+    items:
+      $ref: '#/definitions/Permission'
+  ResetToken:
+    type: object
+    required:
+      - token
+      - isActive
+      - user_id
+    properties:
+      id:
+        type: integer
+        example: 1
+      token:
+        type: string
+        example: 2kj2un2u-22nnj-m2n2n-6edu3he
+      isActive:
+        type: boolean
+        example: true
+      user_id:
+        type: integer
+        example: 24
+  User:
+    type: object
+    required:
+      - email
+    properties:
+      password:
+        type: string
+        example: p@ssw0rd9999
+        minLength: 6
+        maxLength: 30
+        format: password
+        pattern: '^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$'
+      username:
+        type: string
+        example: prabhjot
+      email:
+        type: string
+        format: email
+        example: p.singh@gmail.com
+      mobile:
+        type: string
+        example: +1 (999) 999-9999
+      isEmailVerified:
+        type: boolean
+      googleId:
+        type: string
+        example: 1028028728
+      facebookId:
+        type: string
+        example: 20837928638
+      googleName:
+        type: string
+        example: prabhjot30
+      facebook:
+        type: string
+        example: 87289492892
+      peerplaysAccountName:
+        type: string
+        example: pi-kdijen0j3mi
+      peerplaysAccountId:
+        type: string
+        example: 1.2.40
+  UserPublic:
+    type: object
+    properties:
+      id:
+        type: integer
+      username:
+        type: string
+        example: prabhjot
+      email:
+        type: string
+        format: email
+        example: p.singh@gmail.com
+      mobile:
+        type: string
+        example: +1 (999) 999-9999
+      googleName:
+        type: string
+        example: prabhjot30
+      facebook:
+        type: string
+        example: 87289492892
+      peerplaysAccountName:
+        type: string
+        example: pi-kdijen0j3mi
+      peerplaysAccountId:
+        type: string
+        example: 1.2.40
+  VerificationToken:
+    type: object
+    required:
+      - token
+      - isActive
+      - email
+      - user_id
+    properties:
+      id:
+        type: integer
+        example: 1
+      token:
+        type: string
+        example: 2kj2un2u-22nnj-m2n2n-6edu3he
+      isActive:
+        type: boolean
+        example: true
+      email:
+        type: string
+        format: email
+        example: abc@abc.com
+      user_id:
+        type: integer
+        example: 24
+responses: {}
+parameters: {}
+securityDefinitions: {}
+tags: []

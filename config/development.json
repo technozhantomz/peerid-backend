@@ -7,6 +7,12 @@
     "port": "5432",
     "database": "peerid"
   },
+  "swagger": {
+    "host": "virtserver.swaggerhub.com",
+    "schemes": [
+      "https"
+    ]
+  },
   "sessionSecret": "sessionSecret",
   "cors": true,
   "port": 3000,
@@ -35,8 +41,8 @@
   "frontendUrl": "http://localhost:8082",
   "backendUrl": "http://localhost:3000",
   "peerplays": {
-    "peerplaysWS": "wss://fred.peerplays.download/api",
-    "peerplaysFaucetURL": "https://fred-faucet.peerplays.download/api/v1/accounts",
+    "peerplaysWS": "wss://irona.peerplays.download/api",
+    "peerplaysFaucetURL": "https://irona-faucet.peerplays.download/api/v1/accounts",
     "referrer": "1.2.0",
     "feeAssetId": "1.3.0",
     "paymentAccountID": "1.2.19",
