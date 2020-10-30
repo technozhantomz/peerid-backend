@@ -45,6 +45,7 @@ class ApiModule {
    * @param {UsersController} opts.usersController
    * @param {GoogleController} opts.googleController
    * @param {FacebookController} opts.facebookController
+   * @param {DiscordController} opts.discordController
    * @param {AppController} opts.appController
    * @param {UserRepository} opts.userRepository
    */
@@ -59,6 +60,7 @@ class ApiModule {
     this.profileController = opts.profileController;
     this.usersController = opts.usersController;
     this.facebookController = opts.facebookController;
+    this.discordController = opts.discordController;
     this.googleController = opts.googleController;
     this.appController = opts.appController
 
@@ -137,6 +139,7 @@ class ApiModule {
       this.profileController,
       this.usersController,
       this.facebookController,
+      this.discordController,
       this.googleController,
       this.appController
     ].forEach((controller) => controller.getRoutes(this.app).forEach((route) => {

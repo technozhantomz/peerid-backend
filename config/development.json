@@ -24,6 +24,10 @@
     "clientId": "2534442443233970",
     "clientSecret": "271bd8b8a045cf88f42b6ba36765a337"
   },
+  "discord": {
+    "clientId": "771714070406889472",
+    "clientSecret": "mTuttzFfzJ1GNMiiv1jHVCnIKYjKaalt"
+  },
   "raven": {
     "enabled": false,
     "url": ""

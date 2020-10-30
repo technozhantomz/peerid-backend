@@ -130,10 +130,19 @@ const attributes = {
     unique: true,
     allowNull: true
   },
+  discordId: {
+    type: Sequelize.STRING,
+    unique: true,
+    allowNull: true
+  },
   googleName: {
     type: Sequelize.STRING
   },
   facebook: {
+    type: Sequelize.STRING,
+    defaultValue: ''
+  },
+  discordName: {
     type: Sequelize.STRING,
     defaultValue: ''
   },

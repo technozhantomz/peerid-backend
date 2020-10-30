@@ -1,7 +1,7 @@
 const passport = require('passport');
-const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
+const DiscordStrategy = require('passport-discord').Strategy;
 
-class GoogleController {
+class DiscordController {
 
   /**
    * @param {UserService} opts.userService
@@ -10,11 +10,6 @@ class GoogleController {
   constructor(opts) {
     this.userService = opts.userService;
     this.config = opts.config;
-
-    this.DEFAULT_SCOPE = [
-      'https://www.googleapis.com/auth/userinfo.profile',
-      'https://www.googleapis.com/auth/userinfo.email',
-    ];
   }
 
   /**
@@ -25,20 +20,20 @@ class GoogleController {
     /**
      * @swagger
      *
-     * /auth/google:
+     * /auth/discord:
      *  get:
-     *    description: Auth by google
-     *    summary: Auth by google
+     *    description: Auth by Discord
+     *    summary: Auth by discord
      *    produces:
      *      - application/json
      *    tags:
      *      - SocNetwork
      *    responses:
      *      302:
-     *        description: Redirect to google
+     *        description: Redirect to discord
      */
     this.initializePassport();
-    app.get('/api/v1/auth/google', (req, res, next) => {
+    app.get('/api/v1/auth/discord', (req, res, next) => {
       if (req.query.client_id && req.query.redirect_uri) {
         req.session.appId = req.query.client_id;
         req.session.redirectURI = req.query.redirect_uri;
@@ -53,20 +48,17 @@ class GoogleController {
         req.session.redirectURI = null;
       }
 
-      passport.authenticate('google', {
-        scope: this.DEFAULT_SCOPE,
-        access_type: 'offline'
-      })(req, res, next);
+      passport.authenticate('discord',{scope: ['identify', 'email']})(req, res, next);
     });
 
-    app.get('/api/v1/auth/google/callback', (req, res) => {
+    app.get('/api/v1/auth/discord/callback', (req, res) => {
       passport.authenticate(
-        'google',
-        {failureRedirect: `${this.config.frontendUrl}/error?google-auth-error=restrict`}
+        'discord',
+        {failureRedirect: `${this.config.frontendUrl}/error?discord-auth-error=restrict`}
       )(req, res, (err) => {
 
         if (err) {
-          res.redirect(`${this.config.frontendUrl}/error?google-auth-error=${err.message}`);
+          res.redirect(`${this.config.frontendUrl}/error?discord-auth-error=${err.message}`);
           return;
         }
 
@@ -87,17 +79,14 @@ class GoogleController {
   }
 
   initializePassport() {
-    passport.use(new GoogleStrategy({
+    passport.use(new DiscordStrategy({
       passReqToCallback: true,
-      clientID: this.config.google.clientId,
-      clientSecret: this.config.google.clientSecret,
-      callbackURL: `${this.config.backendUrl}/api/v1/auth/google/callback`
-    }, (req, accessToken, profile, done) => {
-      this.userService.getUserBySocialNetworkAccount('google', {
-        id: profile.id,
-        ...profile._json,
-        username: profile._json.email.replace(/@.+/, '')
-      }, accessToken, req).then((User) => {
+      clientID: this.config.discord.clientId,
+      clientSecret: this.config.discord.clientSecret,
+      callbackURL: `${this.config.backendUrl}/api/v1/auth/discord/callback`,
+      scope: ['identify', 'email']
+    }, (req, token, refreshToken, profile, done) => {
+      this.userService.getUserBySocialNetworkAccount('discord', profile, token, req).then((User) => {
         this.userService.getCleanUser(User).then((user) => done(null, user));
       }).catch((error) => {
         done(error);
@@ -107,4 +96,4 @@ class GoogleController {
 
 }
 
-module.exports = GoogleController;
+module.exports = DiscordController;

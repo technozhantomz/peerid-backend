@@ -139,6 +139,7 @@ class UserService {
     User.isEmailVerified = emailIsUsed ? null : true;
     User.googleName = network === 'google' ? username : '';
     User.facebook = network === 'facebook' ? username : '';
+    User.discordName = network == 'discord' ? username : '';
 
     const peerplaysPassword = `${User.username}-${accessToken}`;
     const peerplaysAccount = await this.createPeerplaysAccountForSocialNetwork(User.username, peerplaysPassword);
@@ -169,6 +170,8 @@ class UserService {
       User.googleName = username;
     } else if (network === 'facebook') {
       User.facebook = username;
+    } else if (network === 'discord') {
+      User.discordName = username;
     } else {
       throw new RestError(`Unexpected Network ${network}`);
     }
@@ -519,13 +522,13 @@ class UserService {
           peerplays_account_auth_id: customAuth.trx.operation_results[0][1],
           operation: Ops[i],
           expiry: threeMonthsFromNow,
-          app_id: app.id,
+          app_id: null,
           user_id: user.id,
           permission_id: Permission.id
         });
       }
     } catch(err) {
-      logger.error(err);
+      console.error(err);
       throw new Error('Peerplays HRP Error');
     }
   }

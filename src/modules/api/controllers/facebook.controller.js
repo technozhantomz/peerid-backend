@@ -43,6 +43,9 @@ class FacebookController {
         }
 
         req.session.save();
+      } else {
+        req.session.appId = null;
+        req.session.redirectURI = null;
       }
 
       passport.authenticate('facebook',{scope: ['email']})(req, res, next);
