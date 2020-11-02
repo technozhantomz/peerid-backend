@@ -2,10 +2,9 @@
 
 ## API Documentation
 
-You can find API documentation here - [/docs/api.md](/docs/api.md)
+You can find API documentation here - [/docs/swagger.yaml](/docs/swagger.yaml)
 
-Also you can build the HTML version of documentation. Just run npm run `build:apidoc`
-and documentation will be built into `apidoc` folder.
+Also, you can build the documentation. Just run npm run `build:doc` and documentation will be built into `docs` folder.
 
 ## Dependency
 1. Docker & Docker-Compose
@@ -24,18 +23,10 @@ For development you can use nodemon. Clone this project into your folder and run
 
 ```bash
 nvm use  # switch to node version as in .nvmrc file
+npm i
 npm run serve # start server with nodemon
 ```
 
-Before you will commit your changes in the repository you should check your code on audit and code mistakes:
-
-```bash
-npm run test:audit # it will check vulnerable dependencies
-npm run test:linter # it will check code style
-npm run test:mocha # this command will run mocha tests
-```
-
-If you want to check the coverage of code tests, just run `npm run test:coverage`.
 ### Commits
 
 > If you have run the init script, you can commit via `git cz`.  
@@ -58,45 +49,22 @@ The following tools are used:
    - [config-conventional](https://www.npmjs.com/package/@commitlint/config-conventional)
      - rule preset in use
 
-### Releases
-
-This repository uses a [standard version](https://www.npmjs.com/package/standard-version) to aid in version control and release management.
-
-When using standard version to cut a release, there is automated changelog modifitions made based on commit messages.
-
-```csharp
-// If you typically use npm version to cut a new release, do this instead:
-npm run release
-npm run release:pre // cut a pre-release in the format v0.2.1-alpha.0
-npm run release:minor // cut a new release with semantic minor bump
-```
-
 ## Migrations & Seeds
 
 To run all pending migrations
-```yarn db-migrate-all```
+```npm run db-migrate-all```
 
 To undo single migrations
-```yarn db-migrate-undo```
+```npm run db-migrate-undo```
 
 To undo all migrations BE CAREFUL
-```yarn db-migrate-undo```
+```npm run db-migrate-undo```
 
 To run all Seeds. Seeds can be run multiple times and should be used for dev only
-```yarn db-seed-all```
+```npm run db-seed-all```
 
 To undo single migrations
-```yarn db-seed-undo-all```
-
-## Testing
-
-1. Copy all the required configurations from development.json to test.json
-2. Make sure to point towards different database than development
-3. If this is first time, create a database for test as mentioned in test.json
-4. Run all migrations for test db
-```NODE_ENV=test yarn db-migrate-all```  
-5. Run the test cases
-```yarn test:mocha```
+```npm run db-seed-undo-all```
 
 ## Docker
 
@@ -108,31 +76,77 @@ docker-compose up --build
 
 ## Project configuration 
 
-### AWS S3 Credentials
+To run the app without any issues, the project configurations have to be provided in the [/config/development.json](/config/development.json)
 
-The server uses AWS S3 to store user-uploaded avatars. To grant server 
-permissions to upload files, you must pass the following variables to 
-environment variables:
-
-```
-AWS_ACCESS_KEY_ID
-AWS_SECRET_ACCESS_KEY
-AWS_SESSION_TOKEN (optional)
-```
-
-For provide public access to files in Bucket you can add next policy: 
-
-```
-{
-  "Version":"2012-10-17",
-  "Statement":[
-    {
-      "Sid":"AddPerm",
-      "Effect":"Allow",
-      "Principal": "*",
-      "Action":["s3:GetObject"],
-      "Resource":["arn:aws:s3:::simplified-guide/*"]
-    }
-  ]
+### Database config
+Following database credentials are required to connect to the db:
+```bash
+"db": {
+  "user": "USERNAME",
+  "password": "PASSWORD",
+  "host": "DB_HOSTNAME",
+  "port": "DB_PORT",
+  "database": "DB_NAME"
 }
-``` 
+```
+
+### Google config
+PeerID uses google oAuth to enable Sign in with Google. Create an app on google with the scopes `'https://www.googleapis.com/auth/userinfo.profile'` and `'https://www.googleapis.com/auth/userinfo.email'`
+
+and provide the credentials in the config as below:
+```bash
+"google": {
+  "clientId": "GOOGLE_CLIENT_ID",
+  "clientSecret": "GOOGLE_CLIENT_SECRET"
+}
+```
+
+### Facebook config
+PeerID uses facebook oAuth to enabled Sign in with Facebook. Create an app on facebook with the `email` scope and provide the credentials in the config as below:
+
+```bash
+"facebook": {
+  "clientId": "FACEBOOK_CLIENT_ID",
+  "clientSecret": "FACEBOOK_CLIENT_SECRET"
+}
+```
+
+### Discord config
+PeerID uses discord oAuth to enabled Sign in with Discord. Create an app on discord with the `identify` and `email` scopes and provide the credentials in the config as below:
+
+```bash
+"discord": {
+  "clientId": "DISCORD_CLIENT_ID",
+  "clientSecret": "DISCORD_CLIENT_SECRET"
+}
+```
+
+### Mailer config
+PeerID sends emails to the newly registered users to verify their email and forgot password functionality. We have to provide the following credentials in the config as below:
+
+```bash
+"mailer": {
+  "host": "EMAIL_HOSTNAME",
+  "port": EMAIL_PORT,
+  "secure": false,
+  "auth": {
+    "user": "EMAIL_AUTH_USERNAME",
+    "pass": "EMAIL_AUTH_PASSWORD"
+  },
+  "sender": "PeerID"
+}
+```
+
+### Peerplays config
+PeerID can connect to the peerplays testnet using the peerplays config provided in the config file as below. If this config is not provided, it will connect to the peerplays mainnet instead:
+
+```bash
+"peerplays": {
+  "peerplaysWS": "wss://irona.peerplays.download/api",
+  "peerplaysFaucetURL": "https://irona-faucet.peerplays.download/api/v1/accounts",
+  "referrer": "1.2.0",
+  "feeAssetId": "1.3.0",
+  "paymentAccountID": "PAYMENT_ACCOUNT_ID",
+  "paymentAccountWIF": "PAYMENT_ACCOUNT_WIF"
+}
+```
