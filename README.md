@@ -12,7 +12,11 @@ Also, you can build the documentation. Just run npm run `build:doc` and document
 2. NVM <br>
 https://github.com/nvm-sh/nvm
 
-3. Start the dependencies (Postgres) 
+3. node v12.13.0
+
+4. Postgres v12.3
+
+5. Start the dependencies (Postgres) 
 ```bash 
    docker-compose -f docker_dependencies.yml up
 ```
