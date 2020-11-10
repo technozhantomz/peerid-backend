@@ -14,11 +14,11 @@ https://github.com/nvm-sh/nvm
 
 3. node v12.13.0
 
-4. Postgres v12.3
+4. Postgres v11.3
 
 5. Start the dependencies (Postgres) 
 ```bash 
-   docker-compose -f docker_dependencies.yml up
+   docker-compose -f docker_dependency.yml up
 ```
 
 ## Development
