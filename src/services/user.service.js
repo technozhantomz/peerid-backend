@@ -302,7 +302,7 @@ class UserService {
       username = this.makeusername(20);
     }
 
-    const peerplaysAccountUsername = `pi-${username}`;
+    const peerplaysAccountUsername = `pi-${username}`.toLowerCase();
     const peerplaysAccountPassword = await bcrypt.hash(`pi-${password}${(new Date()).getTime()}`, 10);
     const keys = Login.generateKeys(
       peerplaysAccountUsername,
