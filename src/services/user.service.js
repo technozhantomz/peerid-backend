@@ -277,19 +277,19 @@ class UserService {
     }
 
     return result;
- }
-
- makeusername(length) {
-  var result = '';
-  var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  var charactersLength = characters.length;
-
-  for ( var i = 0; i < length; i++ ) {
-     result += characters.charAt(Math.floor(Math.random() * charactersLength));
   }
 
-  return result;
-}
+  makeusername(length) {
+    var result = '';
+    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+
+    for ( var i = 0; i < length; i++ ) {
+       result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+
+    return result;
+  }
 
   async signUpWithPassword(email, username, unhashedPassword, mobile) {
     let password = unhashedPassword;
@@ -427,7 +427,6 @@ class UserService {
 
     if(userWithPeerplaysAccount) {
       const user = await this.getCleanUser(userWithPeerplaysAccount);
-      user['newUser'] = false;
       return user;
     }
 
@@ -437,7 +436,6 @@ class UserService {
       LoggedUser.peerplaysAccountId = PeerplaysUser[1].account.id;
       await LoggedUser.save();
       const user = await this.getCleanUser(LoggedUser);
-      user['newUser'] = false;
       return user;
     }
 
@@ -451,7 +449,6 @@ class UserService {
 
     await this.createCustomPermission(NewUser, password);
     const user = await this.getCleanUser(NewUser);
-    user['newUser'] = true;
     return user;
   }
 

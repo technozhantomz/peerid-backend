@@ -1,5 +1,6 @@
-const Joi = require('./abstract/joi.form');
+const Joi = require('joi');
 const tldJS = require('tldjs');
+const {Op} = require('sequelize');
 const BaseValidator = require('./abstract/base.validator');
 const ValidateError = require('./../../../errors/validate.error');
 const tokenConstants = require('../../../constants/token');
@@ -76,6 +77,14 @@ class AuthValidator extends BaseValidator {
       if (email.match(/@.+\..+/) && (!tldJS.tldExists(email) || (email.split('@').pop().split('.').length > 2))) {
         throw new ValidateError(400, 'Validate error', {
           email: 'Invalid email'
+        });
+      }
+
+      const emailExists = await this.userRepository.getByLogin(email);
+
+      if(emailExists) {
+        throw new ValidateError(400, 'Validate error', {
+          email: 'Email already exists'
         });
       }
 
@@ -219,11 +228,11 @@ class AuthValidator extends BaseValidator {
   validateAccessToken() {
     return this.validate(null, null, async (req) => {
 
-      if(!req.headers['Authorization'] || !req.headers['ClientID']) {
+      if(!req.headers['authorization'] || !req.headers['clientid']) {
         throw new ValidateError(401, 'unauthorized');
       }
 
-      const authHeaderArr = req.headers['Authorization'].split(' ');
+      const authHeaderArr = req.headers['authorization'].split(' ');
 
       if(authHeaderArr.length !== 2 && authHeaderArr[0] !== 'Bearer') {
         throw new ValidateError(401, 'Authorization invalid');
@@ -231,7 +240,7 @@ class AuthValidator extends BaseValidator {
 
       const AccessToken = await this.accessTokenRepository.model.findOne({
         where: {
-          app_id: req.headers['ClientID'],
+          app_id: req.headers['clientid'],
           token: authHeaderArr[1],
           expires: {
             [Op.gte]: new Date()

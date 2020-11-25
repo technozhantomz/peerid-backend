@@ -1,17 +1,20 @@
 const uid = require('uid2');
 const ValidateError = require('../errors/validate.error');
+const OperationUtil = require('../utils/operation.util');
 
 class AppService {
 
   /**
      * @param {Config} opts.config
      * @param {AppRepository} opts.appRepository
+     * @param {UserRepository} opts.userRepository
      * @param {OperationRepository} opts.operationRepository
      * @param {AuthorityRepository} opts.authorityRepository
      * @param {AccessTokenRepository} opts.accessTokenRepository
      * @param {PeerplaysRepository} opts.peerplaysRepository
      * @param {PermissionRepository} opts.permissionRepository
      * @param {GrantCodeRepository} opts.grantCodeRepository
+     * @param {PeerplaysConnection} opts.peerplaysConnection
      */
   constructor(opts) {
     this.config = opts.config;
@@ -163,17 +166,67 @@ class AppService {
       }
     });
 
-    const token = await this.generateUniqueAccessToken();
-    const refresh_token = await this.generateUniqueRefreshToken();
-    return this.accessTokenRepository.model.create({
-      app_id: appId,
-      grantcode_id: grantCodeId,
-      user_id: userId,
-      refresh_token,
-      expires: Auth.expiry,
-      scope,
-      token
-    });
+    if(Auth.expiry < new Date()) {
+      const Authorities = await this.authorityRepository.model.findAll({where: { user_id: user.id, app_id }});
+
+      let today = new Date();
+      let year = today.getFullYear();
+      let month = today.getMonth();
+      let day = today.getDate();
+      let threeMonthsFromNow = new Date(year, month + 3, day);
+
+      let customAuths = [];
+
+      try {
+        for(let i = 0; i < Authorities.length; i++) {
+          const customAuth = await this.peerplaysRepository.createSendTransaction('custom_account_authority_update', {
+            fee: {
+              amount: 0,
+              asset_id: this.config.peerplays.feeAssetId
+            },
+            auth_id: Authorities[i].peerplays_account_auth_id,
+            new_valid_from: Math.floor(new Number(today)/1000),
+            new_valid_to: Math.floor(new Number(threeMonthsFromNow)/1000),
+            owner_account: user.peerplaysAccountId,
+            extensions: null
+          });
+
+          Authorities[i].expiry = customAuth.trx.operations[0][1].valid_to;
+          Authorities[i].save();
+
+          customAuths.push(customAuth);
+        }
+      } catch(err) {
+        console.error(err);
+        throw new Error('Peerplays HRP Error');
+      }
+
+      if(customAuths && customAuths.length > 0) {
+        const token = await this.generateUniqueAccessToken();
+        const refresh_token = await this.generateUniqueRefreshToken();
+        return this.accessTokenRepository.model.create({
+          app_id: appId,
+          grantcode_id: grantCodeId,
+          user_id: userId,
+          refresh_token,
+          expires: threeMonthsFromNow,
+          scope,
+          token
+        });
+      }
+    } else {
+      const token = await this.generateUniqueAccessToken();
+      const refresh_token = await this.generateUniqueRefreshToken();
+      return this.accessTokenRepository.model.create({
+        app_id: appId,
+        grantcode_id: grantCodeId,
+        user_id: userId,
+        refresh_token,
+        expires: Auth.expiry,
+        scope,
+        token
+      });
+    }
   }
 
   async generateUniqueAccessToken() {
@@ -219,7 +272,8 @@ class AppService {
       where: {app_id: app.id}
     });
 
-    let customAuths;
+    let customAuths = [];
+
     try{
       let today = new Date();
       let year = today.getFullYear();
@@ -343,11 +397,11 @@ class AppService {
   }
 
   async unjoinApp(user, app) {
-    let customAuths;
-
-    const Authorities = await this.authorityRepository.model.findAll({where: { user_id: user.id, app_id: app.id }});
+    let customAuths = [];
 
     try {
+      const Authorities = await this.authorityRepository.model.findAll({where: { user_id: user.id, app_id: app.id }});
+
       for(let i = 0; i < Authorities.length; i++) {
         const customAuth = await this.peerplaysRepository.createSendTransaction('custom_account_authority_delete', {
           fee: {
@@ -441,6 +495,11 @@ class AppService {
     }
 
     return AccessToken;
+  }
+
+  async broadcastOperations(op) {
+    const opJson = OperationUtil.queryToOperationJson(op);
+    return this.peerplaysRepository.createTransactionFromOps(opJson);
   }
 }
 

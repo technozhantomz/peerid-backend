@@ -1,4 +1,4 @@
-const Joi = require('./../abstract/joi.form');
+const Joi = require('joi');
 const ValidateError = require('../../../../errors/validate.error');
 
 class BaseValidator {
@@ -62,7 +62,7 @@ class BaseValidator {
     const result = {};
     const errors = {};
     Object.keys(schemas).forEach((key) => {
-      const {error, value} = Joi.validate(object[key], schemas[key]);
+      const {error, value} = schemas[key].validate(object[key]);
 
       if (error) {
         /* eslint-disable-next-line prefer-destructuring */

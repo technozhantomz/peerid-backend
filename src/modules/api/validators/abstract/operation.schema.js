@@ -1,4 +1,4 @@
-const Joi = require('./joi.form');
+const Joi = require('joi');
 
 module.exports = Joi.object().keys({
   ref_block_num: Joi.number().required(),

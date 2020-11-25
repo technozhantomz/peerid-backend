@@ -1,5 +1,5 @@
 /* istanbul ignore file */
-const request = require('request');
+const axios = require('axios');
 const {
   Apis,
   ConnectionManager,
@@ -77,42 +77,15 @@ class PeerplaysConnection extends BaseConnection {
     logger.info('peerplays connection successful');
   }
 
-  async request(form) {
-    const options = {
-      method: 'POST',
-      uri: this.config.peerplays.peerplaysFaucetURL,
-      json: form
-    };
+  request(form) {
+    return axios.post(this.config.peerplays.peerplaysFaucetURL, form).then((res) => {
+      if (res.status !== 200) {
+        throw new Error('Peerplays: Unknown error');
+      }
 
-    return new Promise((success, fail) => {
-      request(options, (err, res, body) => {
-
-        if (err) {
-          fail(err.message);
-          return;
-        }
-
-        if (res.statusCode !== 200) {
-          fail('Peerplays: Unknown error');
-          return;
-        }
-
-        if (body.error) {
-          fail(body.error);
-          return;
-        }
-
-        if (body.length === 0) {
-          success(null);
-          return;
-        }
-
-        try {
-          success(body);
-        } catch (_err) {
-          fail(_err.message);
-        }
-      });
+      return res.data;
+    }).catch((err) => {
+      throw new Error(err.message);
     });
   }
 

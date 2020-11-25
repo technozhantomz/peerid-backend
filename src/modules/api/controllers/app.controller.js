@@ -210,6 +210,13 @@ class AppController {
         this.appValidator.validateTransaction,
         this.broadcastTransaction.bind(this)
       ],
+      [
+        'post',
+        '/api/v1/app/operations',
+        this.authValidator.validateAccessToken,
+        this.appValidator.validateOperations,
+        this.broadcastOperations.bind(this)
+      ],
       /**
        * @swagger
        *
@@ -370,8 +377,12 @@ class AppController {
     return await this.appService.getPermittedApps(user);
   }
 
-  async unjoinApp(user, app) {
+  async unjoinApp(user, app ) {
     return await this.appService.unjoinApp(user, app);
+  }
+
+  async broadcastOperations(user, op) {
+    return await this.appService.broadcastOperations(op);
   }
 }
 

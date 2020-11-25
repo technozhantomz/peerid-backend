@@ -456,7 +456,9 @@ class AuthController {
     try {
       user = await this.userService.getSignInUser(login, password, mobile);
     } catch (e) {
-      throw new ValidateError(400, 'Invalid email/username or password');
+      throw new ValidateError(400, 'Validate error', {
+        email: 'Invalid email/username or password'
+      });
     }
 
     await new Promise((success) => req.login(user, () => success()));

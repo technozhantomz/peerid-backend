@@ -50,7 +50,7 @@
     "peerplaysFaucetURL": "https:/irona-faucet.peerplays.download/api/v1/accounts",
     "referrer": "1.2.0",
     "feeAssetId": "1.3.0",
-    "paymentAccountID": "1.2.19",
-    "paymentAccountWIF": "5Ji3ZPqfhewPnVTmSyeZHwA4zFHrYpCMbenvmMwi5FcKR5KjxGr"
+    "paymentAccountID": "1.2.21",
+    "paymentAccountWIF": "5HttHcgL2NgFc5XsFY8bs51VehVDS2Tb4NGkRuwjJ6v6Mq7eC7S"
   }
 }

@@ -122,6 +122,19 @@ class ApiModule {
         });
       });
 
+      // Error Handler
+      this.app.use(function(err, req, res, next) {
+        console.error(err)
+        if (!err.statusCode) err.statusCode = 500;
+        let msg = err.message
+        // Do not expose 500 error messages in production, to the client. 
+        //TODO: Un-comment the below comment
+        if (/*process.env.NODE_ENV === "production" && */err.statusCode === 500) {
+          msg = "Internal Server Error"
+        }
+        res.status(err.statusCode).send(msg)
+      });
+
       this.server = this.app.listen(this.config.port, () => {
         logger.info(`API APP REST listen ${this.config.port} Port`);
         this._initRestRoutes();

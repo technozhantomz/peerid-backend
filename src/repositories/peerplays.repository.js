@@ -161,6 +161,28 @@ class PeerplaysRepository {
 
     return result;
   }
+
+  async createTransactionFromOps(opJson) {
+    const tr = new TransactionBuilder();
+    let result;
+
+    try {
+      for(let i = 0; i < opJson.length; i++) {
+        console.log('Adding ' + JSON.stringify(opJson[i]));
+        tr.add_type_operation(opJson[i][0],opJson[i][1]);
+      }
+
+      await tr.set_required_fees();
+      tr.add_signer(this.pKey, this.pKey.toPublicKey().toPublicKeyString());
+      console.trace('serialized transaction:', JSON.stringify(tr.serialize()));
+      [result] = await tr.broadcast();
+    } catch (e) {
+      console.error(e.message);
+      throw e;
+    }
+
+    return result;
+  }
 }
 
 module.exports = PeerplaysRepository;
