@@ -88,8 +88,7 @@ class AppService {
       raw: true
     });
 
-    for(let i = 0; i < Apps.length; i++)
-    {
+    for(let i = 0; i < Apps.length; i++) {
       const Operations = await this.operationRepository.model.findAll({
         where: {
           app_id: Apps[i].id
@@ -158,16 +157,16 @@ class AppService {
     return uuid;
   }
 
-  async createAccessToken(grantCodeId, appId, userId, scope) {
+  async createAccessToken(grantCodeId, appId, user, scope) {
     const Auth = await this.authorityRepository.model.findOne({
       where: {
-        user_id: userId,
+        user_id: user.id,
         app_id: appId
       }
     });
 
     if(Auth.expiry < new Date()) {
-      const Authorities = await this.authorityRepository.model.findAll({where: { user_id: user.id, app_id }});
+      const Authorities = await this.authorityRepository.model.findAll({where: {user_id: user.id, app_id: appId}});
 
       let today = new Date();
       let year = today.getFullYear();
@@ -207,7 +206,7 @@ class AppService {
         return this.accessTokenRepository.model.create({
           app_id: appId,
           grantcode_id: grantCodeId,
-          user_id: userId,
+          user_id: user.id,
           refresh_token,
           expires: threeMonthsFromNow,
           scope,
@@ -220,7 +219,7 @@ class AppService {
       return this.accessTokenRepository.model.create({
         app_id: appId,
         grantcode_id: grantCodeId,
-        user_id: userId,
+        user_id: user.id,
         refresh_token,
         expires: Auth.expiry,
         scope,
@@ -266,7 +265,7 @@ class AppService {
   }
 
   async joinApp(user, app) {
-    const Permission = await this.permissionRepository.model.findOne({where: { user_id: user.id }});
+    const Permission = await this.permissionRepository.model.findOne({where: {user_id: user.id}});
 
     const Ops = await this.operationRepository.model.findAll({
       where: {app_id: app.id}
@@ -313,8 +312,10 @@ class AppService {
     }
 
     let code = '';
-    if(customAuths && customAuths.length > 0)
+
+    if(customAuths && customAuths.length > 0) {
       code = await this.getGrantCode(app, user);
+    }
 
     return code;
   }
@@ -368,6 +369,7 @@ class AppService {
 
   async getPermittedApps(user) {
     let customAuths, permittedApps = [];
+
     try{
       customAuths = await this.peerplaysConnection.dbAPI.exec('get_custom_account_authorities', [user.peerplaysAccountId]);
     } catch(e) {
@@ -382,7 +384,7 @@ class AppService {
           }
         });
 
-        if(Auth) {
+        if(Auth && Auth.app_id) {
           const app = await this.getOperationsForApp(Auth.app_id);
 
           permittedApps.push({
@@ -400,7 +402,7 @@ class AppService {
     let customAuths = [];
 
     try {
-      const Authorities = await this.authorityRepository.model.findAll({where: { user_id: user.id, app_id: app.id }});
+      const Authorities = await this.authorityRepository.model.findAll({where: {user_id: user.id, app_id: app.id}});
 
       for(let i = 0; i < Authorities.length; i++) {
         const customAuth = await this.peerplaysRepository.createSendTransaction('custom_account_authority_delete', {
@@ -452,7 +454,7 @@ class AppService {
   async refreshAccessToken(user, app_id, AccessToken) {
     let customAuths;
 
-    const Authorities = await this.authorityRepository.model.findAll({where: { user_id: user.id, app_id }});
+    const Authorities = await this.authorityRepository.model.findAll({where: {user_id: user.id, app_id}});
 
     let today = new Date();
     let year = today.getFullYear();

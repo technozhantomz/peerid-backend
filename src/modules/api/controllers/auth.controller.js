@@ -122,7 +122,7 @@ class AuthController {
    * Array of routes processed by this controller
    * @returns {*[]}
    */
-  getRoutes(app) {
+  getRoutes() {
 
     return [
       /**
@@ -183,7 +183,7 @@ class AuthController {
        * @swagger
        *
        * /auth/confirm-email/{token}:
-       *  post:
+       *  get:
        *    description: Confirm email
        *    produces:
        *      - application/json
@@ -502,7 +502,7 @@ class AuthController {
   }
 
   async exchangeCode(user, {grantCodeId, appId, scope}) {
-    return await this.appService.createAccessToken(grantCodeId, appId, user.id, scope);
+    return await this.appService.createAccessToken(grantCodeId, appId, user, scope);
   }
 
   async refreshToken(user, {app_id, AccessToken}) {

@@ -1,5 +1,5 @@
 const Joi = require('joi');
-const { ChainTypes } = require('peerplaysjs-lib');
+const {ChainTypes} = require('peerplaysjs-lib');
 const BaseValidator = require('./abstract/base.validator');
 const ValidateError = require('../../../errors/validate.error');
 const PeerplaysSchemas = require('./abstract/peerplays.schemas');
@@ -52,7 +52,7 @@ class AppValidator extends BaseValidator {
     };
     
     return this.validate(null, bodySchema, async (req, query, body) => {
-      const {appname} = body;
+      const {appname, operations} = body;
       const AppNameExists = await this.appRepository.model.findOne({
         where: {
           appname
@@ -65,8 +65,15 @@ class AppValidator extends BaseValidator {
         });
       }
 
+      if(operations.find((op) => op === 11)) {
+        throw new ValidateError(400, 'Validate error', {
+          operations: 'Owner key is required for account update'
+        });
+      }
+
       if(body.hasOwnProperty('id')) {
         const AppIdExists = await this.appRepository.findByPk(body.id);
+
         if(!AppIdExists) {
           throw new ValidateError(400, 'Validate error', {
             id: 'App not found'
@@ -75,16 +82,14 @@ class AppValidator extends BaseValidator {
 
         const OpsInDb = await this.operationRepository.model.findAll({
           where: {
-            app_id: id
+            app_id: body.id
           }
         });
 
         const OpsArr = OpsInDb.map(({operation_requested}) => operation_requested);
 
-        const OpsInBody = body.map(({op_name}) => ChainTypes.operations[op_name]);
-
-        const allOpsExist = OpsArr.every((op) => OpsInBody.indexOf(op) >= 0)
-                            && OpsInBody.every((op) => OpsArr.indexOf(op) >= 0);
+        const allOpsExist = OpsArr.every((op) => operations.indexOf(op) >= 0)
+                            && operations.every((op) => OpsArr.indexOf(op) >= 0);
 
         if(!allOpsExist) {
           throw new ValidateError('400', 'Validate error', {
@@ -163,7 +168,8 @@ class AppValidator extends BaseValidator {
     return this.validate(null, bodySchema, async (req, query, body) => {
       let {client_id, redirect_uri} = body;
 
-      const Permission = await this.permissionRepository.model.findOne({where: { user_id: req.user.id }});
+      const Permission = await this.permissionRepository.model.findOne({where: {user_id: req.user.id}});
+
       if(!Permission) {
         throw new ValidateError(401, 'Unauthorized', {
           user: 'Permission does not exist for this user'
@@ -212,7 +218,8 @@ class AppValidator extends BaseValidator {
     return this.validate(null, bodySchema, async (req, query, body) => {
       let {app_id} = body;
 
-      const Permission = await this.permissionRepository.model.findOne({where: { user_id: req.user.id }});
+      const Permission = await this.permissionRepository.model.findOne({where: {user_id: req.user.id}});
+
       if(!Permission) {
         throw new ValidateError(401, 'Unauthorized', {
           app_id: 'Permission does not exist for this user'
@@ -264,21 +271,67 @@ class AppValidator extends BaseValidator {
     const bodySchema = {
       operations: Joi.array().items(
         Joi.alternatives()
-        .conditional('.op_name', {
+          .conditional('.op_name', {
             switch: [
-                { is: 'transfer', then: PeerplaysSchemas.transferSchema },
-                { is: 'nft_metadata_create', then: PeerplaysSchemas.nftCreateSchema },
-                { is: 'nft_metadata_update', then: PeerplaysSchemas.nftUpdateSchema },
-                { is: 'nft_mint', then: PeerplaysSchemas.nftMintSchema },
-                { is: 'nft_safe_transfer_from', then: PeerplaysSchemas.nftSafeTransferSchema },
-                { is: 'nft_approve', then: PeerplaysSchemas.nftApproveSchema },
-                { is: 'nft_set_approval_for_all', then: PeerplaysSchemas.nftApproveAllSchema },
-                { is: 'offer', then: PeerplaysSchemas.offerSchema },
-                { is: 'bid', then: PeerplaysSchemas.bidSchema },
-                { is: 'cancel_offer', then: PeerplaysSchemas.cancelOfferSchema },
-                { is: 'nft_lottery_token_purchase', then: PeerplaysSchemas.nftLotteryPurchaseSchema },
+              {is: 'transfer', then: PeerplaysSchemas.transferSchema},
+              {is: 'limit_order_create', then: PeerplaysSchemas.limitOrderCreateSchema},
+              {is: 'limit_order_cancel', then: PeerplaysSchemas.limitOrderCancelSchema},
+              {is: 'call_order_update', then: PeerplaysSchemas.callOrderUpdateSchema},
+              {is: 'fill_order', then: PeerplaysSchemas.fillOrderSchema},
+              {is: 'account_create', then: PeerplaysSchemas.accountCreateSchema},
+              {is: 'account_update', then: PeerplaysSchemas.accountUpdateSchema},
+              {is: 'account_whitelist', then: PeerplaysSchemas.accountWhitelistSchema},
+              {is: 'account_upgrade', then: PeerplaysSchemas.accountUpgradeSchema},
+              {is: 'account_transfer', then: PeerplaysSchemas.accountTransferSchema},
+              {is: 'asset_create', then: PeerplaysSchemas.assetCreateSchema},
+              {is: 'asset_update', then: PeerplaysSchemas.assetUpdateSchema},
+              {is: 'asset_update_bitasset', then: PeerplaysSchemas.assetUpdateBitassetSchema},
+              {is: 'asset_update_feed_producers', then: PeerplaysSchemas.assetUpdateFeedProducerSchema},
+              {is: 'asset_issue', then: PeerplaysSchemas.assetIssueSchema},
+              {is: 'asset_reserve', then: PeerplaysSchemas.assetReserveSchema},
+              {is: 'asset_fund_fee_pool', then: PeerplaysSchemas.assetFundFeePoolSchema},
+              {is: 'asset_settle', then: PeerplaysSchemas.assetSettleSchema},
+              {is: 'asset_global_settle', then: PeerplaysSchemas.assetGlobalSettleSchema},
+              {is: 'asset_publish_feed', then: PeerplaysSchemas.assetPublishFeedSchema},
+              {is: 'witness_create', then: PeerplaysSchemas.witnessCreateSchema},
+              {is: 'witness_update', then: PeerplaysSchemas.witnessUpdateSchema},
+              {is: 'proposal_create', then: PeerplaysSchemas.proposalCreateSchema},
+              {is: 'proposal_update', then: PeerplaysSchemas.proposalUpdateSchema},
+              {is: 'proposal_delete', then: PeerplaysSchemas.proposalDeleteSchema},
+              {is: 'withdraw_permission_create', then: PeerplaysSchemas.withdrawPermissionCreateSchema},
+              {is: 'withdraw_permission_update', then: PeerplaysSchemas.withdrawPermissionUpdateSchema},
+              {is: 'withdraw_permission_claim', then: PeerplaysSchemas.withdrawPermissionClaimSchema},
+              {is: 'withdraw_permission_delete', then: PeerplaysSchemas.withdrawPermissionDeleteSchema},
+              {is: 'committee_member_create', then: PeerplaysSchemas.committeeMemberCreateSchema},
+              {is: 'committee_member_update', then: PeerplaysSchemas.committeeMemberUpdateSchema},
+              {is: 'committee_member_update_global_parameters', then: PeerplaysSchemas.committeeMemberUpdateGlobalParameters},
+              {is: 'vesting_balance_create', then: PeerplaysSchemas.vestingBalanceCreateSchema},
+              {is: 'vesting_balance_withdraw', then: PeerplaysSchemas.vestingBalanceWithdrawSchema},
+              {is: 'worker_create', then: PeerplaysSchemas.workerCreateSchema},
+              {is: 'custom', then: PeerplaysSchemas.customSchema},
+              {is: 'assert', then: PeerplaysSchemas.assertSchema},
+              {is: 'balance_claim', then: PeerplaysSchemas.balanceClaimSchema},
+              {is: 'override_transfer', then: PeerplaysSchemas.overrideTransferSchema},
+              {is: 'transfer_to_blind', then: PeerplaysSchemas.transferToBlindSchema},
+              {is: 'blind_transfer', then: PeerplaysSchemas.blindTransferSchema},
+              {is: 'transfer_from_blind', then: PeerplaysSchemas.transferFromBlindSchema},
+              {is: 'asset_settle_cancel', then: PeerplaysSchemas.assetSettleCancelSchema},
+              {is: 'asset_claim_fees', then: PeerplaysSchemas.assetClaimFeesSchema},
+              {is: 'fba_distribute', then: PeerplaysSchemas.fbaDistributeSchema},
+              {is: 'tournament_create', then: PeerplaysSchemas.tournamentCreateSchema},
+              {is: 'tournament_join', then: PeerplaysSchemas.tournamentJoinSchema},
+              {is: 'nft_metadata_create', then: PeerplaysSchemas.nftCreateSchema},
+              {is: 'nft_metadata_update', then: PeerplaysSchemas.nftUpdateSchema},
+              {is: 'nft_mint', then: PeerplaysSchemas.nftMintSchema},
+              {is: 'nft_safe_transfer_from', then: PeerplaysSchemas.nftSafeTransferSchema},
+              {is: 'nft_approve', then: PeerplaysSchemas.nftApproveSchema},
+              {is: 'nft_set_approval_for_all', then: PeerplaysSchemas.nftApproveAllSchema},
+              {is: 'offer', then: PeerplaysSchemas.offerSchema},
+              {is: 'bid', then: PeerplaysSchemas.bidSchema},
+              {is: 'cancel_offer', then: PeerplaysSchemas.cancelOfferSchema},
+              {is: 'nft_lottery_token_purchase', then: PeerplaysSchemas.nftLotteryPurchaseSchema}
             ]
-        })
+          })
       ).required()
     };
 

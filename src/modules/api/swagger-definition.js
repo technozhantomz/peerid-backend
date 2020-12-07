@@ -10,6 +10,8 @@ module.exports = {
   apis: [
     'src/errors/*.js',
     'src/modules/api/controllers/*.js',
+    'src/modules/api/validators/*.js',
+    'src/modules/api/validators/abstract/*.js',
     'src/modules/api/api.module.js',
     'src/db/models/*.js'
   ],

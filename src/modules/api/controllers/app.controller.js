@@ -60,6 +60,7 @@
  *        properties:
  *          result:
  *            $ref: '#/definitions/NewApp'
+ *  
  */
 class AppController {
 
@@ -210,6 +211,43 @@ class AppController {
         this.appValidator.validateTransaction,
         this.broadcastTransaction.bind(this)
       ],
+      /**
+       * @swagger
+       *
+       * /app/operations:
+       *  post:
+       *    description: Create and broadcast an operation
+       *    produces:
+       *      - application/json
+       *    parameters:
+       *      - in: header
+       *        name: Authorization
+       *        schema:
+       *          type: string
+       *          format: uuid
+       *        required: true
+       *      - in: header
+       *        name: ClientID
+       *        schema:
+       *          type: integer
+       *        required: true
+       *      - in: body
+       *        required: true
+       *        schema:
+       *          $ref: '#/definitions/OperationsRequest'
+       *    tags:
+       *      - App
+       *      - Operations
+       *    responses:
+       *      200:
+       *        description: Transaction result response
+       *        schema:
+       *         $ref: '#/definitions/TransactionResponse'
+       *      400:
+       *        description: Error in operation validation
+       *        schema:
+       *          $ref: '#/definitions/ValidateError'
+       */
       [
         'post',
         '/api/v1/app/operations',

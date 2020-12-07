@@ -106,6 +106,39 @@ paths:
           description: Error in id validation
           schema:
             $ref: '#/definitions/ValidateError'
+  /app/operations:
+    post:
+      description: Create and broadcast an operation
+      produces:
+        - application/json
+      parameters:
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+            format: uuid
+          required: true
+        - in: header
+          name: ClientID
+          schema:
+            type: integer
+          required: true
+        - in: body
+          required: true
+          schema:
+            $ref: '#/definitions/OperationsRequest'
+      tags:
+        - App
+        - Operations
+      responses:
+        '200':
+          description: Transaction result response
+          schema:
+            $ref: '#/definitions/TransactionResponse'
+        '400':
+          description: Error in operation validation
+          schema:
+            $ref: '#/definitions/ValidateError'
   /app/join:
     post:
       description: Join an app
@@ -210,7 +243,7 @@ paths:
           schema:
             $ref: '#/definitions/ValidateError'
   '/auth/confirm-email/{token}':
-    post:
+    get:
       description: Confirm email
       produces:
         - application/json
@@ -392,6 +425,17 @@ paths:
           description: Error form validation
           schema:
             $ref: '#/definitions/ValidateError'
+  /auth/discord:
+    get:
+      description: Auth by Discord
+      summary: Auth by discord
+      produces:
+        - application/json
+      tags:
+        - SocNetwork
+      responses:
+        '302':
+          description: Redirect to discord
   /auth/facebook:
     get:
       description: Auth by facebook
@@ -781,6 +825,469 @@ definitions:
         properties:
           result:
             $ref: '#/definitions/User'
+  PeerplaysAccountIDType:
+    type: string
+    pattern: ^(1.2.)\d+$
+    example: 1.2.31
+  PeerplaysAssetIDType:
+    type: string
+    pattern: ^(1.3.)\d+$
+    example: 1.3.0
+  PeerplaysAmountType:
+    type: integer
+    maximum: 1000000000000
+    example: 100000000
+  PeerplaysAssetType:
+    type: object
+    required:
+      - amount
+      - asset_id
+    properties:
+      amount:
+        $ref: '#/definitions/PeerplaysAmountType'
+      asset_id:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+  TransferRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - from
+      - to
+      - amount
+    properties:
+      op_name:
+        type: string
+        enum:
+          - transfer
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      from:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      to:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      amount:
+        $ref: '#/definitions/PeerplaysAssetType'
+      memo:
+        type: string
+  Benefactor:
+    type: object
+    required:
+      - id
+      - share
+    properties:
+      id:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      share:
+        type: integer
+        maximum: 10000
+        example: 5000
+  LotteryOptions:
+    type: object
+    required:
+      - benefactors
+      - winning_tickets
+      - ticket_price
+      - end_date
+      - ending_on_soldout
+      - is_active
+      - delete_tickets_after_draw
+      - progressive_jackpots
+    properties:
+      benefactors:
+        type: array
+        items:
+          $ref: '#/definitions/Benefactor'
+      winning_tickets:
+        type: array
+        items:
+          type: integer
+          max: 10000
+      ticket_price:
+        type:
+          $ref: '#/definitions/PeerplaysAssetType'
+      end_date:
+        type: integer
+        example: 1608897600
+      ending_on_soldout:
+        type: boolean
+      is_active:
+        type: boolean
+      delete_tickets_after_draw:
+        type: boolean
+      progressive_jackpots:
+        type: string
+        pattern: ^(1.30.)\d+$
+        example: 1.30.0
+  NftCreateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - owner
+      - name
+      - symbol
+      - base_uri
+      - is_transferable
+      - is_sellable
+    properties:
+      op_name:
+        type: string
+        enum:
+          - nft_metadata_create
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      owner:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      name:
+        type: string
+        example: nft_test
+      symbol:
+        type: string
+        example: nfttest1
+      base_uri:
+        type: string
+        format: uri
+        example: 'http://abc.com'
+      revenue_partner:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      revenue_split:
+        type: integer
+        maximum: 10000
+        example: 5000
+      is_transferable:
+        type: boolean
+      is_sellable:
+        type: boolean
+      account_role:
+        type: string
+        pattern: ^(1.32.)\d+$
+        example: 1.32.0
+      max_supply:
+        $ref: '#/definitions/PeerplaysAmountType'
+      lottery_options:
+        $ref: '#/definitions/LotteryOptions'
+  NftUpdateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - owner
+      - nft_metadata_id
+    properties:
+      op_name:
+        type: string
+        enum:
+          - nft_metadata_update
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      owner:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      nft_metadata_id:
+        type: string
+        pattern: ^(1.30.)\d+$
+        example: 1.30.0
+      name:
+        type: string
+        example: nft_test
+      symbol:
+        type: string
+        example: nfttest1
+      base_uri:
+        type: string
+        format: uri
+        example: 'http://abc.com'
+      revenue_partner:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      revenue_split:
+        type: integer
+        maximum: 10000
+        example: 5000
+      is_transferable:
+        type: boolean
+      is_sellable:
+        type: boolean
+      account_role:
+        type: string
+        pattern: ^(1.32.)\d+$
+        example: 1.32.0
+  NftMintRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - payer
+      - nft_metadata_id
+      - owner
+      - approved
+      - approved_operators
+      - token_uri
+    properties:
+      op_name:
+        type: string
+        enum:
+          - nft_mint
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      payer:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      nft_metadata_id:
+        type: string
+        pattern: ^(1.30.)\d+$
+        example: 1.30.0
+      owner:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      approved:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      approved_operators:
+        type: array
+        items:
+          $ref: '#/definitions/PeerplaysAccountIDType'
+      token_uri:
+        type: string
+        example: /pics/2k32s2ks
+  NftSafeTransferRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - operator_
+      - from
+      - to
+      - token_id
+      - data
+    properties:
+      op_name:
+        type: string
+        enum:
+          - nft_safe_transfer_from
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      operator_:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      from:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      to:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      token_id:
+        type: string
+        pattern: ^(1.31.)\d+$
+        example: 1.31.0
+      data:
+        type: string
+  NftApproveRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - operator_
+      - approved
+      - token_id
+    properties:
+      op_name:
+        type: string
+        enum:
+          - nft_approve
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      operator_:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      approved:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      token_id:
+        type: string
+        pattern: ^(1.31.)\d+$
+        example: 1.31.0
+  NftApproveAllRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - owner
+      - operator_
+      - approved
+    properties:
+      op_name:
+        type: string
+        enum:
+          - nft_set_approval_for_all
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      owner:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      operator_:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      approved:
+        type: boolean
+  OfferRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - item_ids
+      - issuer
+      - minimum_price
+      - maximum_price
+      - buying_item
+      - offer_expiration_date
+    properties:
+      op_name:
+        type: string
+        enum:
+          - offer
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      item_ids:
+        type: array
+        items:
+          type: string
+          pattern: ^(1.31.)\d+$
+          example: 1.31.0
+      issue:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      minimum_price:
+        $ref: '#/definitions/PeerplaysAssetType'
+      maximum_price:
+        $ref: '#/definitions/PeerplaysAssetType'
+      buying_item:
+        type: boolean
+      offer_expiration_date:
+        type: integer
+        example: 1608897600
+  BidRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - bidder
+      - bid_price
+      - offer_id
+    properties:
+      op_name:
+        type: string
+        enum:
+          - bid
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      bidder:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      bid_price:
+        $ref: '#/definitions/PeerplaysAssetType'
+      offer_id:
+        type: string
+        pattern: ^(1.29.)\d+$
+        example: 1.29.0
+  CancelOfferRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - issuer
+      - offer_id
+    properties:
+      op_name:
+        type: string
+        enum:
+          - cancel_offer
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      issuer:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      offer_id:
+        type: string
+        pattern: ^(1.29.)\d+$
+        example: 1.29.0
+  NftLotteryPurchaseRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - lottery_id
+      - buyer
+      - tickets_to_buy
+      - amount
+    properties:
+      op_name:
+        type: string
+        enum:
+          - nft_lottery_token_purchase
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      lottery_id:
+        type: string
+        pattern: ^(1.30.)\d+$
+        example: 1.30.0
+      buyer:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      tickets_to_buy:
+        $ref: '#/definitions/PeerplaysAmountType'
+      amount:
+        $ref: '#/definitions/PeerplaysAssetType'
+  OperationRequest:
+    oneOf:
+      - $ref: '#/definitions/TransferRequest'
+      - $ref: '#/definitions/NftCreateRequest'
+      - $ref: '#/definitions/NftUpdateRequest'
+      - $ref: '#/definitions/NftMintRequest'
+      - $ref: '#/definitions/NftSafeTransferRequest'
+      - $ref: '#/definitions/NftApproveRequest'
+      - $ref: '#/definitions/NftApproveAllRequest'
+      - $ref: '#/definitions/OfferRequest'
+      - $ref: '#/definitions/BidRequest'
+      - $ref: '#/definitions/CancelOfferRequest'
+      - $ref: '#/definitions/NftLotteryPurchaseRequest'
+  OperationsRequest:
+    type: object
+    required:
+      - operations
+    properties:
+      operations:
+        type: array
+        items:
+          $ref: '#/definitions/OperationRequest'
+  TransactionObject:
+    type: object
+    required:
+      - ref_block_num
+      - ref_block_prefix
+      - expiration
+      - operations
+      - signatures
+    properties:
+      ref_block_num:
+        type: integer
+      ref_block_prefix:
+        type: integer
+      expiration:
+        type: string
+        format: date
+      operations:
+        type: array
+        items:
+          type: array
+          items: {}
+          example:
+            - 0
+            - fee:
+                amount: '2000000'
+                asset_id: 1.3.0
+              from: 1.2.67
+              to: 1.2.57
+              amount:
+                amount: '100'
+                asset_id: 1.3.0
+              extensions: []
+      operation_result:
+        type: array
+        items:
+          type: integer
+  TransactionResponse:
+    allOf:
+      - $ref: '#/definitions/SuccessResponse'
+      - type: object
+        properties:
+          result:
+            $ref: '#/definitions/TransactionObject'
   SuccessResponse:
     type: object
     properties:
