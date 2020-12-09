@@ -5,15 +5,13 @@ WORKDIR /peerid-backend
 ARG node_env=''
 ENV NODE_ENV=$node_env
 
-COPY ./package*.json /peerid-backend
+COPY ./package*.json ./
 
 RUN npm install --silent
 
 COPY . .
 
-COPY docker-entrypoint.sh /
-
-ENTRYPOINT ["/docker-entrypoint.sh"]
+ENTRYPOINT ["/peerid-backend/docker-entrypoint.sh"]
 
 EXPOSE 3000
 

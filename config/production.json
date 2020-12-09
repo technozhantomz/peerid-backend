@@ -1,2 +1,56 @@
 {
+  "logLevel": "trace",
+  "db": {
+    "user": "DB_USER",
+    "password": "DB_PASSWORD",
+    "host": "DB_HOST",
+    "port": "DB_PORT",
+    "database": "DB_DATABASE"
+  },
+  "swagger": {
+    "host": "virtserver.swaggerhub.com",
+    "schemes": [
+      "https"
+    ]
+  },
+  "sessionSecret": "SESSION_SECRET",
+  "cors": true,
+  "port": "BACKEND_PORT",
+  "google": {
+    "clientId": "GOOGLE_ID",
+    "clientSecret": "GOOGLE_SECRET"
+  },
+  "facebook": {
+    "clientId": "FACEBOOK_ID",
+    "clientSecret": "FACEBOOK_SECRET"
+  },
+  "discord": {
+    "clientId": "DISCORD_ID",
+    "clientSecret": "DISCORD_SECRET"
+  },
+  "raven": {
+    "enabled": false,
+    "url": ""
+  },
+  "mailer": {
+    "host": "MAILER_HOST",
+    "port": "MAILER_PORT",
+    "secure": false,
+    "auth": {
+      "user": "MAILER_USER",
+      "pass": "MAILER_PASS"
+    },
+    "sender": "MAILER_SENDER"
+  },
+  "frontendUrl": "FRONTEND_URL",
+  "backendUrl": "BACKEND_URL",
+  "frontendCallbackUrl": "FRONTEND_CALLBACK_URL",
+  "peerplays": {
+    "peerplaysWS": "PEERPLAYS_WS",
+    "peerplaysFaucetURL": "PEERPLAYS_FAUCET_URL",
+    "referrer": "PEERPLAYS_REFERRER",
+    "feeAssetId": "PEERPLAYS_ASSET_ID",
+    "paymentAccountID": "PEERPLAYS_PAYMENT_ACCOUNT_ID",
+    "paymentAccountWIF": "PEERPLAYS_PAYMENT_ACCOUNT_WIF"
+  }
 }

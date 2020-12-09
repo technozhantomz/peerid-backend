@@ -68,3 +68,5 @@ public/images
 public/video
 .idea/
 .DS_Store
+
+.env

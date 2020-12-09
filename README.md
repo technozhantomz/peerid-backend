@@ -4,79 +4,17 @@
 
 You can find API documentation here - [/docs/swagger.yaml](/docs/swagger.yaml)
 
-Also, you can build the documentation. Just run npm run `build:doc` and documentation will be built into `docs` folder.
-
-## Dependency
-1. Docker & Docker-Compose
-
-2. NVM <br>
-https://github.com/nvm-sh/nvm
-
-3. node v12.13.0
-
-4. Postgres v11.3
-
-5. Start the dependencies (Postgres) 
-```bash 
-   docker-compose -f docker_dependency.yml up
-```
-
-## Development
-
-For development you can use nodemon. Clone this project into your folder and run the following commands to run the backend:
-
+You can also build the documentation by using: 
 ```bash
-nvm use  # switch to node version as in .nvmrc file
-npm i
-npm run serve # start server with nodemon
+npm run build:doc
 ```
+The documentation will be built into the `docs` folder.
 
-### Commits
+## Requirements
 
-> If you have run the init script, you can commit via `git cz`.  
-> If you have not run the init script, you must commit via `npm run commit`.  
-> If you do neither, commit message consistency will be difficult for you.
+- [node v12.13.0+](https://nodejs.org/en/about/releases/)
+- [PostgreSQL v11+](https://www.postgresql.org/download/)
 
-This repository uses a combination of tools to aid in consistent commit messages. The reason we do this is so we can have dynamic changelog creation and smart semantic versioning based on commits (with the ability to override).
-
-The following tools are used:
-
-1. [commitizen](https://www.npmjs.com/package/commitizen)  
-   Used for prompting recommended entries within a commit message to ensure it contains the necessary information.
-   - [conventional changelog](https://www.npmjs.com/package/cz-conventional-changelog)  
-     - Prompts for conventional changelog standard.
-2. [husky](https://www.npmjs.com/package/husky)  
-   By using the hooks from this package we intercept commits being made and verify them with commitlint.
-   - Prevent bad commits/pushes.
-3. [commitlint](https://www.npmjs.com/package/@commitlint/cli)
-   - cli
-   - [config-conventional](https://www.npmjs.com/package/@commitlint/config-conventional)
-     - rule preset in use
-
-## Migrations & Seeds
-
-To run all pending migrations
-```npm run db-migrate-all```
-
-To undo single migrations
-```npm run db-migrate-undo```
-
-To undo all migrations BE CAREFUL
-```npm run db-migrate-undo```
-
-To run all Seeds. Seeds can be run multiple times and should be used for dev only
-```npm run db-seed-all```
-
-To undo single migrations
-```npm run db-seed-undo-all```
-
-## Docker
-
-You can run the application with docker-compose:
-
-```bash
-docker-compose up --build
-```
 
 ## Project configuration 
 
@@ -154,3 +92,70 @@ PeerID can connect to the peerplays testnet using the peerplays config provided 
   "paymentAccountWIF": "PAYMENT_ACCOUNT_WIF"
 }
 ```
+
+## Usage
+
+### Development
+
+For development it is recommended to use a server manager utility like nodemon. Clone this project into your folder and run the following commands to run the backend:
+
+```bash
+npm i
+npm run serve # start server with nodemon
+```
+
+### Migrations & Seeds
+
+To run all pending migrations
+```npm run db-migrate-all```
+
+To undo single migrations
+```npm run db-migrate-undo```
+
+To undo all migrations - **BE CAREFUL**
+```npm run db-migrate-undo```
+
+To run all Seeds. Seeds can be run multiple times and should be used for dev only
+```npm run db-seed-all```
+
+To undo single migrations
+```npm run db-seed-undo-all```
+
+## Docker
+
+You will need to install [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/) on your machine. 
+
+The environment variables for the application will need to be configured. Copy the example.env to create a .env file:
+
+```bash
+cp example.env .env
+```
+You can then run the application with docker-compose:
+
+```bash
+sudo docker-compose up
+```
+
+## Contributing 
+This project is open for contribution through pull requests.
+### Commits
+
+> If you have run the init script, you can commit via `git cz`.  
+> If you have not run the init script, you must commit via `npm run commit`.  
+> If you do neither, commit message consistency will be difficult for you.
+
+This repository uses a combination of tools to aid in consistent commit messages. The reason we do this is so we can have dynamic changelog creation and smart semantic versioning based on commits (with the ability to override).
+
+The following tools are used:
+
+1. [commitizen](https://www.npmjs.com/package/commitizen)  
+   Used for prompting recommended entries within a commit message to ensure it contains the necessary information.
+   - [conventional changelog](https://www.npmjs.com/package/cz-conventional-changelog)  
+     - Prompts for conventional changelog standard.
+2. [husky](https://www.npmjs.com/package/husky)  
+   By using the hooks from this package we intercept commits being made and verify them with commitlint.
+   - Prevent bad commits/pushes.
+3. [commitlint](https://www.npmjs.com/package/@commitlint/cli)
+   - cli
+   - [config-conventional](https://www.npmjs.com/package/@commitlint/config-conventional)
+     - rule preset in use

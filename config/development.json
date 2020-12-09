@@ -1,11 +1,11 @@
 {
   "logLevel": "trace",
   "db": {
-    "user": "psingh",
-    "password": "p@ssw0rd9999",
-    "host": "127.0.0.1",
-    "port": "5432",
-    "database": "peerid"
+    "user": "DB_USER",
+    "password": "DB_PASSWORD",
+    "host": "DB_HOST",
+    "port": "DB_PORT",
+    "database": "DB_DATABASE"
   },
   "swagger": {
     "host": "virtserver.swaggerhub.com",
@@ -13,43 +13,43 @@
       "https"
     ]
   },
-  "sessionSecret": "sessionSecret",
+  "sessionSecret": "SESSION_SECRET",
   "cors": true,
   "port": 3000,
   "google": {
-    "clientId": "457241315847-53tlujrnj4oj66sehd37rqqjjmgdh1r6.apps.googleusercontent.com",
-    "clientSecret": "1vkXPzTcNew4Q4pKmiPgVFFp"
+    "clientId": "GOOGLE_ID",
+    "clientSecret": "GOOGLE_SECRET"
   },
   "facebook": {
-    "clientId": "2534442443233970",
-    "clientSecret": "271bd8b8a045cf88f42b6ba36765a337"
+    "clientId": "FACEBOOK_ID",
+    "clientSecret": "FACEBOOK_SECRET"
   },
   "discord": {
-    "clientId": "771714070406889472",
-    "clientSecret": "mTuttzFfzJ1GNMiiv1jHVCnIKYjKaalt"
+    "clientId": "DISCORD_ID",
+    "clientSecret": "DISCORD_SECRET"
   },
   "raven": {
     "enabled": false,
     "url": ""
   },
   "mailer": {
-    "host": "smtp.gmail.com",
-    "port": 587,
+    "host": "MAILER_HOST",
+    "port": "MAILER_PORT",
     "secure": false,
     "auth": {
-      "user": "prabhjot.narula@gmail.com",
-      "pass": "lqkdwshixsjrasug"
+      "user": "MAILER_USER",
+      "pass": "MAILER_PASSWORD"
     },
-    "sender": "Prabhjot Singh"
+    "sender": "MAILER_SENDER"
   },
-  "frontendUrl": "http://localhost:8082",
-  "backendUrl": "http://localhost:3000",
+  "frontendUrl": "FRONTEND_URL",
+  "backendUrl": "BACKEND_URL",
   "peerplays": {
-    "peerplaysWS": "wss://irona.peerplays.download/api",
-    "peerplaysFaucetURL": "https://irona-faucet.peerplays.download/api/v1/accounts",
-    "referrer": "1.2.0",
-    "feeAssetId": "1.3.0",
-    "paymentAccountID": "1.2.21",
-    "paymentAccountWIF": "5HttHcgL2NgFc5XsFY8bs51VehVDS2Tb4NGkRuwjJ6v6Mq7eC7S"
+    "peerplaysWS": "PEERPLAYS_WS",
+    "peerplaysFaucetURL": "PEERPLAYS_FAUCET_URL",
+    "referrer": "PEERPLAYS_REFERRER",
+    "feeAssetId": "PEERPLAYS_ASSET_ID",
+    "paymentAccountID": "PEERPLAYS_PAYMENT_ACCOUNT_ID",
+    "paymentAccountWIF": "PEERPLAYS_PAYMENT_ACCOUNT_WIF"
   }
 }
