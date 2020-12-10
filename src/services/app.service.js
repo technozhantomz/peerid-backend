@@ -476,7 +476,7 @@ class AppService {
           extensions: null
         });
 
-        Authorities[i].expiry = customAuth.trx.operations[0][1].valid_to;
+        Authorities[i].expiry = customAuth.trx.operations[0][1].new_valid_to;
         Authorities[i].save();
 
         customAuths.push(customAuth);
