@@ -452,7 +452,7 @@ class AppService {
   }
 
   async refreshAccessToken(user, app_id, AccessToken) {
-    let customAuths;
+    let customAuths = [];
 
     const Authorities = await this.authorityRepository.model.findAll({where: {user_id: user.id, app_id}});
 
