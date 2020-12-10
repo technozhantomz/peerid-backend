@@ -114,7 +114,7 @@ class UsersController {
       /**
        * @swagger
        *
-       * /profile/permission:
+       * /permission:
        *  get:
        *    description: Get user permissions
        *    summary: Get user permissions

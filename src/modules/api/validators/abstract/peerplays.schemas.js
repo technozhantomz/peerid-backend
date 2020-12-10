@@ -722,18 +722,18 @@ const bitassetOptionsSchema = Joi.object({
   short_backing_asset: peerplaysAssetIdType.required()
 });
 
-// const lotteryAssetOptionsSchema = Joi.object({
-//   benefactors: Joi.array().items(Joi.object({
-//     id: peerplaysAccountIdType.required(),
-//     share: Joi.number().integer().max(10000).required()
-//   })).required(),
-//   owner: peerplaysAssetIdType.required(),
-//   winning_tickets: Joi.array().items(Joi.number().max(10000)).required(),
-//   ticket_price: peerplaysAssetType.required(),
-//   end_date: Joi.date().timestamp().required(),
-//   ending_on_soldout: Joi.bool().required(),
-//   is_active: Joi.bool().required()
-// });
+const lotteryAssetOptionsSchema = Joi.object({
+  benefactors: Joi.array().items(Joi.object({
+    id: peerplaysAccountIdType.required(),
+    share: Joi.number().integer().max(10000).required()
+  })).required(),
+  owner: peerplaysAssetIdType.required(),
+  winning_tickets: Joi.array().items(Joi.number().max(10000)).required(),
+  ticket_price: peerplaysAssetType.required(),
+  end_date: Joi.date().timestamp().required(),
+  ending_on_soldout: Joi.bool().required(),
+  is_active: Joi.bool().required()
+});
 
 const assetCreateSchema = Joi.object({
   op_name: 'asset_create',
@@ -1100,6 +1100,583 @@ const tournamentJoinSchema = Joi.object({
   buy_in: peerplaysAssetType.required()
 });
 
+const gameMoveSchema = Joi.object({
+  op_name: 'game_move',
+  fee_asset: peerplaysAssetIdType.required(),
+  game_id: Joi.string().trim().regex(/^(1.19.)\d+$/).required(),
+  player_account_id: peerplaysAccountIdType.required(),
+  move: Joi.array().length(2).items(Joi.number().integer(), Joi.object()).required()
+});
+
+const assetUpdateDividendSchema = Joi.object({
+  op_name: 'asset_update_dividend',
+  fee_asset: peerplaysAssetIdType.required(),
+  issuer: peerplaysAccountIdType.required(),
+  asset_to_update: peerplaysAssetIdType.required(),
+  new_options: Joi.object({
+    next_payout_time: Joi.date().timestamp().optional(),
+    payout_interval: Joi.number().integer().optional(),
+    minimum_fee_percentage: Joi.number().integer().required(),
+    minimum_distribution_interval: Joi.number().integer().optional()
+  })
+});
+
+const assetDividendDistributionSchema = Joi.object({
+  op_name: 'asset_dividend_distribution',
+  fee_asset: peerplaysAssetIdType.required(),
+  dividend_asset_id: peerplaysAssetIdType.required(),
+  account_id: peerplaysAccountIdType.required(),
+  amounts: Joi.array().items(peerplaysAssetType).min(1).required()
+});
+
+const sportCreateSchema = Joi.object({
+  op_name: 'sport_create',
+  fee_asset: peerplaysAssetIdType.required(),
+  name: Joi.array().items(Joi.array().length(2).items(Joi.string(),Joi.string())).required()
+});
+
+const sportUpdateSchema = Joi.object({
+  op_name: 'sport_update',
+  fee_asset: peerplaysAssetIdType.required(),
+  sport_id: Joi.string().trim().regex(/^(1.20.)\d+$/).required(),
+  new_name: Joi.array().items(Joi.array().length(2).items(Joi.string(),Joi.string())).optional()
+});
+
+const eventGroupCreateSchema = Joi.object({
+  op_name: 'event_group_create',
+  fee_asset: peerplaysAssetIdType.required(),
+  name: Joi.array().items(Joi.array().length(2).items(Joi.string(),Joi.string())).required(),
+  sport_id: Joi.string().trim().regex(/^(1.20.)\d+$/).required()
+});
+
+const eventGroupUpdateSchema = Joi.object({
+  op_name: 'event_group_update',
+  fee_asset: peerplaysAssetIdType.required(),
+  new_name: Joi.array().items(Joi.array().length(2).items(Joi.string(),Joi.string())).optional(),
+  new_sport_id: Joi.string().trim().regex(/^(1.20.)\d+$/).optional(),
+  event_group_id: Joi.string().trim().regex(/^(1.21.)\d+$/).optional()
+});
+
+const eventCreateSchema = Joi.object({
+  op_name: 'event_create',
+  fee_asset: peerplaysAssetIdType.required(),
+  name: Joi.array().items(Joi.array().length(2).items(Joi.string(),Joi.string())).required(),
+  season: Joi.array().items(Joi.array().length(2).items(Joi.string(),Joi.string())).required(),
+  start_time: Joi.date().timestamp().optional(),
+  event_group_id: Joi.string().trim().regex(/^(1.21.)\d+$/).required()
+});
+
+const eventUpdateSchema = Joi.object({
+  op_name: 'event_update',
+  fee_asset: peerplaysAssetIdType.required(),
+  event_id: Joi.string().trim().regex(/^(1.22.)\d+$/).required(),
+  new_name: Joi.array().items(Joi.array().length(2).items(Joi.string(),Joi.string())).optional(),
+  new_season: Joi.array().items(Joi.array().length(2).items(Joi.string(),Joi.string())).optional(),
+  new_start_time: Joi.date().timestamp().optional(),
+  new_event_group_id: Joi.string().trim().regex(/^(1.21.)\d+$/).optional(),
+  is_live_market: Joi.bool().optional()
+});
+
+const bettingMarketRulesCreateSchema = Joi.object({
+  op_name: 'betting_market_rules_create',
+  fee_asset: peerplaysAssetIdType.required(),
+  name: Joi.array().items(Joi.array().length(2).items(Joi.string(),Joi.string())).required(),
+  description: Joi.array().items(Joi.array().length(2).items(Joi.string(),Joi.string())).required()
+});
+
+const bettingMarketRulesUpdateSchema = Joi.object({
+  op_name: 'betting_market_rules_update',
+  fee_asset: peerplaysAssetIdType.required(),
+  new_name: Joi.array().items(Joi.array().length(2).items(Joi.string(),Joi.string())).optional(),
+  new_description: Joi.array().items(Joi.array().length(2).items(Joi.string(),Joi.string())).optional(),
+  betting_market_rules_id: Joi.string().trim().regex(/^(1.23.)\d+$/).required()
+});
+
+const bettingMarketGroupCreateSchema = Joi.object({
+  op_name: 'betting_market_group_create',
+  fee_asset: peerplaysAssetIdType.required(),
+  description: Joi.array().items(Joi.array().length(2).items(Joi.string(),Joi.string())).required(),
+  event_id: Joi.string().trim().regex(/^(1.22.)\d+$/).required(),
+  rules_id: Joi.string().trim().regex(/^(1.23.)\d+$/).required(),
+  asset_id: peerplaysAssetIdType.required()
+});
+
+const bettingMarketCreateSchema = Joi.object({
+  op_name: 'betting_market_create',
+  fee_asset: peerplaysAssetIdType.required(),
+  group_id: Joi.string().trim().regex(/^(1.24.)\d+$/).required(),
+  description: Joi.array().items(Joi.array().length(2).items(Joi.string(),Joi.string())).required(),
+  payout_condition: Joi.array().items(Joi.array().length(2).items(Joi.string(),Joi.string())).required()
+});
+
+const betPlaceSchema = Joi.object({
+  op_name: 'bet_place',
+  fee_asset: peerplaysAssetIdType.required(),
+  bettor_id: peerplaysAccountIdType.required(),
+  betting_market_id: Joi.string().trim().regex(/^(1.25.)\d+$/).required(),
+  amount_to_bet: peerplaysAssetType.required(),
+  backer_multiplier: Joi.number().integer().required(),
+  back_or_lay: Joi.string().valid('back','lay').required()
+});
+
+const resolutionType = Joi.string().valid('win','not_win','cancel','BETTING_MARKET_RESOLUTION_COUNT');
+
+const bettingMarketGroupResolveSchema = Joi.object({
+  op_name: 'betting_market_group_resolve',
+  fee_asset: peerplaysAssetIdType.required(),
+  betting_market_group_id: Joi.string().trim().regex(/^(1.24.)\d+$/).required(),
+  resolutions: Joi.array().items(Joi.array().length(2).items(Joi.string().trim().regex(/^(1.25.)\d+$/), resolutionType)).required()
+});
+
+const bettingMarketGroupResolvedSchema = Joi.object({
+  op_name: 'betting_market_group_resolved',
+  fee_asset: peerplaysAssetIdType.required(),
+  bettor_id: peerplaysAccountIdType.required(),
+  betting_market_group_id: Joi.string().trim().regex(/^(1.24.)\d+$/).required(),
+  resolutions: Joi.array().items(Joi.array().length(2).items(Joi.string().trim().regex(/^(1.25.)\d+$/), resolutionType)).required(),
+  winnings: peerplaysAmountType.required(),
+  fees_paid: peerplaysAmountType.required()
+});
+
+const bettingMarketGroupCancelUnmatchedBetsSchema = Joi.object({
+  op_name: 'betting_market_group_cancel_unmatched_bets',
+  fee_asset: peerplaysAssetIdType.required(),
+  betting_market_group_id: Joi.string().trim().regex(/^(1.24.)\d+$/).required()
+});
+
+const betMatchedSchema = Joi.object({
+  op_name: 'bet_matched',
+  bettor_id: peerplaysAccountIdType.required(),
+  bet_id: Joi.string().trim().regex(/^(1.26.)\d+$/).required(),
+  betting_market_id: Joi.string().trim().regex(/^(1.25.)\d+$/).required(),
+  amount_bet: peerplaysAssetType.required(),
+  fees_paid: peerplaysAmountType.required(),
+  backer_multiplier: Joi.number().integer().required(),
+  guaranteed_winnings_returned: peerplaysAmountType.required()
+});
+
+const betCancelSchema = Joi.object({
+  op_name: 'bet_cancel',
+  fee_asset: peerplaysAssetIdType.required(),
+  bettor_id: peerplaysAccountIdType.required(),
+  bet_to_cancel: Joi.string().trim().regex(/^(1.26.)\d+$/).required()
+});
+
+const betCanceledSchema = Joi.object({
+  op_name: 'bet_canceled',
+  bettor_id: peerplaysAccountIdType.required(),
+  bet_id: Joi.string().trim().regex(/^(1.26.)\d+$/).required(),
+  stake_returned: peerplaysAssetType.required(),
+  unused_fees_returned: peerplaysAssetType.required()
+});
+
+const tournamentPayoutSchema = Joi.object({
+  op_name: 'tournament_payout',
+  fee_asset: peerplaysAssetIdType.required(),
+  payout_account_id: peerplaysAccountIdType.required(),
+  tournament_id: Joi.string().trim().regex(/^(1.16.)\d+$/).required(),
+  payout_amount: peerplaysAssetType.required(),
+  type: Joi.string().valid('prize_award', 'buyin_refund', 'rake_fee').required()
+});
+
+const tournamentLeaveSchema = Joi.object({
+  op_name: 'tournament_leave',
+  fee_asset: peerplaysAssetIdType.required(),
+  canceling_account_id: peerplaysAccountIdType.required(),
+  player_account_id: peerplaysAccountIdType.required(),
+  tournament_id: Joi.string().trim().regex(/^(1.16.)\d+$/).required()
+});
+
+const bettingMarketGroupUpdateSchema = Joi.object({
+  op_name: 'betting_market_group_update',
+  fee_asset: peerplaysAssetIdType.required(),
+  betting_market_group_id: Joi.string().trim().regex(/^(1.24.)\d+$/).required(),
+  new_description: Joi.array().items(Joi.array().length(2).items(Joi.string(),Joi.string())).optional(),
+  new_rules_id: Joi.string().trim().regex(/^(1.23.)\d+$/).optional(),
+  freeze: Joi.bool().optional(),
+  delay_bets: Joi.bool().optional()
+});
+
+const bettingMarketUpdateSchema = Joi.object({
+  op_name: 'betting_market_update',
+  fee_asset: peerplaysAssetIdType.required(),
+  betting_market_id: Joi.string().trim().regex(/^(1.24.)\d+$/).required(),
+  new_group_id: Joi.string().trim().regex(/^(1.24.)\d+$/).optional(),
+  new_description: Joi.array().items(Joi.array().length(2).items(Joi.string(),Joi.string())).optional(),
+  new_payout_condition: Joi.array().items(Joi.array().length(2).items(Joi.string(),Joi.string())).optional()
+});
+
+const betAdjustedSchema = Joi.object({
+  op_name: 'bet_adjusted',
+  bettor_id: peerplaysAccountIdType.required(),
+  bet_id: Joi.string().trim().regex(/^(1.26.)\d+$/).required(),
+  stake_returned: peerplaysAssetType.required()
+});
+
+const lotteryAssetCreateSchema = Joi.object({
+  op_name: 'lottery_asset_create',
+  fee_asset: peerplaysAssetIdType.required(),
+  issuer: peerplaysAccountIdType.required(),
+  symbol: Joi.string().max(10).required(),
+  precision: Joi.number().integer().min(0).max(10).required(),
+  common_options: assetOptionsSchema.required(),
+  bitasset_opts: bitassetOptionsSchema.optional(),
+  is_prediction_market: Joi.bool().required(),
+  extensions: lotteryAssetOptionsSchema.required()
+});
+
+const ticketPurchaseSchema = Joi.object({
+  op_name: 'ticket_purchase',
+  fee_asset: peerplaysAssetIdType.required(),
+  lottery: peerplaysAssetIdType.required(),
+  buyer: peerplaysAccountIdType.required(),
+  tickets_to_buy: peerplaysAmountType.required(),
+  amount: peerplaysAssetType.required()
+});
+
+const lotteryRewardSchema = Joi.object({
+  op_name: 'lottery_reward',
+  fee_asset: peerplaysAssetIdType.required(),
+  lottery: peerplaysAssetIdType.required(),
+  winner: peerplaysAccountIdType.required(),
+  amount: peerplaysAssetType.required(),
+  win_percentage: Joi.number().integer().max(10000).required(),
+  is_benefactor_reward: Joi.bool().required()
+});
+
+const lotteryEndSchema = Joi.object({
+  op_name: 'lottery_end',
+  fee_asset: peerplaysAssetIdType.required(),
+  lottery: peerplaysAssetIdType.required(),
+  participants: Joi.array().items(Joi.array().length(2).items(peerplaysAccountIdType, Joi.number().integer())).required()
+});
+
+const sweepsVestingClaimSchema = Joi.object({
+  op_name: 'sweeps_vesting_claim',
+  account: peerplaysAccountIdType.required(),
+  amount_to_claim: peerplaysAssetType.required()
+});
+
+const customPermissionCreateSchema = Joi.object({
+  op_name: 'custom_permission_create',
+  fee_asset: peerplaysAssetIdType.required(),
+  owner_account: peerplaysAccountIdType.required(),
+  permission_name: Joi.string().max(10).required(),
+  auth: authoritySchema
+});
+
+const customPermissionUpdateSchema = Joi.object({
+  op_name: 'custom_permission_update',
+  fee_asset: peerplaysAssetIdType.required(),
+  permission_id: Joi.string().trim().regex(/^(1.27.)\d+$/).required(),
+  new_auth: authoritySchema,
+  owner_account: peerplaysAccountIdType.required()
+});
+
+const customPermissionDeleteSchema = Joi.object({
+  op_name: 'custom_permission_delete',
+  fee_asset: peerplaysAssetIdType.required(),
+  permission_id: Joi.string().trim().regex(/^(1.27.)\d+$/).required(),
+  owner_account: peerplaysAccountIdType.required()
+});
+
+const customAccountAuthorityCreateSchema = Joi.object({
+  op_name: 'custom_account_authority_create',
+  fee_asset: peerplaysAssetIdType.required(),
+  permission_id: Joi.string().trim().regex(/^(1.27.)\d+$/).required(),
+  operation_type: Joi.number().integer().min(0).required(),
+  valid_from: Joi.date().timestamp().required(),
+  valid_to: Joi.date().timestamp().required(),
+  owner_account: peerplaysAccountIdType.required()
+});
+
+const customAccountAuthorityUpdateSchema = Joi.object({
+  op_name: 'custom_account_authority_update',
+  fee_asset: peerplaysAssetIdType.required(),
+  auth_id: Joi.string().trim().regex(/^(1.28.)\d+$/).required(),
+  new_valid_from: Joi.date().timestamp().optional(),
+  new_valid_to: Joi.date().timestamp().optional(),
+  owner_account: peerplaysAccountIdType.required()
+});
+
+const customAccountAuthorityDeleteSchema = Joi.object({
+  op_name: 'custom_account_authority_delete',
+  fee_asset: peerplaysAssetIdType.required(),
+  auth_id: Joi.string().trim().regex(/^(1.28.)\d+$/).required(),
+  owner_account: peerplaysAccountIdType.required()
+});
+
+const finalizeOfferSchema = Joi.object({
+  op_name: 'finalize_offer',
+  fee_asset: peerplaysAssetIdType.required(),
+  fee_paying_account: peerplaysAccountIdType.required(),
+  offer_id: Joi.string().trim().regex(/^(1.28.)\d+$/).required(),
+  result: Joi.string().valid('Expired','ExpiredNoBid','Cancelled').required()
+});
+
+const accountRoleCreateSchema = Joi.object({
+  op_name: 'account_role_create',
+  fee_asset: peerplaysAssetIdType.required(),
+  owner: peerplaysAccountIdType.required(),
+  name: Joi.string().required(),
+  metadata: Joi.string().required(),
+  allowed_operations: Joi.array().items(Joi.number().integer().min(0)).required(),
+  whitelisted_accounts: Joi.array().items(peerplaysAccountIdType).required(),
+  valid_from: Joi.date().timestamp().required()
+});
+
+const accountRoleUpdateSchema = Joi.object({
+  op_name: 'account_role_update',
+  fee_asset: peerplaysAssetIdType.required(),
+  owner: peerplaysAccountIdType.required(),
+  account_role_id: Joi.string().trim().regex(/^(1.32.)\d+$/).required(),
+  name: Joi.string().optional(),
+  metadata: Joi.string().optional(),
+  allowed_operations_to_add: Joi.array().items(Joi.number().integer().min(0)).required(),
+  allowed_operations_to_remove: Joi.array().items(Joi.number().integer().min(0)).required(),
+  accounts_to_add: Joi.array().items(peerplaysAccountIdType).required(),
+  accounts_to_remove: Joi.array().items(peerplaysAccountIdType).required(),
+  valid_to: Joi.date().timestamp().optional()
+});
+
+const accountRoleDeleteSchema = Joi.object({
+  op_name: 'account_role_delete',
+  fee_asset: peerplaysAssetIdType.required(),
+  owner: peerplaysAccountIdType.required(),
+  account_role_id: Joi.string().trim().regex(/^(1.32.)\d+$/).required()
+});
+
+const sidechainType = Joi.string().valid(
+  'unknown',
+  'bitcoin',
+  'ethereum',
+  'eos',
+  'peerplays'
+);
+
+const sonCreateSchema = Joi.object({
+  op_name: 'son_create',
+  fee_asset: peerplaysAssetIdType.required(),
+  owner_account: peerplaysAccountIdType.required(),
+  url: Joi.string().uri().required(),
+  deposit: Joi.string().trim().regex(/^(1.13.)\d+$/).required(),
+  signing_key: Joi.string().required(),
+  sidechain_public_keys: Joi.array().items(Joi.array().length(2).items(sidechainType, Joi.string())).required(),
+  pay_vb: Joi.string().trim().regex(/^(1.13.)\d+$/).required()
+});
+
+const sonUpdateSchema = Joi.object({
+  op_name: 'son_update',
+  fee_asset: peerplaysAssetIdType.required(),
+  son_id: Joi.string().trim().regex(/^(1.33.)\d+$/).required(),
+  owner_account: peerplaysAccountIdType.required(),
+  new_url: Joi.string().uri().optional(),
+  new_deposit: Joi.string().trim().regex(/^(1.13.)\d+$/).optional(),
+  new_signing_key: Joi.string().optional(),
+  new_sidechain_public_keys: Joi.array().items(Joi.array().length(2).items(sidechainType, Joi.string())).optional(),
+  new_pay_vb: Joi.string().trim().regex(/^(1.13.)\d+$/).optional()
+});
+
+const sonDeregisterSchema = Joi.object({
+  op_name: 'son_deregister',
+  fee_asset: peerplaysAssetIdType.required(),
+  son_id: Joi.string().trim().regex(/^(1.33.)\d+$/).required(),
+  payer: peerplaysAccountIdType.required()
+});
+
+const sonHeartbeatSchema = Joi.object({
+  op_name: 'son_heartbeat',
+  fee_asset: peerplaysAssetIdType.required(),
+  son_id: Joi.string().trim().regex(/^(1.33.)\d+$/).required(),
+  owner_account: peerplaysAccountIdType.required(),
+  ts: Joi.date().timestamp().required()
+});
+
+const sonReportDownSchema = Joi.object({
+  op_name: 'son_report_down',
+  fee_asset: peerplaysAssetIdType.required(),
+  son_id: Joi.string().trim().regex(/^(1.33.)\d+$/).required(),
+  payer: peerplaysAccountIdType.required(),
+  down_ts: Joi.date().timestamp().required()
+});
+
+const sonMaintenanceSchema = Joi.object({
+  op_name: 'son_maintenance',
+  fee_asset: peerplaysAssetIdType.required(),
+  son_id: Joi.string().trim().regex(/^(1.33.)\d+$/).required(),
+  owner_account: peerplaysAccountIdType.required(),
+  request_type: Joi.string().valid('request_maintenance','cancel_request_maintenance').required()
+});
+
+const sonInfoSchema = Joi.object({
+  son_id: Joi.string().trim().regex(/^(1.33.)\d+$/).required(),
+  weight: Joi.number().integer().min(0).required(),
+  signing_key: Joi.string().required(),
+  sidechain_public_keys: Joi.array().items(Joi.array().length(2).items(sidechainType, Joi.string())).required()
+});
+
+const sonWalletRecreateSchema = Joi.object({
+  op_name: 'son_wallet_recreate',
+  fee_asset: peerplaysAssetIdType.required(),
+  payer: peerplaysAccountIdType.required(),
+  sons: Joi.array().items(sonInfoSchema).min(1).required()
+});
+
+const sonWalletUpdateSchema = Joi.object({
+  op_name: 'son_wallet_update',
+  fee_asset: peerplaysAssetIdType.required(),
+  payer: peerplaysAccountIdType.required(),
+  son_wallet_id: Joi.string().trim().regex(/^(1.35.)\d+$/).required(),
+  sidechain: sidechainType.required(),
+  address: Joi.string().required()
+});
+
+const sonWalletDepositCreateSchema = Joi.object({
+  op_name: 'son_wallet_deposit_create',
+  fee_asset: peerplaysAssetIdType.required(),
+  payer: peerplaysAccountIdType.required(),
+  son_id: Joi.string().trim().regex(/^(1.33.)\d+$/).required(),
+  timestamp: Joi.date().timestamp().required(),
+  block_num: Joi.number().integer().required(),
+  sidechain: sidechainType.required(),
+  sidechain_uid: Joi.string().required(),
+  sidechain_transaction_id: Joi.string().required(),
+  sidechain_from: Joi.string().required(),
+  sidechain_to: Joi.string().required(),
+  sidechain_currency: Joi.string().required(),
+  sidechain_amount: peerplaysAmountType.required(),
+  peerplays_from: peerplaysAccountIdType.required(),
+  peerplays_to: peerplaysAccountIdType.required(),
+  peerplays_asset: peerplaysAssetType.required()
+});
+
+const sonWalletDepositProcessSchema = Joi.object({
+  op_name: 'son_wallet_deposit_process',
+  fee_asset: peerplaysAssetIdType.required(),
+  payer: peerplaysAccountIdType.required(),
+  son_wallet_deposit_id: Joi.string().trim().regex(/^(1.36.)\d+$/).required()
+});
+
+const sonWalletWithdrawCreateSchema = Joi.object({
+  op_name: 'son_wallet_withdraw_create',
+  fee_asset: peerplaysAssetIdType.required(),
+  payer: peerplaysAccountIdType.required(),
+  son_id: Joi.string().trim().regex(/^(1.33.)\d+$/).required(),
+  timestamp: Joi.date().timestamp().required(),
+  block_num: Joi.number().integer().required(),
+  sidechain: sidechainType.required(),
+  peerplays_uid: Joi.string().required(),
+  peerplays_transaction_id: Joi.string().required(),
+  peerplays_from: peerplaysAccountIdType.required(),
+  peerplays_asset: peerplaysAssetType.required(),
+  withdraw_sidechain: sidechainType.required(),
+  withdraw_address: Joi.string().required(),
+  withdraw_currency: Joi.string().required(),
+  withdraw_amount: Joi.number().integer().required()
+});
+
+const sonWalletWithdrawProcessSchema = Joi.object({
+  op_name: 'son_wallet_withdraw_process',
+  fee_asset: peerplaysAssetIdType.required(),
+  payer: peerplaysAccountIdType.required(),
+  son_wallet_withdraw_id: Joi.string().trim().regex(/^(1.37.)\d+$/).required()
+});
+
+const sidechainAddressAddSchema = Joi.object({
+  op_name: 'sidechain_address_add',
+  fee_asset: peerplaysAssetIdType.required(),
+  payer: peerplaysAccountIdType.required(),
+  sidechain_address_account: peerplaysAccountIdType.required(),
+  sidechain: sidechainType.required(),
+  deposit_public_key: Joi.string().required(),
+  deposit_address: Joi.string().required(),
+  deposit_address_data: Joi.string().required(),
+  withdraw_public_key: Joi.string().required(),
+  withdraw_address: Joi.string().required()
+});
+
+const sidechainAddressUpdateSchema = Joi.object({
+  op_name: 'sidechain_address_update',
+  fee_asset: peerplaysAssetIdType.required(),
+  payer: peerplaysAccountIdType.required(),
+  sidechain_address_id: Joi.string().trim().regex(/^(1.38.)\d+$/).required(),
+  sidechain_address_account: peerplaysAccountIdType.required(),
+  sidechain: sidechainType.required(),
+  deposit_public_key: Joi.string().optional(),
+  deposit_address: Joi.string().optional(),
+  deposit_address_data: Joi.string().optional(),
+  withdraw_public_key: Joi.string().optional(),
+  withdraw_address: Joi.string().optional()
+});
+
+const sidechainAddressDeleteSchema = Joi.object({
+  op_name: 'sidechain_address_delete',
+  fee_asset: peerplaysAssetIdType.required(),
+  payer: peerplaysAccountIdType.required(),
+  sidechain_address_id: Joi.string().trim().regex(/^(1.38.)\d+$/).required(),
+  sidechain_address_account: peerplaysAccountIdType.required(),
+  sidechain: sidechainType.required()
+});
+
+const sidechainTransactionCreateSchema = Joi.object({
+  op_name: 'sidechain_transaction_create',
+  fee_asset: peerplaysAssetIdType.required(),
+  payer: peerplaysAccountIdType.required(),
+  sidechain: sidechainType.required(),
+  object_id: Joi.string().required(),
+  transaction: Joi.string().required(),
+  signers: Joi.array().items(sonInfoSchema).min(1).required()
+});
+
+const sidechainTransactionSignSchema = Joi.object({
+  op_name: 'sidechain_transaction_sign',
+  fee_asset: peerplaysAssetIdType.required(),
+  signer: Joi.string().trim().regex(/^(1.33.)\d+$/).required(),
+  payer: peerplaysAccountIdType.required(),
+  sidechain_transaction_id: Joi.string().trim().regex(/^(1.39.)\d+$/).required(),
+  signature: Joi.string().required()
+});
+
+const sidechainTransactionSendSchema = Joi.object({
+  op_name: 'sidechain_transaction_send',
+  fee_asset: peerplaysAssetIdType.required(),
+  payer: peerplaysAccountIdType.required(),
+  sidechain_transaction_id: Joi.string().trim().regex(/^(1.39.)\d+$/).required(),
+  sidechain_transaction: Joi.string().required()
+});
+
+const sidechainTransactionSettleSchema = Joi.object({
+  op_name: 'sidechain_transaction_settle',
+  fee_asset: peerplaysAssetIdType.required(),
+  payer: peerplaysAccountIdType.required(),
+  sidechain_transaction_id: Joi.string().trim().regex(/^(1.39.)\d+$/).required()
+});
+
+const nftLotteryRewardSchema = Joi.object({
+  op_name: 'nft_lottery_reward',
+  fee_asset: peerplaysAssetIdType.required(),
+  lottery_id: Joi.string().trim().regex(/^(1.30.)\d+$/).required(),
+  winner: peerplaysAccountIdType.required(),
+  amount: peerplaysAssetType.required(),
+  win_percentage: Joi.number().integer().max(10000).required(),
+  is_benefactor_reward: Joi.bool().required(),
+  winner_ticket_id: Joi.number().integer().required()
+});
+
+const nftLotteryEndSchema = Joi.object({
+  op_name: 'nft_lottery_end',
+  fee_asset: peerplaysAssetIdType.required(),
+  lottery_id: Joi.string().trim().regex(/^(1.30.)\d+$/).required()
+});
+
+const randomNumberStoreSchema = Joi.object({
+  op_name: 'random_number_store',
+  fee_asset: peerplaysAssetIdType.required(),
+  account: peerplaysAccountIdType.required(),
+  random_number: Joi.array().items(Joi.number().integer()).min(1).required(),
+  data: Joi.string().required()
+});
+
 module.exports = {
   transferSchema,
   limitOrderCreateSchema,
@@ -1148,6 +1725,65 @@ module.exports = {
   fbaDistributeSchema,
   tournamentCreateSchema,
   tournamentJoinSchema,
+  gameMoveSchema,
+  assetUpdateDividendSchema,
+  assetDividendDistributionSchema,
+  sportCreateSchema,
+  sportUpdateSchema,
+  eventGroupCreateSchema,
+  eventGroupUpdateSchema,
+  eventCreateSchema,
+  eventUpdateSchema,
+  bettingMarketRulesCreateSchema,
+  bettingMarketRulesUpdateSchema,
+  bettingMarketGroupCreateSchema,
+  bettingMarketCreateSchema,
+  betPlaceSchema,
+  bettingMarketGroupResolveSchema,
+  bettingMarketGroupResolvedSchema,
+  bettingMarketGroupCancelUnmatchedBetsSchema,
+  betMatchedSchema,
+  betCancelSchema,
+  betCanceledSchema,
+  tournamentPayoutSchema,
+  tournamentLeaveSchema,
+  bettingMarketGroupUpdateSchema,
+  bettingMarketUpdateSchema,
+  betAdjustedSchema,
+  lotteryAssetCreateSchema,
+  ticketPurchaseSchema,
+  lotteryRewardSchema,
+  lotteryEndSchema,
+  sweepsVestingClaimSchema,
+  customPermissionCreateSchema,
+  customPermissionUpdateSchema,
+  customPermissionDeleteSchema,
+  customAccountAuthorityCreateSchema,
+  customAccountAuthorityUpdateSchema,
+  customAccountAuthorityDeleteSchema,
+  finalizeOfferSchema,
+  accountRoleCreateSchema,
+  accountRoleUpdateSchema,
+  accountRoleDeleteSchema,
+  sonCreateSchema,
+  sonUpdateSchema,
+  sonDeregisterSchema,
+  sonHeartbeatSchema,
+  sonReportDownSchema,
+  sonMaintenanceSchema,
+  sonWalletRecreateSchema,
+  sonWalletUpdateSchema,
+  sonWalletDepositCreateSchema,
+  sonWalletDepositProcessSchema,
+  sonWalletWithdrawCreateSchema,
+  sonWalletWithdrawProcessSchema,
+  sidechainAddressAddSchema,
+  sidechainAddressUpdateSchema,
+  sidechainAddressDeleteSchema,
+  sidechainTransactionCreateSchema,
+  sidechainTransactionSignSchema,
+  sidechainTransactionSendSchema,
+  sidechainTransactionSettleSchema,
   nftCreateSchema,
   nftUpdateSchema,
   nftMintSchema,
@@ -1157,5 +1793,8 @@ module.exports = {
   offerSchema,
   bidSchema,
   cancelOfferSchema,
-  nftLotteryPurchaseSchema
+  nftLotteryPurchaseSchema,
+  nftLotteryRewardSchema,
+  nftLotteryEndSchema,
+  randomNumberStoreSchema
 };

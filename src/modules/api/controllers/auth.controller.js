@@ -423,7 +423,7 @@ class AuthController {
        */
       [
         'post',
-        'api/v1/auth/refreshtoken',
+        '/api/v1/auth/refreshtoken',
         this.authValidator.validateRefreshToken,
         this.refreshToken.bind(this)
       ]
