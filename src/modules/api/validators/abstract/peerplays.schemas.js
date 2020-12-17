@@ -599,8 +599,8 @@ const Joi = require('joi');
  *      min_to_receive:
  *        $ref: '#/definitions/PeerplaysAssetType'
  *      expiration:
- *        type: string
- *        format: date
+ *        type: integer
+ *        example: 160989737
  *      fill_or_kill:
  *        type: boolean
  *  LimitOrderCancelRequest:
