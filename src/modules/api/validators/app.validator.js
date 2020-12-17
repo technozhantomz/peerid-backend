@@ -65,7 +65,7 @@ class AppValidator extends BaseValidator {
         });
       }
 
-      if(operations.find((op) => op === 11)) {
+      if(operations.find((op) => op === 6)) {
         throw new ValidateError(400, 'Validate error', {
           operations: 'Owner key is required for account update'
         });
