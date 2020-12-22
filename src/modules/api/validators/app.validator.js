@@ -191,7 +191,7 @@ class AppValidator extends BaseValidator {
         }
       });
 
-      if(Authorities) {
+      if(Authorities && Authorities.length > 0) {
         throw new ValidateError(400, 'Validate error', {
           user: 'You have already joined this app'
         });

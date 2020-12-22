@@ -83,8 +83,7 @@ const Joi = require('joi');
  *          type: integer
  *          max: 10000
  *      ticket_price:
- *        type:
- *          $ref: '#/definitions/PeerplaysAssetType'
+ *        $ref: '#/definitions/PeerplaysAssetType'
  *      end_date:
  *        type: integer
  *        example: 1608897600
