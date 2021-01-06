@@ -27,6 +27,10 @@ class PeerplaysConnection extends BaseConnection {
 
     this.config = opts.config;
     this.dbAPI = null;
+    this.networkAPI = null;
+    this.historyAPI = null;
+    this.cryptoAPI = null;
+    this.bookieAPI = null;
     this.asset = null;
     this.apiInstance = null;
     this.reconnectAttempt = 0;
@@ -70,6 +74,9 @@ class PeerplaysConnection extends BaseConnection {
     this.apiInstance = apiInstance;
     this.dbAPI = this.apiInstance.db_api();
     this.networkAPI = this.apiInstance.network_api();
+    this.historyAPI = this.apiInstance.history_api();
+    this.cryptoAPI = this.apiInstance.crypto_api();
+    this.bookieAPI = this.apiInstance.bookie_api();
     [this.asset] = await this.dbAPI.exec('get_assets', [['1.3.0']]);
     this.TransactionBuilder = TransactionBuilder;
     

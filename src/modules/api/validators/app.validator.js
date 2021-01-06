@@ -30,6 +30,7 @@ class AppValidator extends BaseValidator {
     this.getAppOperations = this.getAppOperations.bind(this);
     this.unjoinApp = this.unjoinApp.bind(this);
     this.validateOperations = this.validateOperations.bind(this);
+    this.validateBlockchainData = this.validateBlockchainData.bind(this);
   }
 
   registerApp() {
@@ -475,6 +476,16 @@ class AppValidator extends BaseValidator {
 
       return body.operations;
     });
+  }
+
+  validateBlockchainData() {
+    const querySchema = {
+      api: Joi.string().valid('database','network_broadcast','history','crypto','bookie').required(),
+      method: Joi.string().required(),
+      params: Joi.array().optional()
+    };
+
+    return this.validate(querySchema, null, async (req, query) => query);
   }
 }
 

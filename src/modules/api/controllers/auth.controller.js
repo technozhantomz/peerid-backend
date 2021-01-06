@@ -501,8 +501,8 @@ class AuthController {
     return user;
   }
 
-  async exchangeCode(user, {grantCodeId, appId, scope}) {
-    return await this.appService.createAccessToken(grantCodeId, appId, user, scope);
+  async exchangeCode(user, {grantCode, appId, scope}) {
+    return await this.appService.createAccessToken(grantCode, appId, scope);
   }
 
   async refreshToken(user, {app_id, AccessToken}) {

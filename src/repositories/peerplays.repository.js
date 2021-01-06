@@ -62,6 +62,45 @@ class PeerplaysRepository {
     }
   }
 
+  async getBlockchainData(query) {
+    let res = null;
+    let api = null;
+    let params = [];
+
+    switch(query.api) {
+      case 'database':
+        api = this.peerplaysConnection.dbAPI;
+        break;
+      case 'network_broadcast':
+        api = this.peerplaysConnection.networkAPI;
+        break;
+      case 'history':
+        api = this.peerplaysConnection.historyAPI;
+        break;
+      case 'crypto':
+        api = this.peerplaysConnection.cryptoAPI;
+        break;
+      case 'bookie':
+        api = this.peerplaysConnection.bookieAPI;
+        break;
+      default:
+        api = this.peerplaysConnection.dbAPI;
+    }
+
+    if(query.params) {
+      params = query.params;
+    }
+
+    try {
+      res = await api.exec(query.method, params);
+    } catch (e) {
+      logger.warn('Peerplays returns error', e.message);
+      throw new Error('Peerplays error');
+    }
+
+    return res;
+  }
+
   async broadcastSerializedTx(tr) {
     return new Promise((success, fail) => {
       this.peerplaysConnection.networkAPI

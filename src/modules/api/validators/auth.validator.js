@@ -218,7 +218,7 @@ class AuthValidator extends BaseValidator {
       }
 
       return {
-        grantCodeId: GrantCodeExists.id,
+        grantCode: GrantCodeExists,
         appId: AppExists.id,
         scope: GrantCodeExists.scope
       };
@@ -291,7 +291,7 @@ class AuthValidator extends BaseValidator {
         });
       }
 
-      return { app_id: client_id, AccessToken: RefreshTokenExists };
+      return {app_id: client_id, AccessToken: RefreshTokenExists};
     });
   }
 }

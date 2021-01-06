@@ -199,6 +199,27 @@ paths:
           description: Error in id validation
           schema:
             $ref: '#/definitions/ValidateError'
+  /app/blockchain-data:
+    get:
+      description: Get blockchain data
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          required: true
+          schema:
+            $ref: '#/definitions/BlockchainDataRequest'
+      tags:
+        - App
+      responses:
+        '200':
+          description: Success response
+          schema:
+            $ref: '#/definitions/BlockchainDataResponse'
+        '400':
+          description: Error in request validation
+          schema:
+            $ref: '#/definitions/ValidateError'
   /auth/logout:
     post:
       description: Logout
@@ -707,6 +728,32 @@ definitions:
         properties:
           result:
             $ref: '#/definitions/NewApp'
+  BlockchainDataRequest:
+    type: object
+    required:
+      - api
+      - method
+    properties:
+      api:
+        type: string
+        enum:
+          - database
+          - network_broadcast
+          - history
+          - crypto
+          - bookie
+      method:
+        type: string
+      params:
+        type: array
+        items: {}
+  BlockchainDataResponse:
+    allOf:
+      - $ref: '#/definitions/SuccessResponse'
+      - type: object
+        properties:
+          result:
+            type: object
   AuthSignUpUser:
     type: object
     required:
