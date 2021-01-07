@@ -38,7 +38,7 @@
     "secure": false,
     "auth": {
       "user": "MAILER_USER",
-      "pass": "MAILER_PASSWORD"
+      "pass": "MAILER_PASS"
     },
     "sender": "MAILER_SENDER"
   },
