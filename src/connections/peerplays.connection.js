@@ -3,10 +3,12 @@ const axios = require('axios');
 const {
   Apis,
   ConnectionManager,
-  TransactionBuilder
+  TransactionBuilder,
+  ChainConfig
 } = require('peerplaysjs-lib');
 const {getLogger} = require('log4js');
 const logger = getLogger();
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
 const BaseConnection = require('./abstracts/base.connection');
 
@@ -59,6 +61,7 @@ class PeerplaysConnection extends BaseConnection {
     const endpoint = this.endpoints[this.reconnectAttempt % this.endpoints.length];
     logger.info(`connecting to peerplays endpoint "${endpoint}"`);
     const apiInstance = Apis.instance(endpoint, true);
+    ChainConfig.setPrefix(IS_PRODUCTION ? 'PPY' : 'TEST');
 
     try {
       await apiInstance.init_promise;
