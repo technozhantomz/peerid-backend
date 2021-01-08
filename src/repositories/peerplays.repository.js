@@ -177,7 +177,7 @@ class PeerplaysRepository {
     let result, keys, activePrivateKey, activePublicKey, isWIF= false;
 
     try {
-      activePrivateKey = PrivateKey.fromWIF(peerplaysPassword);
+      activePrivateKey = PrivateKey.fromWif(peerplaysPassword);
       activePublicKey = activePrivateKey.toPublicKey().toPublicKeyString();
       isWIF = true;
     } catch(err) {
