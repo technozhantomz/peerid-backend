@@ -200,14 +200,6 @@ class UserService {
     return User.getPublic();
   }
 
-  async getPermission(user) {
-    return await this.permissionRepository.model.findOne({
-      where: {
-        user_id: user.id
-      }
-    });
-  }
-
   async getUser(id) {
     const User = await this.userRepository.findByPk(id);
 
@@ -273,7 +265,7 @@ class UserService {
     var charactersLength = characters.length;
 
     for ( var i = 0; i < length; i++ ) {
-       result += characters.charAt(Math.floor(Math.random() * charactersLength));
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
 
     return result;
@@ -285,7 +277,7 @@ class UserService {
     var charactersLength = characters.length;
 
     for ( var i = 0; i < length; i++ ) {
-       result += characters.charAt(Math.floor(Math.random() * charactersLength));
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
 
     return result;
@@ -346,10 +338,6 @@ class UserService {
 
     if (!User) {
       throw new Error('User not found');
-    }
-
-    if(User && User.isEmailVerified === false){
-      throw new Error('Please verify your email address first');
     }
 
     if (password && !await bcrypt.compare(password, User.password)) {
@@ -474,13 +462,16 @@ class UserService {
     let text = '';
     const possible = 'abcdefghijklmnopqrstuvwxyz';
 
-    for (let i = 0; i < 7; i++) { text += possible.charAt(Math.floor(Math.random() * possible.length)); }
+    for (let i = 0; i < 7; i++) {
+      text += possible.charAt(Math.floor(Math.random() * possible.length)); 
+    }
 
     return text;
   }
 
   async createCustomPermission(user, peerplaysPassword) {
     let permissionName = `pid${this.randomizePermissionName()}`;
+
     try {
       const customPermission = await this.peerplaysRepository.createAndSendTransaction('custom_permission_create',{
         fee: {
