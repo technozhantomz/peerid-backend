@@ -132,8 +132,10 @@ class AuthValidator extends BaseValidator {
 
       const user = await this.userRepository.getByLogin(login);
 
-      if(user && user.isEmailVerified === false){
-        throw new ValidateError(403, 'Please verify your email address first');
+      if(!user) {
+        throw new ValidateError(400, 'Validate error', {
+          login: 'User not found'
+        });
       }
 
       if(!password && !mobile) {

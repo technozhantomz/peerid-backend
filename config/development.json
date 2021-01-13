@@ -40,7 +40,10 @@
       "user": "prabhjot.narula@gmail.com",
       "pass": "lqkdwshixsjrasug"
     },
-    "sender": "Prabhjot Singh"
+    "sender": "Prabhjot Singh",
+    "tls": {
+        "rejectUnauthorized": false
+    }
   },
   "frontendUrl": "http://localhost:8082",
   "backendUrl": "http://localhost:3000",
