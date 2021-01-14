@@ -511,6 +511,13 @@ class AppService {
   async getBlockchainData(query) {
     return this.peerplaysRepository.getBlockchainData(query);
   }
+
+  async getAccessToken(user, app) {
+    const code = await this.joinApp(user, app);
+    const grantCode = await this.grantCodeRepository.model.findOne({where:{code}});
+
+    return this.createAccessToken(grantCode, app.id, grantCode.scope);
+  }
 }
 
 module.exports = AppService;

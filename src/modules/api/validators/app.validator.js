@@ -9,6 +9,7 @@ const psl = require('psl');
 class AppValidator extends BaseValidator {
   /**
    * @param {AppRepository} opts.appRepository
+   * @param {userRepository} opts.userRepository
    * @param {PermissionRepository} opts.permissionRepository
    * @param {AccessTokenRepository} opts.accessTokenRepository
    * @param {OperationRepository} opts.operationRepository
@@ -22,6 +23,7 @@ class AppValidator extends BaseValidator {
     this.accessTokenRepository = opts.accessTokenRepository;
     this.operationRepository = opts.operationRepository;
     this.authorityRepository = opts.authorityRepository;
+    this.userRepository = opts.userRepository;
 
     this.registerApp = this.registerApp.bind(this);
     this.deleteApp = this.deleteApp.bind(this);
@@ -31,6 +33,7 @@ class AppValidator extends BaseValidator {
     this.unjoinApp = this.unjoinApp.bind(this);
     this.validateOperations = this.validateOperations.bind(this);
     this.validateBlockchainData = this.validateBlockchainData.bind(this);
+    this.validateROPCFlow = this.validateROPCFlow.bind(this);
   }
 
   registerApp() {
@@ -486,6 +489,93 @@ class AppValidator extends BaseValidator {
     };
 
     return this.validate(querySchema, null, async (req, query) => query);
+  }
+
+  validateROPCFlow() {
+    const bodySchema = {
+      login: Joi.string().required(),
+      password: Joi.string().optional(),
+      mobile: Joi.string().optional(),
+      client_id: Joi.number().integer().required()
+    };
+
+    return this.validate(null, bodySchema, async (req, query, body) => {
+      const {login, password, mobile, client_id} = body;
+
+      const user = await this.userRepository.getByLogin(login);
+
+      if(!user) {
+        throw new ValidateError(400, 'Validate error', {
+          login: 'User not found'
+        });
+      }
+
+      if(!password && !mobile) {
+        throw new ValidateError(400, 'Validate error', {
+          mobile: 'Either mobile or password is required',
+          password: 'Either mobile or password is required'
+        });
+      }
+
+      const Permission = await this.permissionRepository.model.findOne({where: {user_id: user.id}});
+
+      if(!Permission) {
+        throw new ValidateError(401, 'Unauthorized', {
+          login: 'Permission does not exist for this user'
+        });
+      }
+
+      const AuthCount = await this.authorityRepository.model.count({where: {user_id: user.id}});
+
+      if(AuthCount > 15) {
+        throw new ValidateError(400, 'Validate error', {
+          login: 'Max operations that can be linked to this user reached'
+        });
+      }
+
+      const Authorities = await this.authorityRepository.model.findAll({
+        where: {
+          app_id: client_id,
+          user_id: user.id
+        }
+      });
+
+      if(Authorities && Authorities.length > 0) {
+        throw new ValidateError(400, 'Validate error', {
+          login: 'You have already joined this app'
+        });
+      }
+
+      //validate client id
+      const AppExists = await this.appRepository.model.findOne({
+        where: {
+          id: client_id
+        }
+      });
+
+      if(!AppExists) {
+        throw new ValidateError(400, 'Validate error', {
+          client_id: 'App does not exist'
+        });
+      }
+
+      const Ops = await this.operationRepository.model.count({
+        where: {
+          app_id: client_id
+        }
+      });
+
+      if(AuthCount + Ops > 15) {
+        throw new ValidateError(400, 'Validate error', {
+          login: 'Max operations that can be linked to this user will be reached while joining this app'
+        });
+      }
+
+      return {
+        ...body,
+        AppExists
+      };
+    });
   }
 }
 

@@ -292,8 +292,7 @@ paths:
       tags:
         - Auth
       parameters:
-        - name: token
-          in: body
+        - in: body
           required: true
           schema:
             $ref: '#/definitions/AuthSignInUser'
@@ -314,8 +313,7 @@ paths:
       tags:
         - Auth
       parameters:
-        - name: token
-          in: body
+        - in: body
           required: true
           schema:
             $ref: '#/definitions/AuthForgotPassword'
@@ -356,8 +354,7 @@ paths:
       tags:
         - Auth
       parameters:
-        - name: token
-          in: body
+        - in: body
           required: true
           schema:
             $ref: '#/definitions/AuthResetPassword'
@@ -388,8 +385,7 @@ paths:
       tags:
         - Auth
       parameters:
-        - name: peerplays
-          in: body
+        - in: body
           required: true
           schema:
             $ref: '#/definitions/AuthSignInUser'
@@ -410,8 +406,7 @@ paths:
       tags:
         - Auth
       parameters:
-        - name: code
-          in: body
+        - in: body
           required: true
           schema:
             $ref: '#/definitions/ExchangeCode'
@@ -432,14 +427,34 @@ paths:
       tags:
         - Auth
       parameters:
-        - name: refreshtoken
-          in: body
+        - in: body
           required: true
           schema:
             $ref: '#/definitions/RefreshTokenRequest'
       responses:
         '200':
           description: Refresh Token response
+          schema:
+            $ref: '#/definitions/AccessToken'
+        '400':
+          description: Error form validation
+          schema:
+            $ref: '#/definitions/ValidateError'
+  /auth/token:
+    post:
+      description: Get token using Resource Owner Password Credential flow
+      produces:
+        - application/json
+      tags:
+        - Auth
+      parameters:
+        - in: body
+          required: true
+          schema:
+            $ref: '#/definitions/AuthROPCUser'
+      responses:
+        '200':
+          description: Access Token response
           schema:
             $ref: '#/definitions/AccessToken'
         '400':
@@ -852,6 +867,23 @@ definitions:
       client_secret:
         type: string
         example: asdf0l0aksf97ja93yh
+  AuthROPCUser:
+    type: object
+    required:
+      - login
+      - client_id
+    properties:
+      login:
+        type: string
+      password:
+        type: string
+        format: password
+      mobile:
+        type: string
+        example: 999-999-9999
+      client_id:
+        type: integer
+        example: 20
   ProfileCreatePeerplaysAccount:
     type: object
     required:
