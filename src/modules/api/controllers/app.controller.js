@@ -433,7 +433,6 @@ class AppController {
       [
         'get',
         '/api/v1/app/blockchain-data',
-        this.authValidator.loggedOnly,
         this.appValidator.validateBlockchainData,
         this.getBlockchainData.bind(this)
       ]
