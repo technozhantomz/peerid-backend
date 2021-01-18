@@ -672,6 +672,10 @@ class OperationUtil {
             extensions: null
           };
 
+          if(op[i].options.hasOwnProperty('start_time')) {
+            operation.options.start_time = op[i].options.start_time.getTime();
+          }
+
           opJson.push(['tournament_create', operation]);
           break;
         }
@@ -687,6 +691,915 @@ class OperationUtil {
             tournament_id: op[i].tournament_id,
             buy_in: op[i].buy_in,
             extensions: null
+          }]);
+          break;
+
+        case 'game_move':
+          opJson.push(['game_move', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            game_id: op[i].game_id,
+            player_account_id: op[i].player_account_id,
+            move: op[i].move,
+            extensions: null
+          }]);
+          break;
+
+        case 'asset_update_dividend': {
+          let operation = {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            issuer: op[i].issuer,
+            asset_to_update: op[i].asset_to_update,
+            new_options: {
+              ...op[i].new_options
+            },
+            extensions: null
+          };
+
+          if(op[i].new_options.hasOwnProperty('next_payout_time')) {
+            operation.new_options.next_payout_time = op[i].new_options.next_payout_time.getTime();
+          }
+
+          opJson.push(['asset_update_dividend'], operation);
+          break;
+        }
+
+        case 'asset_dividend_distribution':
+          opJson.push(['asset_dividend_distribution', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            dividend_asset_id: op[i].dividend_asset_id,
+            account_id: op[i].account_id,
+            amounts: op[i].amounts,
+            extensions: null
+          }]);
+          break;
+        case 'sport_create':
+          opJson.push(['sport_create', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            name: op[i].name,
+            extensions: null
+          }]);
+          break;
+
+        case 'sport_update': {
+          let operation = {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            sport_id: op[i].sport_id,
+            extensions: null
+          };
+
+          if(op[i].hasOwnProperty('new_name')) {
+            operation.new_name = op[i].new_name;
+          }
+
+          opJson.push(['sport_update', operation]);
+          break;
+        }
+
+        case 'event_group_create':
+          opJson.push(['event_group_create', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            name: op[i].name,
+            sport_id: op[i].sport_id,
+            extensions: null
+          }]);
+          break;
+
+        case 'event_group_update': {
+          let operation = {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            event_group_id: op[i].event_group_id,
+            extensions: null
+          };
+
+          if(op[i].hasOwnProperty('new_sport_id')) {
+            operation.new_sport_id = op[i].new_sport_id;
+          }
+
+          if(op[i].hasOwnProperty('new_name')) {
+            operation.new_name = op[i].new_name;
+          }
+
+          opJson.push(['event_group_update', operation]);
+          break;
+        }
+
+        case 'event_create': {
+          let operation = {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            name: op[i].name,
+            season: op[i].season,
+            event_group_id: op[i].event_group_id,
+            extensions: null
+          };
+
+          if(op[i].hasOwnProperty('start_time')) {
+            operation.start_time = op[i].start_time.getTime();
+          }
+
+          opJson.push(['event_create', operation]);
+          break;
+        }
+
+        case 'event_update': {
+          let operation = {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            event_id: op[i].event_id,
+            extensions: null
+          };
+
+          if(op[i].hasOwnProperty('new_event_group_id')) {
+            operation.new_event_group_id = op[i].new_event_group_id;
+          }
+
+          if(op[i].hasOwnProperty('new_name')) {
+            operation.new_name = op[i].new_name;
+          }
+
+          if(op[i].hasOwnProperty('new_season')) {
+            operation.new_season = op[i].new_season;
+          }
+
+          if(op[i].hasOwnProperty('new_start_time')) {
+            operation.new_start_time = op[i].new_start_time.getTime();
+          }
+
+          if(op[i].hasOwnProperty('is_live_market')) {
+            operation.is_live_market = op[i].is_live_market;
+          }
+
+          opJson.push(['event_update', operation]);
+          break;
+        }
+
+        case 'betting_market_rules_create':
+          opJson.push(['betting_market_rules_create', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            name: op[i].name,
+            description: op[i].description,
+            extensions: null
+          }]);
+          break;
+
+        case 'betting_market_rules_update': {
+          let operation = {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            betting_market_rules_id: op[i].betting_market_rules_id,
+            extensions: null
+          };
+
+          if(op[i].hasOwnProperty('new_name')) {
+            operation.new_name = op[i].new_name;
+          }
+
+          if(op[i].hasOwnProperty('new_description')) {
+            operation.new_description = op[i].new_description;
+          }
+
+          opJson.push(['betting_market_rules_update', operation]);
+          break;
+        }
+
+        case 'betting_market_group_create':
+          opJson.push(['betting_market_group_create', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            description: op[i].description,
+            event_id: op[i].event_id,
+            rules_id: op[i].rules_id,
+            asset_id: op[i].asset_id,
+            extensions: null
+          }]);
+          break;
+        case 'betting_market_create':
+          opJson.push(['betting_market_create', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            group_id: op[i].group_id,
+            description: op[i].description,
+            payout_condition: op[i].payout_condition,
+            extensions: null
+          }]);
+          break;
+        case 'bet_place':
+          opJson.push(['bet_place', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            bettor_id: op[i].bettor_id,
+            betting_market_id: op[i].betting_market_id,
+            amount_to_bet: op[i].amount_to_bet,
+            backer_multiplier: op[i].backer_multiplier,
+            back_or_lay: op[i].back_or_lay,
+            extensions: null
+          }]);
+          break;
+        case 'betting_market_group_resolve':
+          opJson.push(['betting_market_group_resolve', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            betting_market_group_id: op[i].betting_market_group_id,
+            resolutions: op[i].resolutions,
+            extensions: null
+          }]);
+          break;
+        case 'betting_market_group_resolved':
+          opJson.push(['betting_market_group_resolved', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            bettor_id: op[i].bettor_id,
+            betting_market_group_id: op[i].betting_market_group_id,
+            resolutions: op[i].resolutions,
+            winnings: op[i].winnings,
+            fees_paid: op[i].fees_paid
+          }]);
+          break;
+        case 'betting_market_group_cancel_unmatched_bets':
+          opJson.push(['betting_market_group_cancel_unmatched_bets', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            betting_market_group_id: op[i].betting_market_group_id,
+            extensions: null
+          }]);
+          break;
+        case 'bet_matched':
+          opJson.push(['bet_matched', {
+            bettor_id: op[i].bettor_id,
+            bet_id: op[i].bet_id,
+            betting_market_id: op[i].betting_market_id,
+            amount_bet: op[i].amount_bet,
+            fees_paid: op[i].fees_paid,
+            backer_multiplier: op[i].backer_multiplier,
+            guaranteed_winnings_returned: op[i].guaranteed_winnings_returned
+          }]);
+          break;
+        case 'bet_cancel':
+          opJson.push(['bet_cancel', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            bettor_id: op[i].bettor_id,
+            bet_to_cancel: op[i].bet_to_cancel,
+            extensions: null
+          }]);
+          break;
+        case 'bet_canceled':
+          opJson.push(['bet_canceled', {
+            bettor_id: op[i].bettor_id,
+            bet_id: op[i].bet_id,
+            stake_returned: op[i].stake_returned,
+            unused_fees_returned: op[i].unused_fees_returned
+          }]);
+          break;
+        case 'tournament_payout':
+          opJson.push(['tournament_payout', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            payout_account_id: op[i].payout_account_id,
+            tournament_id: op[i].tournament_id,
+            payout_amount: op[i].payout_amount,
+            type: op[i].type,
+            extensions: null
+          }]);
+          break;
+        case 'tournament_leave':
+          opJson.push(['tournament_leave', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            canceling_account_id: op[i].canceling_account_id,
+            player_account_id: op[i].player_account_id,
+            tournament_id: op[i].tournament_id,
+            extensions: null
+          }]);
+          break;
+
+        case 'betting_market_group_update': {
+          let operation = {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            betting_market_group_id: op[i].betting_market_group_id,
+            extensions: null
+          };
+
+          if(op[i].hasOwnProperty('new_description')) {
+            operation.new_description = op[i].new_description;
+          }
+
+          if(op[i].hasOwnProperty('new_rules_id')) {
+            operation.new_rules_id = op[i].new_rules_id;
+          }
+
+          if(op[i].hasOwnProperty('freeze')) {
+            operation.freeze = op[i].freeze;
+          }
+
+          if(op[i].hasOwnProperty('delay_bets')) {
+            operation.delay_bets = op[i].delay_bets;
+          }
+
+          opJson.push(['betting_market_group_update', operation]);
+          break;
+        }
+
+        case 'betting_market_update': {
+          let operation = {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            betting_market_id: op[i].betting_market_id,
+            extensions: null
+          };
+
+          if(op[i].hasOwnProperty('new_group_id')) {
+            operation.new_group_id = op[i].new_group_id;
+          }
+
+          if(op[i].hasOwnProperty('new_description')) {
+            operation.new_description = op[i].new_description;
+          }
+
+          if(op[i].hasOwnProperty('new_payout_condition')) {
+            operation.new_payout_condition = op[i].new_payout_condition;
+          }
+
+          opJson.push(['betting_market_update', operation]);
+          break;
+        }
+
+        case 'bet_adjusted':
+          opJson.push(['bet_adjusted', {
+            bettor_id: op[i].bettor_id,
+            bet_id: op[i].bet_id,
+            stake_returned: op[i].stake_returned
+          }]);
+          break;
+
+        case 'lottery_asset_create': {
+          let operation = {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            issuer: op[i].issuer,
+            symbol: op[i].symbol,
+            precision: op[i].precision,
+            common_options: {
+              ...op[i].common_options,
+              extensions: null
+            },
+            is_prediction_market: op[i].is_prediction_market,
+            extensions: op[i].extensions
+          };
+
+          if(op[i].hasOwnProperty('bitasset_options')) {
+            operation.bitasset_opts = {
+              ...op[i].bitasset_opts,
+              extensions: null
+            };
+          }
+
+          opJson.push(['lottery_asset_create', operation]);
+          break;
+        }
+
+        case 'ticket_purchase':
+          opJson.push(['ticket_purchase', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            lottery: op[i].lottery,
+            buyer: op[i].buyer,
+            tickets_to_buy: op[i].tickets_to_buy,
+            amount: op[i].amount,
+            extensions: null
+          }]);
+          break;
+        case 'lottery_reward':
+          opJson.push(['lottery_reward', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            lottery: op[i].lottery,
+            winner: op[i].winner,
+            amount: op[i].amount,
+            win_percentage: op[i].win_percentage,
+            is_benefactor_reward: op[i].is_benefactor_reward,
+            extensions: null
+          }]);
+          break;
+        case 'lottery_end':
+          opJson.push(['lottery_end', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            lottery: op[i].lottery,
+            participants: op[i].participants,
+            extensions: null
+          }]);
+          break;
+        case 'sweeps_vesting_claim':
+          opJson.push(['sweeps_vesting_claim', {
+            account: op[i].account,
+            amount_to_claim: op[i].amount_to_claim,
+            extensions: null
+          }]);
+          break;
+        case 'custom_permission_create':
+          opJson.push(['custom_permission_create', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            owner_account: op[i].owner_account,
+            permission_name: op[i].permission_name,
+            auth: op[i].auth,
+            extensions: null
+          }]);
+          break;
+        case 'custom_permission_update':
+          opJson.push(['custom_permission_update', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            permission_id: op[i].permission_id,
+            new_auth: op[i].new_auth,
+            owner_account: op[i].owner_account,
+            extensions: null
+          }]);
+          break;
+        case 'custom_permission_delete':
+          opJson.push(['custom_permission_delete', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            permission_id: op[i].permission_id,
+            owner_account: op[i].owner_account,
+            extensions: null
+          }]);
+          break;
+        case 'custom_account_authority_create':
+          opJson.push(['custom_account_authority_create', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            permission_id: op[i].permission_id,
+            operation_type: op[i].operation_type,
+            valid_from: op[i].valid_from.getTime(),
+            valid_to: op[i].valid_to.getTime(),
+            owner_account: op[i].owner_account,
+            extensions: null
+          }]);
+          break;
+
+        case 'custom_account_authority_update': {
+          let operation = {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            auth_id: op[i].auth_id,
+            owner_account: op[i].owner_account,
+            extensions: null
+          };
+
+          if(op[i].hasOwnProperty('new_valid_from')) {
+            operation.new_valid_from = op[i].new_valid_from.getTime();
+          }
+
+          if(op[i].hasOwnProperty('new_valid_to')) {
+            operation.new_valid_to = op[i].new_valid_to.getTime();
+          }
+
+          opJson.push(['custom_account_authority_update', operation ]);
+          break;
+        }
+
+        case 'custom_account_authority_delete':
+          opJson.push(['custom_account_authority_delete', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            owner_account: op[i].owner_account,
+            extensions: null
+          }]);
+          break;
+        case 'finalize_offer':
+          opJson.push(['finalize_offer', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            fee_paying_account: op[i].fee_paying_account,
+            offer_id: op[i].offer_id,
+            result: op[i].result,
+            extensions: null
+          }]);
+          break;
+        case 'account_role_create':
+          opJson.push(['account_role_create', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            owner: op[i].owner,
+            name: op[i].name,
+            metadata: op[i].metadata,
+            allowed_operations: op[i].allowed_operations,
+            whitelisted_accounts: op[i].whitelisted_accounts,
+            valid_from: op[i].valid_from.getTime(),
+            extensions: null
+          }]);
+          break;
+
+        case 'account_role_update': {
+          let operation = {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            owner: op[i].owner,
+            account_role_id: op[i].account_role_id,
+            allowed_operations_to_add: op[i].allowed_operations_to_add,
+            allowed_operations_to_remove: op[i].allowed_operations_to_remove,
+            accounts_to_add: op[i].accounts_to_add,
+            accounts_to_remove: op[i].accounts_to_remove,
+            extensions: null
+          };
+
+          if(op[i].hasOwnProperty('name')) {
+            operation.name = op[i].name;
+          }
+
+          if(op[i].hasOwnProperty('metadata')) {
+            operation.metadata = op[i].metadata;
+          }
+
+          if(op[i].hasOwnProperty('valid_to')) {
+            operation.valid_to = op[i].valid_to.getTime();
+          }
+
+          opJson.push(['account_role_update', operation ]);
+          break;
+        }
+
+        case 'account_role_delete':
+          opJson.push(['account_role_delete', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            owner: op[i].owner,
+            account_role_id: op[i].account_role_id,
+            extensions: null
+          }]);
+          break;
+        case 'son_create':
+          opJson.push(['son_create', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            owner_account: op[i].owner_account,
+            url: op[i].url,
+            deposit: op[i].deposit,
+            signing_key: op[i].signing_key,
+            sidechain_public_keys: op[i].sidechain_public_keys,
+            pay_vb: op[i].pay_vb
+          }]);
+          break;
+
+        case 'son_update': {
+          let operation = {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            son_id: op[i].son_id,
+            owner_account: op[i].owner_account
+          };
+
+          if(op[i].hasOwnProperty('new_url')) {
+            operation.new_url = op[i].new_url;
+          }
+
+          if(op[i].hasOwnProperty('new_deposit')) {
+            operation.new_deposit = op[i].new_deposit;
+          }
+
+          if(op[i].hasOwnProperty('new_signing_key')) {
+            operation.new_signing_key = op[i].new_signing_key;
+          }
+
+          if(op[i].hasOwnProperty('new_sidechain_public_keys')) {
+            operation.new_sidechain_public_keys = op[i].new_sidechain_public_keys;
+          }
+
+          if(op[i].hasOwnProperty('new_pay_vb')) {
+            operation.new_pay_vb = op[i].new_pay_vb;
+          }
+
+          opJson.push(['son_update', operation ]);
+          break;
+        }
+
+        case 'son_deregister':
+          opJson.push(['son_deregister', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            son_id: op[i].son_id,
+            payer: op[i].payer
+          }]);
+          break;
+        case 'son_heartbeat':
+          opJson.push(['son_heartbeat', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            son_id: op[i].son_id,
+            owner_account: op[i].owner_account,
+            ts: op[i].ts.getTime()
+          }]);
+          break;
+        case 'son_report_down':
+          opJson.push(['son_report_down', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            son_id: op[i].son_id,
+            payer: op[i].payer,
+            down_ts: op[i].down_ts.getTime()
+          }]);
+          break;
+        case 'son_maintenance':
+          opJson.push(['son_maintenance', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            son_id: op[i].son_id,
+            owner_account: op[i].owner_account,
+            request_type: op[i].request_type
+          }]);
+          break;
+        case 'son_wallet_recreate':
+          opJson.push(['son_wallet_recreate', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            payer: op[i].payer,
+            sons: op[i].sons
+          }]);
+          break;
+        case 'son_wallet_update':
+          opJson.push(['son_wallet_update', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            payer: op[i].payer,
+            son_wallet_id: op[i].son_wallet_id,
+            sidechain: op[i].sidechain,
+            address: op[i].address
+          }]);
+          break;
+        case 'son_wallet_deposit_create':
+          opJson.push(['son_wallet_deposit_create', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            payer: op[i].payer,
+            son_id: op[i].son_id,
+            timestamp: op[i].timestamp.getTime(),
+            block_num: op[i].block_num,
+            sidechain: op[i].sidechain,
+            sidechain_uid: op[i].sidechain_uid,
+            sidechain_transaction_id: op[i].sidechain_transaction_id,
+            sidechain_from: op[i].sidechain_from,
+            sidechain_to: op[i].sidechain_to,
+            sidechain_currency: op[i].sidechain_currency,
+            sidechain_amount: op[i].sidechain_amount,
+            peerplays_from: op[i].peerplays_from,
+            peerplays_to: op[i].peerplays_to,
+            peerplays_asset: op[i].peerplays_asset
+          }]);
+          break;
+        case 'son_wallet_deposit_process':
+          opJson.push(['son_wallet_deposit_process', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            payer: op[i].payer,
+            son_wallet_deposit_id: op[i].son_wallet_deposit_id
+          }]);
+          break;
+        case 'son_wallet_withdraw_create':
+          opJson.push(['son_wallet_withdraw_create', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            payer: op[i].payer,
+            son_id: op[i].son_id,
+            timestamp: op[i].timestamp.getTime(),
+            block_num: op[i].block_num,
+            sidechain: op[i].sidechain,
+            peerplays_uid: op[i].peerplays_uid,
+            peerplays_transaction_id: op[i].peerplays_transaction_id,
+            peerplays_from: op[i].peerplays_from,
+            peerplays_asset: op[i].peerplays_asset,
+            withdraw_sidechain: op[i].withdraw_sidechain,
+            withdraw_address: op[i].withdraw_address,
+            withdraw_currency: op[i].withdraw_currency,
+            withdraw_amount: op[i].withdraw_amount
+          }]);
+          break;
+        case 'son_wallet_withdraw_process':
+          opJson.push(['son_wallet_withdraw_process', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            payer: op[i].payer,
+            son_wallet_withdraw_id: op[i].son_wallet_withdraw_id
+          }]);
+          break;
+        case 'sidechain_address_add':
+          opJson.push(['sidechain_address_add', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            payer: op[i].payer,
+            sidechain_address_account: op[i].sidechain_address_account,
+            sidechain: op[i].sidechain,
+            deposit_public_key: op[i].deposit_public_key,
+            deposit_address: op[i].deposit_address,
+            deposit_address_data: op[i].deposit_address_data,
+            withdraw_public_key: op[i].withdraw_public_key,
+            withdraw_address: op[i].withdraw_address
+          }]);
+          break;
+
+        case 'sidechain_address_update': {
+          let operation = {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            payer: op[i].payer,
+            sidechain_address_id: op[i].sidechain_address_id,
+            sidechain_address_account: op[i].sidechain_address_account,
+            sidechain: op[i].sidechain
+          };
+
+          if(op[i].hasOwnProperty('deposit_public_key')) {
+            operation.deposit_public_key = op[i].deposit_public_key;
+          }
+
+          if(op[i].hasOwnProperty('deposit_address')) {
+            operation.deposit_address = op[i].deposit_address;
+          }
+
+          if(op[i].hasOwnProperty('deposit_address_data')) {
+            operation.deposit_address_data = op[i].deposit_address_data;
+          }
+
+          if(op[i].hasOwnProperty('withdraw_public_key')) {
+            operation.withdraw_public_key = op[i].withdraw_public_key;
+          }
+
+          if(op[i].hasOwnProperty('withdraw_address')) {
+            operation.withdraw_address = op[i].withdraw_address;
+          }
+
+          opJson.push(['sidechain_address_update', operation]);
+          break;
+        }
+
+        case 'sidechain_address_delete':
+          opJson.push(['sidechain_address_delete', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            payer: op[i].payer,
+            sidechain_address_id: op[i].sidechain_address_id,
+            sidechain_address_account: op[i].sidechain_address_account,
+            sidechain: op[i].sidechain
+          }]);
+          break;
+
+        case 'sidechain_transaction_create':
+          opJson.push(['sidechain_transaction_create', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            payer: op[i].payer,
+            sidechain: op[i].sidechain,
+            object_id: op[i].object_id,
+            transaction: op[i].transaction,
+            signers: op[i].signers
+          }]);
+          break;
+        case 'sidechain_transaction_sign':
+          opJson.push(['sidechain_transaction_sign', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            signer: op[i].signer,
+            payer: op[i].payer,
+            sidechain_transaction_id: op[i].sidechain_transaction_id,
+            signature: op[i].signature
+          }]);
+          break;
+
+        case 'sidechain_transaction_send':
+          opJson.push(['sidechain_transaction_send', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            payer: op[i].payer,
+            sidechain_transaction_id: op[i].sidechain_transaction_id,
+            sidechain_transaction: op[i].sidechain_transaction
+          }]);
+          break;
+
+        case 'sidechain_transaction_settle':
+          opJson.push(['sidechain_transaction_settle', {
+            fee: {
+              amount: 0,
+              asset_id: op[i].fee_asset
+            },
+            payer: op[i].payer,
+            sidechain_transaction_id: op[i].sidechain_transaction_id
           }]);
           break;
 
@@ -901,6 +1814,49 @@ class OperationUtil {
               buyer: op[i].buyer,
               tickets_to_buy: op[i].tickets_to_buy,
               amount: op[i].amount,
+              extensions: null
+            }
+          ]);
+          break;
+        case 'nft_lottery_reward':
+          opJson.push([
+            'nft_lottery_reward', {
+              fee: {
+                amount: 0,
+                asset_id: op[i].fee_asset
+              },
+              lottery_id: op[i].lottery_id,
+              winner: op[i].winner,
+              amount: op[i].amount,
+              win_percentage: op[i].win_percentage,
+              is_benefactor_reward: op[i].is_benefactor_reward,
+              winner_ticket_id: op[i].winner_ticket_id,
+              extensions: null
+            }
+          ]);
+          break;
+        case 'nft_lottery_end':
+          opJson.push([
+            'nft_lottery_end', {
+              fee: {
+                amount: 0,
+                asset_id: op[i].fee_asset
+              },
+              lottery_id: op[i].lottery_id,
+              extensions: null
+            }
+          ]);
+          break;
+        case 'random_number_store':
+          opJson.push([
+            'random_number_store', {
+              fee: {
+                amount: 0,
+                asset_id: op[i].fee_asset
+              },
+              account: op[i].account,
+              random_number: op[i].random_number,
+              data: op[i].data,
               extensions: null
             }
           ]);

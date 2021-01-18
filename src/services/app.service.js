@@ -157,13 +157,15 @@ class AppService {
     return uuid;
   }
 
-  async createAccessToken(grantCodeId, appId, user, scope) {
+  async createAccessToken(grantCode, appId, scope) {
     const Auth = await this.authorityRepository.model.findOne({
       where: {
-        user_id: user.id,
+        user_id: grantCode.user_id,
         app_id: appId
       }
     });
+
+    const user = await this.userRepository.model.findByPk(grantCode.user_id);
 
     if(Auth.expiry < new Date()) {
       const Authorities = await this.authorityRepository.model.findAll({where: {user_id: user.id, app_id: appId}});
@@ -205,7 +207,7 @@ class AppService {
         const refresh_token = await this.generateUniqueRefreshToken();
         return this.accessTokenRepository.model.create({
           app_id: appId,
-          grantcode_id: grantCodeId,
+          grantcode_id: grantCode.id,
           user_id: user.id,
           refresh_token,
           expires: threeMonthsFromNow,
@@ -218,7 +220,7 @@ class AppService {
       const refresh_token = await this.generateUniqueRefreshToken();
       return this.accessTokenRepository.model.create({
         app_id: appId,
-        grantcode_id: grantCodeId,
+        grantcode_id: grantCode.id,
         user_id: user.id,
         refresh_token,
         expires: Auth.expiry,
@@ -452,9 +454,11 @@ class AppService {
   }
 
   async refreshAccessToken(user, app_id, AccessToken) {
-    let customAuths;
+    let customAuths = [];
 
-    const Authorities = await this.authorityRepository.model.findAll({where: {user_id: user.id, app_id}});
+    const Authorities = await this.authorityRepository.model.findAll({where: {user_id: AccessToken.user_id, app_id}});
+
+    const User = await this.userRepository.findByPk(AccessToken.user_id);
 
     let today = new Date();
     let year = today.getFullYear();
@@ -472,11 +476,11 @@ class AppService {
           auth_id: Authorities[i].peerplays_account_auth_id,
           new_valid_from: Math.floor(new Number(today)/1000),
           new_valid_to: Math.floor(new Number(threeMonthsFromNow)/1000),
-          owner_account: user.peerplaysAccountId,
+          owner_account: User.peerplaysAccountId,
           extensions: null
         });
 
-        Authorities[i].expiry = customAuth.trx.operations[0][1].valid_to;
+        Authorities[i].expiry = customAuth.trx.operations[0][1].new_valid_to;
         Authorities[i].save();
 
         customAuths.push(customAuth);
@@ -502,6 +506,17 @@ class AppService {
   async broadcastOperations(op) {
     const opJson = OperationUtil.queryToOperationJson(op);
     return this.peerplaysRepository.createTransactionFromOps(opJson);
+  }
+
+  async getBlockchainData(query) {
+    return this.peerplaysRepository.getBlockchainData(query);
+  }
+
+  async getAccessToken(user, app) {
+    const code = await this.joinApp(user, app);
+    const grantCode = await this.grantCodeRepository.model.findOne({where:{code}});
+
+    return this.createAccessToken(grantCode, app.id, grantCode.scope);
   }
 }
 

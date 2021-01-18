@@ -199,6 +199,27 @@ paths:
           description: Error in id validation
           schema:
             $ref: '#/definitions/ValidateError'
+  /app/blockchain-data:
+    get:
+      description: Get blockchain data
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          required: true
+          schema:
+            $ref: '#/definitions/BlockchainDataRequest'
+      tags:
+        - App
+      responses:
+        '200':
+          description: Success response
+          schema:
+            $ref: '#/definitions/BlockchainDataResponse'
+        '400':
+          description: Error in request validation
+          schema:
+            $ref: '#/definitions/ValidateError'
   /auth/logout:
     post:
       description: Logout
@@ -271,8 +292,7 @@ paths:
       tags:
         - Auth
       parameters:
-        - name: token
-          in: body
+        - in: body
           required: true
           schema:
             $ref: '#/definitions/AuthSignInUser'
@@ -293,8 +313,7 @@ paths:
       tags:
         - Auth
       parameters:
-        - name: token
-          in: body
+        - in: body
           required: true
           schema:
             $ref: '#/definitions/AuthForgotPassword'
@@ -335,8 +354,7 @@ paths:
       tags:
         - Auth
       parameters:
-        - name: token
-          in: body
+        - in: body
           required: true
           schema:
             $ref: '#/definitions/AuthResetPassword'
@@ -367,8 +385,7 @@ paths:
       tags:
         - Auth
       parameters:
-        - name: peerplays
-          in: body
+        - in: body
           required: true
           schema:
             $ref: '#/definitions/AuthSignInUser'
@@ -389,8 +406,7 @@ paths:
       tags:
         - Auth
       parameters:
-        - name: code
-          in: body
+        - in: body
           required: true
           schema:
             $ref: '#/definitions/ExchangeCode'
@@ -411,14 +427,34 @@ paths:
       tags:
         - Auth
       parameters:
-        - name: refreshtoken
-          in: body
+        - in: body
           required: true
           schema:
             $ref: '#/definitions/RefreshTokenRequest'
       responses:
         '200':
           description: Refresh Token response
+          schema:
+            $ref: '#/definitions/AccessToken'
+        '400':
+          description: Error form validation
+          schema:
+            $ref: '#/definitions/ValidateError'
+  /auth/token:
+    post:
+      description: Get token using Resource Owner Password Credential flow
+      produces:
+        - application/json
+      tags:
+        - Auth
+      parameters:
+        - in: body
+          required: true
+          schema:
+            $ref: '#/definitions/AuthROPCUser'
+      responses:
+        '200':
+          description: Access Token response
           schema:
             $ref: '#/definitions/AccessToken'
         '400':
@@ -596,7 +632,7 @@ paths:
           description: Error user unauthorized
           schema:
             $ref: '#/definitions/UnauthorizedError'
-  /profile/permission:
+  /permission:
     get:
       description: Get user permissions
       summary: Get user permissions
@@ -707,6 +743,32 @@ definitions:
         properties:
           result:
             $ref: '#/definitions/NewApp'
+  BlockchainDataRequest:
+    type: object
+    required:
+      - api
+      - method
+    properties:
+      api:
+        type: string
+        enum:
+          - database
+          - network_broadcast
+          - history
+          - crypto
+          - bookie
+      method:
+        type: string
+      params:
+        type: array
+        items: {}
+  BlockchainDataResponse:
+    allOf:
+      - $ref: '#/definitions/SuccessResponse'
+      - type: object
+        properties:
+          result:
+            type: object
   AuthSignUpUser:
     type: object
     required:
@@ -805,6 +867,23 @@ definitions:
       client_secret:
         type: string
         example: asdf0l0aksf97ja93yh
+  AuthROPCUser:
+    type: object
+    required:
+      - login
+      - client_id
+    properties:
+      login:
+        type: string
+      password:
+        type: string
+        format: password
+      mobile:
+        type: string
+        example: 999-999-9999
+      client_id:
+        type: integer
+        example: 20
   ProfileCreatePeerplaysAccount:
     type: object
     required:
@@ -904,8 +983,7 @@ definitions:
           type: integer
           max: 10000
       ticket_price:
-        type:
-          $ref: '#/definitions/PeerplaysAssetType'
+        $ref: '#/definitions/PeerplaysAssetType'
       end_date:
         type: integer
         example: 1608897600
@@ -1226,16 +1304,124 @@ definitions:
   OperationRequest:
     oneOf:
       - $ref: '#/definitions/TransferRequest'
+      - $ref: '#/definitions/LimitOrderCreateRequest'
+      - $ref: '#/definitions/LimitOrderCancelRequest'
+      - $ref: '#/definitions/CallOrderUpdateRequest'
+      - $ref: '#/definitions/FillOrderRequest'
+      - $ref: '#/definitions/AccountCreateRequest'
+      - $ref: '#/definitions/AccountUpdateRequest'
+      - $ref: '#/definitions/AccountWhitelistRequest'
+      - $ref: '#/definitions/AccountUpgradeRequest'
+      - $ref: '#/definitions/AccountTransferRequest'
+      - $ref: '#/definitions/AssetCreateRequest'
+      - $ref: '#/definitions/AssetUpdateRequest'
+      - $ref: '#/definitions/AssetUpdateBitassetRequest'
+      - $ref: '#/definitions/AssetUpdateFeedProducerRequest'
+      - $ref: '#/definitions/AssetIssueRequest'
+      - $ref: '#/definitions/AssetReserveRequest'
+      - $ref: '#/definitions/AssetFundFeePoolRequest'
+      - $ref: '#/definitions/AssetSettleRequest'
+      - $ref: '#/definitions/AssetGlobalSettleRequest'
+      - $ref: '#/definitions/AssetPublishFeedRequest'
+      - $ref: '#/definitions/WitnessCreateRequest'
+      - $ref: '#/definitions/WitnessUpdateRequest'
+      - $ref: '#/definitions/ProposalCreateRequest'
+      - $ref: '#/definitions/ProposalUpdateRequest'
+      - $ref: '#/definitions/ProposalDeleteRequest'
+      - $ref: '#/definitions/WithdrawPermissionCreateRequest'
+      - $ref: '#/definitions/WithdrawPermissionUpdateRequest'
+      - $ref: '#/definitions/WithdrawPermissionClaimRequest'
+      - $ref: '#/definitions/WithdrawPermissionDeleteRequest'
+      - $ref: '#/definitions/CommitteeMemberCreateRequest'
+      - $ref: '#/definitions/CommitteeMemberUpdateRequest'
+      - $ref: '#/definitions/CommitteeMemberUpdateGlobalParametersRequest'
+      - $ref: '#/definitions/VestingBalanceCreateRequest'
+      - $ref: '#/definitions/VestingBalanceWithdrawRequest'
+      - $ref: '#/definitions/WorkerCreateRequest'
+      - $ref: '#/definitions/CustomRequest'
+      - $ref: '#/definitions/AssertRequest'
+      - $ref: '#/definitions/BalanceClaimRequest'
+      - $ref: '#/definitions/OverrideTransferRequest'
+      - $ref: '#/definitions/TransferToBlindRequest'
+      - $ref: '#/definitions/BlindTransferRequest'
+      - $ref: '#/definitions/TransferFromBlindRequest'
+      - $ref: '#/definitions/AssetSettleCancelRequest'
+      - $ref: '#/definitions/AssetClaimFeesRequest'
+      - $ref: '#/definitions/FBADistributeRequest'
+      - $ref: '#/definitions/TournamentCreateRequest'
+      - $ref: '#/definitions/TournamentJoinRequest'
+      - $ref: '#/definitions/GameMoveRequest'
+      - $ref: '#/definitions/AssetUpdateDividendRequest'
+      - $ref: '#/definitions/AssetDividendDistributionRequest'
+      - $ref: '#/definitions/TournamentPayoutRequest'
+      - $ref: '#/definitions/TournamentLeaveRequest'
+      - $ref: '#/definitions/SportCreateRequest'
+      - $ref: '#/definitions/SportUpdateRequest'
+      - $ref: '#/definitions/EventGroupCreateRequest'
+      - $ref: '#/definitions/EventGroupUpdateRequest'
+      - $ref: '#/definitions/EventCreateRequest'
+      - $ref: '#/definitions/EventUpdateRequest'
+      - $ref: '#/definitions/BettingMarketRulesCreateRequest'
+      - $ref: '#/definitions/BettingMarketRulesUpdateRequest'
+      - $ref: '#/definitions/BettingMarketGroupCreateRequest'
+      - $ref: '#/definitions/BettingMarketCreateRequest'
+      - $ref: '#/definitions/BetPlaceRequest'
+      - $ref: '#/definitions/BettingMarketGroupResolveRequest'
+      - $ref: '#/definitions/BettingMarketGroupResolvedRequest'
+      - $ref: '#/definitions/BetAdjustedRequest'
+      - $ref: '#/definitions/BettingMarketGroupCancelUnmatchedBetsRequest'
+      - $ref: '#/definitions/BetMatchedRequest'
+      - $ref: '#/definitions/BetCancelRequest'
+      - $ref: '#/definitions/BetCanceledRequest'
+      - $ref: '#/definitions/BettingMarketGroupUpdateRequest'
+      - $ref: '#/definitions/BettingMarketUpdateRequest'
+      - $ref: '#/definitions/LotteryAssetCreateRequest'
+      - $ref: '#/definitions/TicketPurchaseRequest'
+      - $ref: '#/definitions/LotteryRewardRequest'
+      - $ref: '#/definitions/LotteryEndRequest'
+      - $ref: '#/definitions/SweepsVestingClaimRequest'
+      - $ref: '#/definitions/CustomPermissionCreateRequest'
+      - $ref: '#/definitions/CustomPermissionUpdateRequest'
+      - $ref: '#/definitions/CustomPermissionDeleteRequest'
+      - $ref: '#/definitions/CustomAccountAuthorityCreateRequest'
+      - $ref: '#/definitions/CustomAccountAuthorityUpdateRequest'
+      - $ref: '#/definitions/CustomAccountAuthorityDeleteRequest'
+      - $ref: '#/definitions/OfferRequest'
+      - $ref: '#/definitions/BidRequest'
+      - $ref: '#/definitions/CancelOfferRequest'
+      - $ref: '#/definitions/FinalizeOfferRequest'
       - $ref: '#/definitions/NftCreateRequest'
       - $ref: '#/definitions/NftUpdateRequest'
       - $ref: '#/definitions/NftMintRequest'
       - $ref: '#/definitions/NftSafeTransferRequest'
       - $ref: '#/definitions/NftApproveRequest'
       - $ref: '#/definitions/NftApproveAllRequest'
-      - $ref: '#/definitions/OfferRequest'
-      - $ref: '#/definitions/BidRequest'
-      - $ref: '#/definitions/CancelOfferRequest'
+      - $ref: '#/definitions/AccountRoleCreateRequest'
+      - $ref: '#/definitions/AccountRoleUpdateRequest'
+      - $ref: '#/definitions/AccountRoleDeleteRequest'
+      - $ref: '#/definitions/SONCreateRequest'
+      - $ref: '#/definitions/SONUpdateRequest'
+      - $ref: '#/definitions/SONDeregisterRequest'
+      - $ref: '#/definitions/SONHeartbeatRequest'
+      - $ref: '#/definitions/SONReportDownRequest'
+      - $ref: '#/definitions/SONMaintenanceRequest'
+      - $ref: '#/definitions/SONWalletRecreateRequest'
+      - $ref: '#/definitions/SONWalletUpdateRequest'
+      - $ref: '#/definitions/SONWalletDepositCreateRequest'
+      - $ref: '#/definitions/SONWalletDepositProcessRequest'
+      - $ref: '#/definitions/SONWalletWithdrawCreateRequest'
+      - $ref: '#/definitions/SONWalletWithdrawProcessRequest'
+      - $ref: '#/definitions/SidechainAddressAddRequest'
+      - $ref: '#/definitions/SidechainAddressUpdateRequest'
+      - $ref: '#/definitions/SidechainAddressDeleteRequest'
+      - $ref: '#/definitions/SidechainTransactionCreateRequest'
+      - $ref: '#/definitions/SidechainTransactionSignRequest'
+      - $ref: '#/definitions/SidechainTransactionSendRequest'
+      - $ref: '#/definitions/SidechainTransactionSettleRequest'
       - $ref: '#/definitions/NftLotteryPurchaseRequest'
+      - $ref: '#/definitions/NftLotteryRewardRequest'
+      - $ref: '#/definitions/NftLotteryEndRequest'
+      - $ref: '#/definitions/RandomNumberStoreRequest'
   OperationsRequest:
     type: object
     required:
@@ -1288,6 +1474,3438 @@ definitions:
         properties:
           result:
             $ref: '#/definitions/TransactionObject'
+  LimitOrderCreateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - seller
+      - amount_to_sell
+      - min_to_receive
+      - expiration
+      - fill_or_kill
+    properties:
+      op_name:
+        type: string
+        enum:
+          - limit_order_create
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      seller:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      amount_to_sell:
+        $ref: '#/definitions/PeerplaysAssetType'
+      min_to_receive:
+        $ref: '#/definitions/PeerplaysAssetType'
+      expiration:
+        type: integer
+        example: 160989737
+      fill_or_kill:
+        type: boolean
+  LimitOrderCancelRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - fee_paying_account
+      - order
+    properties:
+      op_name:
+        type: string
+        enum:
+          - limit_order_cancel
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      fee_paying_account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      order:
+        type: string
+        pattern: ^(1.7.)\d+$
+        example: 1.7.0
+  CallOrderUpdateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - funding_account
+      - delta_collateral
+      - delta_debt
+    properties:
+      op_name:
+        type: string
+        enum:
+          - call_order_update
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      funding_account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      delta_collateral:
+        $ref: '#/definitions/PeerplaysAssetType'
+      delta_debt:
+        $ref: '#/definitions/PeerplaysAssetType'
+  FillOrderRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - order_id
+      - account_id
+      - pays
+      - receives
+    properties:
+      op_name:
+        type: string
+        enum:
+          - fill_order
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      order_id:
+        type: string
+        pattern: ^(1.7.)\d+$
+        example: 1.7.0
+      account_id:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      pays:
+        $ref: '#/definitions/PeerplaysAssetType'
+      receives:
+        $ref: '#/definitions/PeerplaysAssetType'
+  AuthorityType:
+    type: object
+    required:
+      - weight_threshold
+      - account_auths
+      - key_auths
+      - address_auths
+    properties:
+      weight_threshold:
+        type: integer
+        example: 1
+      account_auths:
+        type: array
+        items:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items: {}
+          example:
+            - 1.2.110
+            - 1
+      key_auths:
+        type: array
+        items:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items: {}
+          example:
+            - 1ljaukl1j839il30sjj2u219ja0js9k2
+            - 1
+      address_auths:
+        type: array
+        items:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items: {}
+          example:
+            - PPY1ljaukl1j839il30sjj2u219ja0js9k2
+            - 1
+  AccountOptionsType:
+    type: object
+    required:
+      - memo_key
+      - voting_account
+      - num_witness
+      - num_committee
+      - num_son
+      - votes
+    properties:
+      memo_key:
+        type: string
+        example: PPYS2a2a30k9jd8jmnd9j3nd99dk3n8ddms
+      voting_account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      num_witness:
+        type: integer
+        example: 4
+      num_committee:
+        type: integer
+        example: 2
+      num_son:
+        type: integer
+        example: 2
+      votes:
+        type: array
+        items:
+          type: integer
+          example: 31
+  AccountCreateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - registrar
+      - referrer
+      - referrer_percent
+      - name
+      - owner
+      - active
+      - options
+    properties:
+      op_name:
+        type: string
+        enum:
+          - account_create
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      registrar:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      referrer:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      referrer_percent:
+        type: integer
+        maximum: 10000
+        example: 5000
+      name:
+        type: string
+        example: jotprabh30
+      owner:
+        $ref: '#/definitions/AuthorityType'
+      active:
+        $ref: '#/definitions/AuthorityType'
+      options:
+        $ref: '#/definitions/AccountOptionsType'
+  AccountUpdateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - account
+      - update_last_voting_time
+    properties:
+      op_name:
+        type: string
+        enum:
+          - account_update
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      owner:
+        $ref: '#/definitions/AuthorityType'
+      active:
+        $ref: '#/definitions/AuthorityType'
+      new_options:
+        $ref: '#/definitions/AccountOptionsType'
+      update_last_voting_time:
+        type: boolean
+  AccountWhitelistRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - authorizing_account
+      - account_to_list
+      - new_listing
+    properties:
+      op_name:
+        type: string
+        enum:
+          - account_whitelist
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      authorizing_account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      account_to_list:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      new_listing:
+        type: integer
+        example: 1
+  AccountUpgradeRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - account_to_upgrade
+      - upgrade_to_lifetime_member
+    properties:
+      op_name:
+        type: string
+        enum:
+          - account_upgrade
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      account_to_upgrade:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      upgrade_to_lifetime_member:
+        type: boolean
+  AccountTransferRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - account_id
+      - new_owner
+    properties:
+      op_name:
+        type: string
+        enum:
+          - account_transfer
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      account_id:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      new_owner:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+  PriceType:
+    type: object
+    required:
+      - base
+      - quote
+    properties:
+      base:
+        $ref: '#/definitions/PeerplaysAssetType'
+      quote:
+        $ref: '#/definitions/PeerplaysAssetType'
+  AssetOptionsType:
+    type: object
+    required:
+      - max_supply
+      - market_fee_percent
+      - max_market_fee
+      - issuer_permissions
+      - flags
+      - core_exchange_rate
+      - whitelist_authorities
+      - blacklist_authorities
+      - whitelist_markets
+      - blacklist_markets
+      - description
+    properties:
+      max_supply:
+        $ref: '#/definitions/PeerplaysAmountType'
+      market_fee_percent:
+        type: integer
+        maximum: 10000
+        example: 5000
+      max_market_fee:
+        type: integer
+        maximum: 10000
+        example: 5000
+      issuer_permissions:
+        type: integer
+        example: 1
+      flags:
+        type: integer
+        example: 1
+      core_exchange_rate:
+        $ref: '#/definitions/PriceType'
+      whitelist_authorities:
+        type: array
+        items:
+          $ref: '#/definitions/PeerplaysAccountIDType'
+      blacklist_authorities:
+        type: array
+        items:
+          $ref: '#/definitions/PeerplaysAccountIDType'
+      whitelist_markets:
+        type: array
+        items:
+          $ref: '#/definitions/PeerplaysAssetIDType'
+      blacklist_markets:
+        type: array
+        items:
+          $ref: '#/definitions/PeerplaysAssetIDType'
+      description:
+        type: string
+        example: StreamersEdge Token Options
+  BitassetOptionsType:
+    type: object
+    required:
+      - feed_lifetime_sec
+      - minimum_feeds
+      - force_settlement_delay_sec
+      - force_settlement_offset_percent
+      - maximum_force_settlement_volume
+      - short_backing_asset
+    properties:
+      feed_lifetime_sec:
+        type: integer
+        example: 10
+      minimum_feeds:
+        type: integer
+        example: 2
+      force_settlement_delay_sec:
+        type: integer
+        example: 10
+      force_settlement_offset_percent:
+        type: integer
+        example: 1000
+      maximum_force_settlement_volume:
+        type: integer
+        example: 1000
+      short_backing_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+  LotteryAssetOptionsType:
+    type: object
+    required:
+      - benefactors
+      - owner
+      - winning_tickets
+      - ticket_price
+      - end_date
+      - ending_on_soldout
+      - is_active
+    properties:
+      benefactors:
+        type: array
+        items:
+          type: object
+          required:
+            - id
+            - share
+          properties:
+            id:
+              $ref: '#/definitions/PeerplaysAccountIDType'
+            share:
+              type: integer
+              maximum: 10000
+              example: 5000
+      owner:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      winning_tickets:
+        type: array
+        items:
+          type: integer
+          maximum: 10000
+          example: 5000
+      ticket_price:
+        $ref: '#/definitions/PeerplaysAssetType'
+      end_date:
+        type: integer
+        example: 1608897600
+      ending_on_soldout:
+        type: boolean
+      is_active:
+        type: boolean
+  AssetCreateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - issuer
+      - symbol
+      - precision
+      - common_options
+      - is_prediction_market
+    properties:
+      op_name:
+        type: string
+        enum:
+          - asset_create
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      issuer:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      symbol:
+        type: string
+        maxLength: 10
+        example: PPY
+      precision:
+        type: integer
+        minimum: 0
+        maximum: 10
+        example: 8
+      common_options:
+        $ref: '#/definitions/AssetOptionsType'
+      bitasset_opts:
+        $ref: '#/definitions/BitassetOptionsType'
+      is_prediction_market:
+        type: boolean
+  AssetUpdateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - issuer
+      - asset_to_update
+      - new_options
+    properties:
+      op_name:
+        type: string
+        enum:
+          - asset_update
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      issuer:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      asset_to_update:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      new_issuer:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      new_options:
+        $ref: '#/definitions/AssetOptionsType'
+  AssetUpdateBitassetRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - issuer
+      - asset_to_update
+      - new_options
+    properties:
+      op_name:
+        type: string
+        enum:
+          - asset_update_bitasset
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      issuer:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      asset_to_update:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      new_options:
+        $ref: '#/definitions/BitassetOptionsType'
+  AssetUpdateFeedProducerRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - issuer
+      - asset_to_update
+      - new_feed_producers
+    properties:
+      op_name:
+        type: string
+        enum:
+          - asset_update_feed_producers
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      issuer:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      asset_to_update:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      new_feed_producers:
+        type: array
+        items:
+          $ref: '#/definitions/PeerplaysAccountIDType'
+        minItems: 1
+  AssetIssueRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - issuer
+      - asset_to_issue
+      - issue_to_account
+    properties:
+      op_name:
+        type: string
+        enum:
+          - asset_issue
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      issuer:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      asset_to_issue:
+        $ref: '#/definitions/PeerplaysAssetType'
+      issue_to_account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+  AssetReserveRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - payer
+      - amount_to_reserve
+    properties:
+      op_name:
+        type: string
+        enum:
+          - asset_reserve
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      payer:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      amount_to_reserve:
+        $ref: '#/definitions/PeerplaysAssetType'
+  AssetFundFeePoolRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - from_account
+      - asset_id
+      - amount
+    properties:
+      op_name:
+        type: string
+        enum:
+          - asset_fund_fee_pool
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      from_account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      asset_id:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      amount:
+        $ref: '#/definitions/PeerplaysAmountType'
+  AssetSettleRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - account
+      - amount
+    properties:
+      op_name:
+        type: string
+        enum:
+          - asset_settle
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      amount:
+        $ref: '#/definitions/PeerplaysAssetType'
+  AssetGlobalSettleRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - issuer
+      - asset_to_settle
+      - settle_price
+    properties:
+      op_name:
+        type: string
+        enum:
+          - asset_global_settle
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      issuer:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      asset_to_settle:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      settle_price:
+        $ref: '#/definitions/PriceType'
+  AssetPublishFeedRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - publisher
+      - asset_id
+      - feed
+    properties:
+      op_name:
+        type: string
+        enum:
+          - asset_publish_feed
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      publisher:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      asset_id:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      feed:
+        type: object
+        required:
+          - settle_price
+          - maintenance_collateral_ratio
+          - maximum_short_squeeze_ratio
+          - core_exchange_rate
+        properties:
+          settle_price:
+            $ref: '#/definitions/PriceType'
+          maintenance_collateral_ratio:
+            type: integer
+            example: 500
+          maximum_short_squeeze_ratio:
+            type: integer
+            example: 500
+          core_exchange_rate:
+            $ref: '#/definitions/PriceType'
+  WitnessCreateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - witness_account
+      - url
+      - block_signing_key
+      - initial_secret
+    properties:
+      op_name:
+        type: string
+        enum:
+          - witness_create
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      witness_account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      url:
+        type: string
+        format: uri
+        example: 'https://www.blockchainmd.com/about'
+      block_signing_key:
+        type: string
+        example: PPYasd9u2j4nkas9un3k4r9usaeqrnlm
+      initial_secret:
+        type: string
+        format: byte
+        example: >-
+          /9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAoHBwgHBgoIC...ljA5GC68sN8AoXT/AF7fw7//2Q==
+  WitnessUpdateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - witness
+      - witness_account
+    properties:
+      op_name:
+        type: string
+        enum:
+          - witness_update
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      witness:
+        type: string
+        pattern: ^(1.6.)\d+$
+        example: 1.6.11
+      witness_account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      new_url:
+        type: string
+        format: uri
+        example: 'https://www.blockchainmd.com/about'
+      new_signing_key:
+        type: string
+        example: PPYasd9u2j4nkas9un3k4r9usaeqrnlm
+      new_initial_secret:
+        type: string
+        format: byte
+        example: >-
+          /9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAoHBwgHBgoIC...ljA5GC68sN8AoXT/AF7fw7//2Q==
+  ProposalCreateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - fee_paying_account
+      - expiration_time
+      - proposed_ops
+    properties:
+      op_name:
+        type: string
+        enum:
+          - proposal_create
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      fee_paying_account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      expiration_time:
+        type: integer
+        example: 1608897600
+      proposed_ops:
+        type: array
+        items: {}
+        minItems: 1
+      review_period_seconds:
+        type: integer
+        example: 2000
+  ProposalUpdateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - fee_paying_account
+      - proposal
+      - active_approvals_to_add
+      - active_approvals_to_remove
+      - owner_approvals_to_add
+      - owner_approvals_to_remove
+      - key_approvals_to_add
+      - key_approvals_to_remove
+    properties:
+      op_name:
+        type: string
+        enum:
+          - proposal_update
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      fee_paying_account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      proposal:
+        type: string
+        pattern: ^(1.10.)\d+$
+        example: 1.10.11
+      active_approvals_to_add:
+        type: array
+        items:
+          $ref: '#/definitions/PeerplaysAccountIDType'
+      active_approvals_to_remove:
+        type: array
+        items:
+          $ref: '#/definitions/PeerplaysAccountIDType'
+      owner_approvals_to_add:
+        type: array
+        items:
+          $ref: '#/definitions/PeerplaysAccountIDType'
+      owner_approvals_to_remove:
+        type: array
+        items:
+          $ref: '#/definitions/PeerplaysAccountIDType'
+      key_approvals_to_add:
+        type: array
+        items:
+          type: string
+          example: PPYJ134s039ks93k9mdoowmi3mk
+      key_approvals_to_remove:
+        type: array
+        items:
+          type: string
+          example: PPYJ134s039ks93k9mdoowmi3mk
+  ProposalDeleteRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - fee_paying_account
+      - using_owner_authority
+      - proposal
+    properties:
+      op_name:
+        type: string
+        enum:
+          - proposal_delete
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      fee_paying_account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      using_owner_authority:
+        type: boolean
+      proposal:
+        type: string
+        pattern: ^(1.10.)\d+$
+        example: 1.10.11
+  WithdrawPermissionCreateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - withdraw_from_account
+      - authorized_account
+      - withdrawal_limit
+      - withdrawal_period_sec
+      - periods_until_expiration
+      - period_start_time
+    properties:
+      op_name:
+        type: string
+        enum:
+          - withdraw_permission_create
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      withdraw_from_account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      authorized_account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      withdrawal_limit:
+        $ref: '#/definitions/PeerplaysAssetType'
+      withdrawal_period_sec:
+        type: integer
+        example: 100
+      periods_until_expiration:
+        type: integer
+        example: 10
+      period_start_time:
+        type: integer
+        example: 1608897600
+  WithdrawPermissionUpdateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - withdraw_from_account
+      - authorized_account
+      - permission_to_update
+      - withdrawal_limit
+      - withdrawal_period_sec
+      - periods_until_expiration
+      - period_start_time
+    properties:
+      op_name:
+        type: string
+        enum:
+          - withdraw_permission_update
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      withdraw_from_account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      authorized_account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      permission_to_update:
+        type: string
+        pattern: ^(1.12.)\d+$
+        example: 1.12.1
+      withdrawal_limit:
+        $ref: '#/definitions/PeerplaysAssetType'
+      withdrawal_period_sec:
+        type: integer
+        example: 100
+      periods_until_expiration:
+        type: integer
+        example: 10
+      period_start_time:
+        type: integer
+        example: 1608897600
+  WithdrawPermissionClaimRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - withdraw_permission
+      - withdraw_from_account
+      - withdraw_to_account
+      - amount_to_withdraw
+    properties:
+      op_name:
+        type: string
+        enum:
+          - withdraw_permission_claim
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      withdraw_permission:
+        type: string
+        pattern: ^(1.12.)\d+$
+        example: 1.12.1
+      withdraw_from_account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      withdraw_to_account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      amount_to_withdraw:
+        $ref: '#/definitions/PeerplaysAssetType'
+  WithdrawPermissionDeleteRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - withdraw_permission
+      - withdraw_from_account
+      - authorized_account
+    properties:
+      op_name:
+        type: string
+        enum:
+          - withdraw_permission_delete
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      withdraw_permission:
+        type: string
+        pattern: ^(1.12.)\d+$
+        example: 1.12.1
+      withdraw_from_account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      authorized_account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+  CommitteeMemberCreateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - committee_member_account
+      - url
+    properties:
+      op_name:
+        type: string
+        enum:
+          - committee_member_create
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      committee_member_account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      url:
+        type: string
+        pattern: uri
+        example: 'https://committeemember-abc.com/'
+  CommitteeMemberUpdateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - committee_member
+      - committee_member_account
+    properties:
+      op_name:
+        type: string
+        enum:
+          - committee_member_update
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      committee_member:
+        type: string
+        pattern: ^(1.5.)\d+$
+        example: 1.5.1
+      committee_member_account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      new_url:
+        type: string
+        pattern: uri
+        example: 'https://committeemember-abc.com/'
+  CommitteeMemberUpdateGlobalParametersRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - new_parameters
+    properties:
+      op_name:
+        type: string
+        enum:
+          - committee_member_update_global_parameters
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      new_parameters:
+        type: object
+  VestingBalanceCreateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - creator
+      - owner
+      - amount
+      - policy
+      - balance_type
+    properties:
+      op_name:
+        type: string
+        enum:
+          - vesting_balance_create
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      creator:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      owner:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      amount:
+        $ref: '#/definitions/PeerplaysAssetType'
+      policy:
+        type: array
+        minItems: 2
+        maxItems: 2
+        items: {}
+        example:
+          - 1
+          - start_claim: 160882928
+            vesting_seconds: 1000
+      balance_type:
+        type: string
+        enum:
+          - normal
+          - gpos
+          - son
+  VestingBalanceWithdrawRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - vesting_balance
+      - owner
+      - amount
+    properties:
+      op_name:
+        type: string
+        enum:
+          - vesting_balance_withdraw
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      vesting_balance:
+        type: string
+        pattern: ^(1.13.)\d+$
+        example: 1.13.1
+      owner:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      amount:
+        $ref: '#/definitions/PeerplaysAssetType'
+  WorkerCreateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - owner
+      - work_begin_date
+      - work_end_date
+      - daily_pay
+      - name
+      - url
+      - initializer
+    properties:
+      op_name:
+        type: string
+        enum:
+          - worker_create
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      owner:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      work_begin_date:
+        type: integer
+        example: 1608897600
+      work_end_date:
+        type: integer
+        example: 1608897600
+      daily_pay:
+        $ref: '#/definitions/PeerplaysAmountType'
+      name:
+        type: string
+        example: Aslam
+      url:
+        type: string
+        format: uri
+        example: 'https://abc.com'
+      initializer:
+        type: array
+        minItems: 2
+        maxItems: 2
+        items: {}
+        example:
+          - 1
+          - pay_vesting_period_days: 7
+  CustomRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - payer
+      - required_auths
+      - id
+      - data
+    properties:
+      op_name:
+        type: string
+        enum:
+          - custom
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      payer:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      required_auths:
+        type: array
+        items:
+          $ref: '#/definitions/PeerplaysAccountIDType'
+        minItems: 1
+      id:
+        type: integer
+        example: 1608897600
+      data:
+        type: string
+        format: byte
+        example: >-
+          /9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAoHBwgHBgoIC...ljA5GC68sN8AoXT/AF7fw7//2Q==
+  AssertRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - fee_paying_account
+      - predicates
+      - required_auths
+    properties:
+      op_name:
+        type: string
+        enum:
+          - assert
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      fee_paying_account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      predicates:
+        type: array
+        items:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items: {}
+          example:
+            - 1
+            - asset_id: 1.3.0
+              symbol: ppy
+      required_auths:
+        type: array
+        items:
+          $ref: '#/definitions/PeerplaysAccountIDType'
+        minItems: 1
+  BalanceClaimRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - deposit_to_account
+      - balance_to_claim
+      - balance_owner_key
+      - total_claimed
+    properties:
+      op_name:
+        type: string
+        enum:
+          - balance_claim
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      deposit_to_account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      balance_to_claim:
+        type: string
+        pattern: ^(1.13.)\d+$
+        example: 1.13.1
+      balance_owner_key:
+        type: string
+        example: PPYb5bbjhjb7b7tgb865fvhhu7g
+      total_claimed:
+        $ref: '#/definitions/PeerplaysAssetType'
+  OverrideTransferRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - issuer
+      - from
+      - to
+      - amount
+    properties:
+      op_name:
+        type: string
+        enum:
+          - override_transfer
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      issuer:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      from:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      to:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      amount:
+        $ref: '#/definitions/PeerplaysAssetType'
+  StealthConfirmationType:
+    type: object
+    required:
+      - one_time_key
+      - encrypted_memo
+    properties:
+      one_time_key:
+        type: string
+        example: PPYb5bbjhjb7b7tgb865fvhhu7g
+      to:
+        type: string
+        example: PPYb5bbjhjb7b7tgb865fvhhu7g
+      encrypted_memo:
+        type: string
+        format: byte
+        example: >-
+          /9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAoHBwgHBgoIC...ljA5GC68sN8AoXT/AF7fw7//2Q==
+  BlindOutputType:
+    type: object
+    required:
+      - commitment
+      - range_proof
+      - owner
+    properties:
+      commitment:
+        type: string
+        format: byte
+        example: >-
+          /9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAoHBwgHBgoIC...ljA5GC68sN8AoXT/AF7fw7//2Q==
+      range_proof:
+        type: string
+        format: byte
+        example: >-
+          /9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAoHBwgHBgoIC...ljA5GC68sN8AoXT/AF7fw7//2Q==
+      owner:
+        $ref: '#/definitions/AuthorityType'
+      stealth_memo:
+        $ref: '#/definitions/StealthConfirmationType'
+  TransferToBlindRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - amount
+      - from
+      - blinding_factor
+      - outputs
+    properties:
+      op_name:
+        type: string
+        enum:
+          - transfer_to_blind
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      amount:
+        $ref: '#/definitions/PeerplaysAssetType'
+      from:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      blinding_factor:
+        type: string
+        format: byte
+        example: >-
+          /9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAoHBwgHBgoIC...ljA5GC68sN8AoXT/AF7fw7//2Q==
+      outputs:
+        type: array
+        items:
+          $ref: '#/definitions/BlindOutputType'
+  BlindInputType:
+    type: object
+    required:
+      - commitment
+      - owner
+    properties:
+      commitment:
+        type: string
+        format: byte
+        example: >-
+          /9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAoHBwgHBgoIC...ljA5GC68sN8AoXT/AF7fw7//2Q==
+      owner:
+        $ref: '#/definitions/AuthorityType'
+  BlindTransferRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - inputs
+      - outputs
+    properties:
+      op_name:
+        type: string
+        enum:
+          - blind_transfer
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      inputs:
+        type: array
+        items:
+          $ref: '#/definitions/BlindInputType'
+      outputs:
+        type: array
+        items:
+          $ref: '#/definitions/BlindOutputType'
+  TransferFromBlindRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - amount
+      - to
+      - blinding_factor
+      - inputs
+    properties:
+      op_name:
+        type: string
+        enum:
+          - transfer_from_blind
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      amount:
+        $ref: '#/definitions/PeerplaysAssetType'
+      to:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      blinding_factor:
+        type: string
+        format: byte
+        example: >-
+          /9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAoHBwgHBgoIC...ljA5GC68sN8AoXT/AF7fw7//2Q==
+      inputs:
+        type: array
+        items:
+          $ref: '#/definitions/BlindInputType'
+  AssetSettleCancelRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - settlement
+      - account
+      - amount
+    properties:
+      op_name:
+        type: string
+        enum:
+          - asset_settle_cancel
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      settlement:
+        type: string
+        pattern: ^(1.4.)\d+$
+        example: 1.4.1
+      account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      amount:
+        $ref: '#/definitions/PeerplaysAssetType'
+  AssetClaimFeesRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - issuer
+      - amount_to_claim
+    properties:
+      op_name:
+        type: string
+        enum:
+          - asset_claim_fees
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      issuer:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      amount_to_claim:
+        $ref: '#/definitions/PeerplaysAssetType'
+  FBADistributeRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - account_id
+      - fba_id
+      - amount
+    properties:
+      op_name:
+        type: string
+        enum:
+          - fba_distribute
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      account_id:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      fba_id:
+        type: string
+        pattern: ^(2.16.)\d+$
+        example: 2.16.1
+      amount:
+        $ref: '#/definitions/PeerplaysAmountType'
+  RockPaperScissorsGameOptionsType:
+    type: object
+    required:
+      - insurance_enabled
+      - time_per_commit_move
+      - time_per_reveal_move
+      - number_of_gestures
+    properties:
+      insurance_enabled:
+        type: boolean
+      time_per_commit_move:
+        type: integer
+        example: 100
+      time_per_reveal_move:
+        type: integer
+        example: 100
+      number_of_gestures:
+        type: integer
+        example: 10
+  TournamentOptionsType:
+    type: object
+    required:
+      - type_of_game
+      - registration_deadline
+      - number_of_players
+      - buy_in
+      - whitelist
+      - start_time
+      - start_delay
+      - round_delay
+      - number_of_wins
+      - meta
+      - game_options
+    properties:
+      type_of_game:
+        type: integer
+        example: 1
+      registration_deadline:
+        type: integer
+        example: 1609893839
+      number_of_players:
+        type: integer
+        example: 4
+      buy_in:
+        $ref: '#/definitions/PeerplaysAssetType'
+      whitelist:
+        type: array
+        items:
+          $ref: '#/definitions/PeerplaysAccountIDType'
+      start_time:
+        type: integer
+        example: 1609893839
+      start_delay:
+        type: integer
+        example: 10
+      round_delay:
+        type: integer
+        example: 1
+      number_of_wins:
+        type: integer
+        example: 3
+      meta:
+        type: object
+        example: {}
+      game_options:
+        type: array
+        minItems: 2
+        maxItems: 2
+        items: {}
+        example:
+          - 1
+          - insurance_enabled: true
+            time_per_commit_move: 100
+            time_per_reveal_move: 100
+            number_of_gestures: 3
+  TournamentCreateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - creator
+      - options
+    properties:
+      op_name:
+        type: string
+        enum:
+          - tournament_create
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      creator:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      options:
+        $ref: '#/definitions/TournamentOptionsType'
+  TournamentJoinRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - payer_account_id
+      - player_account_id
+      - tournament_id
+      - buy_in
+    properties:
+      op_name:
+        type: string
+        enum:
+          - tournament_join
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      payer_account_id:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      player_account_id:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      tournament_id:
+        type: string
+        pattern: ^(1.16.)\d+$
+        example: 1.16.11
+      buy_in:
+        $ref: '#/definitions/PeerplaysAssetType'
+  GameMoveRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - player_account_id
+      - game_id
+      - move
+    properties:
+      op_name:
+        type: string
+        enum:
+          - game_move
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      player_account_id:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      game_id:
+        type: string
+        pattern: ^(1.19.)\d+$
+        example: 1.19.11
+      move:
+        type: array
+        minItems: 2
+        maxItems: 2
+        items: {}
+        example:
+          - 0
+          - nonce1: 11
+            throw_hash: kajsd8nk9aj39jsd9fmq393rjopa/as9ji3n
+  AssetUpdateDividendRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - issuer
+      - asset_to_update
+      - new_options
+    properties:
+      op_name:
+        type: string
+        enum:
+          - asset_update_dividend
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      issuer:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      asset_to_update:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      new_options:
+        type: object
+        required:
+          - minimum_fee_percentage
+        properties:
+          next_payout_time:
+            type: integer
+            example: 1609289792
+          payout_interval:
+            type: integer
+            example: 60000
+          minimum_fee_percentage:
+            type: integer
+            example: 100
+          minimum_distribution_interval:
+            type: integer
+            example: 60000
+  AssetDividendDistributionRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - account_id
+      - dividend_asset_id
+      - amounts
+    properties:
+      op_name:
+        type: string
+        enum:
+          - asset_dividend_distribution
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      dividend_asset_id:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      account_id:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      amounts:
+        type: array
+        items:
+          $ref: '#/definitions/PeerplaysAssetType'
+        minItems: 1
+  SportCreateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - name
+    properties:
+      op_name:
+        type: string
+        enum:
+          - sport_create
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      name:
+        type: array
+        items:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items:
+            type: string
+            example: soccer
+  SportUpdateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - sport_id
+    properties:
+      op_name:
+        type: string
+        enum:
+          - sport_update
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      sport_id:
+        type: string
+        pattern: ^(1.20.)\d+$
+        example: 1.20.1
+      new_name:
+        type: array
+        items:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items:
+            type: string
+            example: soccer
+  EventGroupCreateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - name
+      - sport_id
+    properties:
+      op_name:
+        type: string
+        enum:
+          - event_group_create
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      name:
+        type: array
+        items:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items:
+            type: string
+            example: Champions Trophy
+      sport_id:
+        type: string
+        pattern: ^(1.20.)\d+$
+        example: 1.20.1
+  EventGroupUpdateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - event_group_id
+    properties:
+      op_name:
+        type: string
+        enum:
+          - event_group_update
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      new_name:
+        type: array
+        items:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items:
+            type: string
+            example: Champions Trophy
+      new_sport_id:
+        type: string
+        pattern: ^(1.20.)\d+$
+        example: 1.20.1
+      event_group_id:
+        type: string
+        pattern: ^(1.21.)\d+$
+        example: 1.21.1
+  EventCreateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - name
+      - season
+      - event_group_id
+    properties:
+      op_name:
+        type: string
+        enum:
+          - event_create
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      name:
+        type: array
+        items:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items:
+            type: string
+            example: Manchester United vs Arsenal
+      season:
+        type: array
+        items:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items:
+            type: string
+            example: 2020
+      start_time:
+        type: integer
+        example: 160982982
+      event_group_id:
+        type: string
+        pattern: ^(1.21.)\d+$
+        example: 1.21.1
+  EventUpdateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - event_id
+    properties:
+      op_name:
+        type: string
+        enum:
+          - event_update
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      event_id:
+        type: string
+        pattern: ^(1.22.)\d+$
+        example: 1.22.1
+      new_name:
+        type: array
+        items:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items:
+            type: string
+            example: Manchester United vs Arsenal
+      new_season:
+        type: array
+        items:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items:
+            type: string
+            example: 2020
+      new_start_time:
+        type: integer
+        example: 160982982
+      new_event_group_id:
+        type: string
+        pattern: ^(1.21.)\d+$
+        example: 1.21.1
+      is_live_market:
+        type: boolean
+  BettingMarketRulesCreateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - name
+      - description
+    properties:
+      op_name:
+        type: string
+        enum:
+          - betting_market_rules_create
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      name:
+        type: array
+        items:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items:
+            type: string
+            example: Rule 1
+      description:
+        type: array
+        items:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items:
+            type: string
+            example: Player can not bet on the same event twice
+  BettingMarketRulesUpdateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - betting_market_rules_id
+    properties:
+      op_name:
+        type: string
+        enum:
+          - betting_market_rules_update
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      new_name:
+        type: array
+        items:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items:
+            type: string
+            example: Rule 1
+      new_description:
+        type: array
+        items:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items:
+            type: string
+            example: Player can not bet on the same event twice
+      betting_market_rules_id:
+        type: string
+        pattern: ^(1.23.)\d+$
+        example: 1.23.1
+  BettingMarketGroupCreateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - description
+      - event_id
+      - rules_id
+      - asset_id
+    properties:
+      op_name:
+        type: string
+        enum:
+          - betting_market_group_create
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      description:
+        type: array
+        items:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items:
+            type: string
+            example: Bookie Group
+      event_id:
+        type: string
+        pattern: ^(1.22.)\d+$
+        example: 1.22.1
+      rules_id:
+        type: string
+        pattern: ^(1.23.)\d+$
+        example: 1.23.1
+      asset_id:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+  BettingMarketCreateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - group_id
+      - description
+      - payout_condition
+    properties:
+      op_name:
+        type: string
+        enum:
+          - betting_market_create
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      group_id:
+        type: string
+        pattern: ^(1.24.)\d+$
+        example: 1.24.1
+      description:
+        type: array
+        items:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items:
+            type: string
+            example: Bookie Market
+      payout_condition:
+        type: array
+        items:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items:
+            type: string
+            example: After match has ended
+  BetPlaceRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - bettor_id
+      - betting_market_id
+      - amount_to_bet
+      - backer_multiplier
+      - back_or_lay
+    properties:
+      op_name:
+        type: string
+        enum:
+          - bet_place
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      bettor_id:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      betting_market_id:
+        type: string
+        pattern: ^(1.25.)\d+$
+        example: 1.25.1
+      amount_to_bet:
+        $ref: '#/definitions/PeerplaysAssetType'
+      backer_multiplier:
+        type: integer
+        example: 10
+      back_or_lay:
+        type: string
+        enum:
+          - back
+          - lay
+  BettingMarketGroupResolveRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - betting_market_group_id
+      - resolutions
+    properties:
+      op_name:
+        type: string
+        enum:
+          - betting_market_group_resolve
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      betting_market_group_id:
+        type: string
+        pattern: ^(1.24.)\d+$
+        example: 1.24.1
+      resolutions:
+        type: array
+        items:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items: {}
+          example:
+            - 1.25.1
+            - not_win
+  BettingMarketGroupResolvedRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - bettor_id
+      - betting_market_group_id
+      - resolutions
+      - winnings
+      - fees_paid
+    properties:
+      op_name:
+        type: string
+        enum:
+          - betting_market_group_resolved
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      bettor_id:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      betting_market_group_id:
+        type: string
+        pattern: ^(1.24.)\d+$
+        example: 1.24.1
+      resolutions:
+        type: array
+        items:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items: {}
+          example:
+            - 1.25.1
+            - not_win
+      winnings:
+        $ref: '#/definitions/PeerplaysAmountType'
+      fees_paid:
+        $ref: '#/definitions/PeerplaysAmountType'
+  BettingMarketGroupCancelUnmatchedBetsRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - betting_market_group_id
+    properties:
+      op_name:
+        type: string
+        enum:
+          - betting_market_group_cancel_unmatched_bets
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      betting_market_group_id:
+        type: string
+        pattern: ^(1.24.)\d+$
+        example: 1.24.1
+  BetMatchedRequest:
+    type: object
+    required:
+      - op_name
+      - bettor_id
+      - bet_id
+      - betting_market_id
+      - amount_bet
+      - fees_paid
+      - backer_multiplier
+      - guaranteed_winnings_returned
+    properties:
+      op_name:
+        type: string
+        enum:
+          - bet_matched
+      bettor_id:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      bet_id:
+        type: string
+        pattern: ^(1.26.)\d+$
+        example: 1.26.1
+      betting_market_id:
+        type: string
+        pattern: ^(1.25.)\d+$
+        example: 1.25.1
+      amount_bet:
+        $ref: '#/definitions/PeerplaysAssetType'
+      fees_paid:
+        $ref: '#/definitions/PeerplaysAmountType'
+      backer_multiplier:
+        type: integer
+        example: 10
+      guaranteed_winnings_returned:
+        $ref: '#/definitions/PeerplaysAmountType'
+  BetCancelRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - bettor_id
+      - bet_to_cancel
+    properties:
+      op_name:
+        type: string
+        enum:
+          - bet_cancel
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      bettor_id:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      bet_to_cancel:
+        type: string
+        pattern: ^(1.26.)\d+$
+        example: 1.26.1
+  BetCanceledRequest:
+    type: object
+    required:
+      - op_name
+      - bettor_id
+      - bet_id
+      - stake_returned
+      - unused_fees_returned
+    properties:
+      op_name:
+        type: string
+        enum:
+          - bet_canceled
+      bettor_id:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      bet_id:
+        type: string
+        pattern: ^(1.26.)\d+$
+        example: 1.26.1
+      stake_returned:
+        $ref: '#/definitions/PeerplaysAssetType'
+      unused_fees_returned:
+        $ref: '#/definitions/PeerplaysAssetType'
+  TournamentPayoutRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - payout_account_id
+      - tournament_id
+      - payout_amount
+      - type
+    properties:
+      op_name:
+        type: string
+        enum:
+          - tournament_payout
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      payout_account_id:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      tournament_id:
+        type: string
+        pattern: ^(1.16.)\d+$
+        example: 1.16.1
+      payout_amount:
+        $ref: '#/definitions/PeerplaysAssetType'
+      type:
+        type: string
+        enum:
+          - prize_award
+          - buyin_refund
+          - rake_fee
+  TournamentLeaveRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - canceling_account_id
+      - player_account_id
+      - tournament_id
+    properties:
+      op_name:
+        type: string
+        enum:
+          - tournament_leave
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      canceling_account_id:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      player_account_id:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      tournament_id:
+        type: string
+        pattern: ^(1.16.)\d+$
+        example: 1.16.1
+  BettingMarketGroupUpdateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - betting_market_group_id
+    properties:
+      op_name:
+        type: string
+        enum:
+          - betting_market_group_update
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      betting_market_group_id:
+        type: string
+        pattern: ^(1.24.)\d+$
+        example: 1.24.1
+      new_description:
+        type: array
+        items:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items:
+            type: string
+            example: Bookie Group
+      new_rules_id:
+        type: string
+        pattern: ^(1.23.)\d+$
+        example: 1.23.1
+      freeze:
+        type: boolean
+      delay_bets:
+        type: boolean
+  BettingMarketUpdateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - betting_market_id
+    properties:
+      op_name:
+        type: string
+        enum:
+          - betting_market_update
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      betting_market_id:
+        type: string
+        pattern: ^(1.25.)\d+$
+        example: 1.25.1
+      new_group_id:
+        type: string
+        pattern: ^(1.24.)\d+$
+        example: 1.24.1
+      new_description:
+        type: array
+        items:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items:
+            type: string
+            example: Bookie Market
+      new_payout_condition:
+        type: array
+        items:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items:
+            type: string
+            example: After match has ended
+  BetAdjustedRequest:
+    type: object
+    required:
+      - op_name
+      - bettor_id
+      - bet_id
+      - stake_returned
+    properties:
+      op_name:
+        type: string
+        enum:
+          - bet_adjusted
+      bettor_id:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      bet_id:
+        type: string
+        pattern: ^(1.26.)\d+$
+        example: 1.26.1
+      stake_returned:
+        $ref: '#/definitions/PeerplaysAssetType'
+  LotteryAssetCreateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - issuer
+      - symbol
+      - precision
+      - common_options
+      - is_prediction_market
+      - extensions
+    properties:
+      op_name:
+        type: string
+        enum:
+          - lottery_asset_create
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      issuer:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      symbol:
+        type: string
+        maxLength: 10
+        example: PPY
+      precision:
+        type: integer
+        minimum: 0
+        maximum: 10
+        example: 8
+      common_options:
+        $ref: '#/definitions/AssetOptionsType'
+      bitasset_opts:
+        $ref: '#/definitions/BitassetOptionsType'
+      is_prediction_market:
+        type: boolean
+      extensions:
+        $ref: '#/definitions/LotteryAssetOptionsType'
+  TicketPurchaseRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - lottery
+      - buyer
+      - tickets_to_buy
+      - amount
+    properties:
+      op_name:
+        type: string
+        enum:
+          - ticket_purchase
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      lottery:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      buyer:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      tickets_to_buy:
+        $ref: '#/definitions/PeerplaysAmountType'
+      amount:
+        $ref: '#/definitions/PeerplaysAssetType'
+  LotteryRewardRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - lottery
+      - winner
+      - amount
+      - win_percentage
+      - is_benefactor_reward
+    properties:
+      op_name:
+        type: string
+        enum:
+          - lottery_reward
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      lottery:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      winner:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      amount:
+        $ref: '#/definitions/PeerplaysAssetType'
+      win_percentage:
+        type: integer
+        maximum: 10000
+        example: 5000
+      is_benefactor_reward:
+        type: boolean
+  LotteryEndRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - lottery
+      - participants
+    properties:
+      op_name:
+        type: string
+        enum:
+          - lottery_end
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      lottery:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      participants:
+        type: array
+        items:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items: {}
+          example:
+            - 1.2.31
+            - 0
+  SweepsVestingClaimRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - account
+      - amount_to_claim
+    properties:
+      op_name:
+        type: string
+        enum:
+          - sweeps_vesting_claim
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      amount_to_claim:
+        $ref: '#/definitions/PeerplaysAssetType'
+  CustomPermissionCreateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - owner_account
+      - permission_name
+      - auth
+    properties:
+      op_name:
+        type: string
+        enum:
+          - custom_permission_create
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      owner_account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      permission_name:
+        type: string
+        maxLength: 10
+        example: abc123
+      auth:
+        $ref: '#/definitions/AuthorityType'
+  CustomPermissionUpdateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - permission_id
+      - new_auth
+      - owner_account
+    properties:
+      op_name:
+        type: string
+        enum:
+          - custom_permission_update
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      permission_id:
+        type: string
+        pattern: ^(1.27.)\d+$
+        example: 1.27.2
+      new_auth:
+        $ref: '#/definitions/AuthorityType'
+      owner_account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+  CustomPermissionDeleteRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - permission_id
+      - owner_account
+    properties:
+      op_name:
+        type: string
+        enum:
+          - custom_permission_delete
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      permission_id:
+        type: string
+        pattern: ^(1.27.)\d+$
+        example: 1.27.2
+      owner_account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+  CustomAccountAuthorityCreateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - permission_id
+      - operation_type
+      - valid_from
+      - valid_to
+      - owner_account
+    properties:
+      op_name:
+        type: string
+        enum:
+          - custom_account_authority_create
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      permission_id:
+        type: string
+        pattern: ^(1.27.)\d+$
+        example: 1.27.2
+      operation_type:
+        type: integer
+        minimum: 0
+        example: 0
+      valid_from:
+        type: integer
+        example: 160986767
+      valid_to:
+        type: integer
+        example: 160989767
+      owner_account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+  CustomAccountAuthorityUpdateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - auth_id
+      - owner_account
+    properties:
+      op_name:
+        type: string
+        enum:
+          - custom_account_authority_update
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      auth_id:
+        type: string
+        pattern: ^(1.28.)\d+$
+        example: 1.28.2
+      new_valid_from:
+        type: integer
+        example: 160986767
+      new_valid_to:
+        type: integer
+        example: 160989767
+      owner_account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+  CustomAccountAuthorityDeleteRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - auth_id
+      - owner_account
+    properties:
+      op_name:
+        type: string
+        enum:
+          - custom_account_authority_delete
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      auth_id:
+        type: string
+        pattern: ^(1.28.)\d+$
+        example: 1.28.2
+      owner_account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+  FinalizeOfferRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - fee_paying_account
+      - offer_id
+      - result
+    properties:
+      op_name:
+        type: string
+        enum:
+          - finalize_offer
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      fee_paying_account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      offer_id:
+        type: string
+        pattern: ^(1.29.)\d+$
+        example: 1.29.0
+      result:
+        type: string
+        enum:
+          - Expired
+          - ExpiredNoBid
+          - Cancelled
+  AccountRoleCreateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - owner
+      - name
+      - metadata
+      - allowed_operations
+      - whitelisted_accounts
+      - valid_from
+    properties:
+      op_name:
+        type: string
+        enum:
+          - account_role_create
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      owner:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      name:
+        type: string
+        example: admin
+      metadata:
+        type: string
+        example: permitted for all ops
+      allowed_operations:
+        type: array
+        items:
+          type: integer
+          minimum: 0
+          example: 80
+      whitelisted_accounts:
+        type: array
+        items:
+          $ref: '#/definitions/PeerplaysAccountIDType'
+      valid_from:
+        type: integer
+        example: 1609876722
+  AccountRoleUpdateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - owner
+      - account_role_id
+      - allowed_operations_to_add
+      - allowed_operations_to_remove
+      - accounts_to_add
+      - accounts_to_remove
+    properties:
+      op_name:
+        type: string
+        enum:
+          - account_role_update
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      owner:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      account_role_id:
+        type: string
+        pattern: ^(1.32.)\d+$
+        example: 1.32.0
+      name:
+        type: string
+        example: admin
+      metadata:
+        type: string
+        example: permitted for all ops
+      allowed_operations_to_add:
+        type: array
+        items:
+          type: integer
+          minimum: 0
+          example: 80
+      allowed_operations_to_remove:
+        type: array
+        items:
+          type: integer
+          minimum: 0
+          example: 80
+      accounts_to_add:
+        type: array
+        items:
+          $ref: '#/definitions/PeerplaysAccountIDType'
+      accounts_to_remove:
+        type: array
+        items:
+          $ref: '#/definitions/PeerplaysAccountIDType'
+      valid_to:
+        type: integer
+        example: 1609876722
+  AccountRoleDeleteRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - owner
+      - account_role_id
+    properties:
+      op_name:
+        type: string
+        enum:
+          - account_role_delete
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      owner:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      account_role_id:
+        type: string
+        pattern: ^(1.32.)\d+$
+        example: 1.32.0
+  SidechainType:
+    type: string
+    enum:
+      - unknown
+      - bitcoin
+      - ethereum
+      - eos
+      - peerplays
+  SONCreateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - owner_account
+      - url
+      - deposit
+      - signing_key
+      - sidechain_public_keys
+      - pay_vb
+    properties:
+      op_name:
+        type: string
+        enum:
+          - son_create
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      owner_account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      url:
+        type: string
+        format: uri
+        example: 'https://www.dummyurl.com/son'
+      deposit:
+        type: string
+        pattern: ^(1.13.)\d+$
+        example: 1.13.102
+      signing_key:
+        type: string
+        example: PPYk29k2ms9ksm9sms0os9l3/9k3ojdh3ud
+      sidechain_public_keys:
+        type: array
+        items:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items: {}
+          example:
+            - bitcoin
+            - BTCj2l2m2ok4ms9uhn3irthsbdnfoihiesbf3d
+      pay_vb:
+        type: string
+        pattern: ^(1.13.)\d+$
+        example: 1.13.103
+  SONUpdateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - son_id
+      - owner_account
+    properties:
+      op_name:
+        type: string
+        enum:
+          - son_update
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      son_id:
+        type: string
+        pattern: ^(1.33.)\d+$
+        example: 1.33.0
+      owner_account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      new_url:
+        type: string
+        format: uri
+        example: 'https://www.dummyurl.com/son'
+      new_deposit:
+        type: string
+        pattern: ^(1.13.)\d+$
+        example: 1.13.102
+      new_signing_key:
+        type: string
+        example: PPYk29k2ms9ksm9sms0os9l3/9k3ojdh3ud
+      new_sidechain_public_keys:
+        type: array
+        items:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items: {}
+          example:
+            - bitcoin
+            - BTCj2l2m2ok4ms9uhn3irthsbdnfoihiesbf3d
+      new_pay_vb:
+        type: string
+        pattern: ^(1.13.)\d+$
+        example: 1.13.103
+  SONDeregisterRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - son_id
+      - payer
+    properties:
+      op_name:
+        type: string
+        enum:
+          - son_deregister
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      son_id:
+        type: string
+        pattern: ^(1.33.)\d+$
+        example: 1.33.0
+      payer:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+  SONHeartbeatRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - son_id
+      - owner_account
+      - ts
+    properties:
+      op_name:
+        type: string
+        enum:
+          - son_heartbeat
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      son_id:
+        type: string
+        pattern: ^(1.33.)\d+$
+        example: 1.33.0
+      owner_account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      ts:
+        type: integer
+        example: 1609878978
+  SONReportDownRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - son_id
+      - payer
+      - down_ts
+    properties:
+      op_name:
+        type: string
+        enum:
+          - son_report_down
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      son_id:
+        type: string
+        pattern: ^(1.33.)\d+$
+        example: 1.33.0
+      payer:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      down_ts:
+        type: integer
+        example: 1609878978
+  SONMaintenanceRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - son_id
+      - owner_account
+      - request_type
+    properties:
+      op_name:
+        type: string
+        enum:
+          - son_maintenance
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      son_id:
+        type: string
+        pattern: ^(1.33.)\d+$
+        example: 1.33.0
+      owner_account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      request_type:
+        type: string
+        enum:
+          - request_maintenance
+          - cancel_request_maintenance
+  SONInfoType:
+    type: object
+    required:
+      - son_id
+      - weight
+      - signing_key
+      - sidechain_public_keys
+    properties:
+      son_id:
+        type: string
+        pattern: ^(1.33.)\d+$
+        example: 1.33.0
+      weight:
+        type: integer
+        minimum: 0
+        example: 100
+      signing_key:
+        type: string
+        example: PPYaisjd9j28ah7h32unsa8h82i3jr8awf8h37u
+      sidechain_public_keys:
+        type: array
+        items:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items: {}
+          example:
+            - bitcoin
+            - BTCj2l2m2ok4ms9uhn3irthsbdnfoihiesbf3d
+  SONWalletRecreateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - payer
+      - sons
+    properties:
+      op_name:
+        type: string
+        enum:
+          - son_wallet_recreate
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      payer:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      sons:
+        type: array
+        minItems: 1
+        items:
+          $ref: '#/definitions/SONInfoType'
+  SONWalletUpdateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - payer
+      - son_wallet_id
+      - sidechain
+      - address
+    properties:
+      op_name:
+        type: string
+        enum:
+          - son_wallet_update
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      payer:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      son_wallet_id:
+        type: string
+        pattern: ^(1.35.)\d+$
+        example: 1.35.12
+      sidechain:
+        $ref: '#/definitions/SidechainType'
+      address:
+        type: string
+        example: mj2hn2k2n39jdnsd7fyahnsdfb8asvdf
+  SONWalletDepositCreateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - payer
+      - son_id
+      - timestamp
+      - block_num
+      - sidechain
+      - sidechain_uid
+      - sidechain_transaction_id
+      - sidechain_from
+      - sidechain_to
+      - sidechain_currency
+      - sidechain_amount
+      - peerplays_from
+      - peerplays_to
+      - peerplays_asset
+    properties:
+      op_name:
+        type: string
+        enum:
+          - son_wallet_deposit_create
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      payer:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      son_id:
+        type: string
+        pattern: ^(1.33.)\d+$
+        example: 1.33.12
+      timestamp:
+        type: integer
+        example: 1609896784
+      block_num:
+        type: integer
+        example: 989276272
+      sidechain:
+        $ref: '#/definitions/SidechainType'
+      sidechain_uid:
+        type: string
+        example: >-
+          bitcoin-9b8fd16cc5a3ff37a548ba5ea73dbb3d4609c5793442b096f8757c88c44f693d-0
+      sidechain_transaction_id:
+        type: string
+        example: 9b8fd16cc5a3ff37a548ba5ea73dbb3d4609c5793442b096f8757c88c44f693d
+      sidechain_from:
+        type: string
+        example: 2MxAnE469fhhdvUqUB7daU997VSearb2mn7
+      sidechain_to:
+        type: string
+        example: 2MxAnE469fhhdvUqUB7daU997VSearb2mn7
+      sidechain_currency:
+        type: string
+        example: BTC
+      sidechain_amount:
+        $ref: '#/definitions/PeerplaysAmountType'
+      peerplays_from:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      peerplays_to:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      peerplays_asset:
+        $ref: '#/definitions/PeerplaysAssetType'
+  SONWalletDepositProcessRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - payer
+      - son_wallet_deposit_id
+    properties:
+      op_name:
+        type: string
+        enum:
+          - son_wallet_deposit_process
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      payer:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      son_wallet_deposit_id:
+        type: string
+        pattern: ^(1.36.)\d+$
+        example: 1.36.12
+  SONWalletWithdrawCreateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - payer
+      - son_id
+      - timestamp
+      - block_num
+      - sidechain
+      - peerplays_uid
+      - peerplays_transaction_id
+      - peerplays_from
+      - peerplays_asset
+      - withdraw_sidechain
+      - withdraw_address
+      - withdraw_currency
+      - withdraw_amount
+    properties:
+      op_name:
+        type: string
+        enum:
+          - son_wallet_withdraw_create
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      payer:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      son_id:
+        type: string
+        pattern: ^(1.33.)\d+$
+        example: 1.33.12
+      timestamp:
+        type: integer
+        example: 1609896784
+      block_num:
+        type: integer
+        example: 989276272
+      sidechain:
+        $ref: '#/definitions/SidechainType'
+      peerplays_uid:
+        type: string
+        example: >-
+          peerplays-9b8fd16cc5a3ff37a548ba5ea73dbb3d4609c5793442b096f8757c88c44f693d-0
+      peerplays_transaction_id:
+        type: string
+        example: 9b8fd16cc5a3ff37a548ba5ea73dbb3d4609c5793442b096f8757c88c44f693d
+      peerplays_from:
+        type: string
+        example: 2MxAnE469fhhdvUqUB7daU997VSearb2mn7
+      peerplays_asset:
+        $ref: '#/definitions/PeerplaysAssetType'
+      withdraw_sidechain:
+        $ref: '#/definitions/SidechainType'
+      withdraw_address:
+        type: string
+        example: 2MxAnE469fhhdvUqUB7daU997VSearb2mn7
+      withdraw_currency:
+        type: string
+        example: BTC
+      withdraw_amount:
+        $ref: '#/definitions/PeerplaysAmountType'
+  SONWalletWithdrawProcessRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - payer
+      - son_wallet_withdraw_id
+    properties:
+      op_name:
+        type: string
+        enum:
+          - son_wallet_withdraw_process
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      payer:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      son_wallet_withdraw_id:
+        type: string
+        pattern: ^(1.37.)\d+$
+        example: 1.37.12
+  SidechainAddressAddRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - payer
+      - sidechain_address_account
+      - sidechain
+      - deposit_public_key
+      - deposit_address
+      - deposit_address_data
+      - withdraw_public_key
+      - withdraw_address
+    properties:
+      op_name:
+        type: string
+        enum:
+          - sidechain_address_add
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      payer:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      sidechain_address_account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      sidechain:
+        $ref: '#/definitions/SidechainType'
+      deposit_public_key:
+        type: string
+        example: PPYasdf8hqnwn34j9asdnnfamw9jn34r
+      deposit_address:
+        type: string
+        example: 2MxAnE469fhhdvUqUB7daU997VSearb2mn7
+      deposit_address_data:
+        type: string
+        example:
+          bitcoin_name: aslam3
+          peerplays_name: aslam1
+      withdraw_public_key:
+        type: string
+        example: PPYasdf8hqnwn34j9asdnnfamw9jn34r
+      withdraw_address:
+        type: string
+        example: 2MxAnE469fhhdvUqUB7daU997VSearb2mn7
+  SidechainAddressUpdateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - payer
+      - sidechain_address_id
+      - sidechain_address_account
+      - sidechain
+    properties:
+      op_name:
+        type: string
+        enum:
+          - sidechain_address_update
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      payer:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      sidechain_address_id:
+        type: string
+        pattern: ^(1.38.)\d+$
+        example: 1.38.1
+      sidechain_address_account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      sidechain:
+        $ref: '#/definitions/SidechainType'
+      deposit_public_key:
+        type: string
+        example: PPYasdf8hqnwn34j9asdnnfamw9jn34r
+      deposit_address:
+        type: string
+        example: 2MxAnE469fhhdvUqUB7daU997VSearb2mn7
+      deposit_address_data:
+        type: string
+        example:
+          bitcoin_name: aslam3
+          peerplays_name: aslam1
+      withdraw_public_key:
+        type: string
+        example: PPYasdf8hqnwn34j9asdnnfamw9jn34r
+      withdraw_address:
+        type: string
+        example: 2MxAnE469fhhdvUqUB7daU997VSearb2mn7
+  SidechainAddressDeleteRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - payer
+      - sidechain_address_id
+      - sidechain_address_account
+      - sidechain
+    properties:
+      op_name:
+        type: string
+        enum:
+          - sidechain_address_delete
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      payer:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      sidechain_address_id:
+        type: string
+        pattern: ^(1.38.)\d+$
+        example: 1.38.1
+      sidechain_address_account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      sidechain:
+        $ref: '#/definitions/SidechainType'
+  SidechainTransactionCreateRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - payer
+      - sidechain
+      - object_id
+      - transaction
+      - signers
+    properties:
+      op_name:
+        type: string
+        enum:
+          - sidechain_transaction_create
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      payer:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      sidechain:
+        $ref: '#/definitions/SidechainType'
+      object_id:
+        type: string
+        example: 1.23.21
+      transaction:
+        type: string
+        example: {}
+      signers:
+        type: array
+        minItems: 1
+        items:
+          $ref: '#/definitions/SONInfoType'
+  SidechainTransactionSignRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - signer
+      - payer
+      - sidechain_transaction_id
+      - signature
+    properties:
+      op_name:
+        type: string
+        enum:
+          - sidechain_transaction_sign
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      signer:
+        type: string
+        pattern: ^(1.33.)\d+$
+        example: 1.33.12
+      payer:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      sidechain_transaction_id:
+        type: string
+        pattern: ^(1.39.)\d+$
+        example: 1.39.12
+      signature:
+        type: string
+        example: 2kjas8238ja9sdu9hwqoej8ahsidfowd
+  SidechainTransactionSendRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - payer
+      - sidechain_transaction_id
+      - sidechain_transaction
+    properties:
+      op_name:
+        type: string
+        enum:
+          - sidechain_transaction_send
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      payer:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      sidechain_transaction_id:
+        type: string
+        pattern: ^(1.39.)\d+$
+        example: 1.39.12
+      sidechain_transaction:
+        type: string
+        example: 2kjas8238ja9sdu9hwqoej8ahsidfowd
+  SidechainTransactionSettleRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - payer
+      - sidechain_transaction_id
+    properties:
+      op_name:
+        type: string
+        enum:
+          - sidechain_transaction_settle
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      payer:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      sidechain_transaction_id:
+        type: string
+        pattern: ^(1.39.)\d+$
+        example: 1.39.12
+  NftLotteryRewardRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - lottery_id
+      - winner
+      - amount
+      - win_percentage
+      - is_benefactor_reward
+      - winner_ticket_id
+    properties:
+      op_name:
+        type: string
+        enum:
+          - nft_lottery_reward
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      lottery_id:
+        type: string
+        pattern: ^(1.30.)\d+$
+        example: 1.30.0
+      winner:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      amount:
+        $ref: '#/definitions/PeerplaysAssetType'
+      win_percentage:
+        type: integer
+        example: 5000
+      is_benefactor_reward:
+        type: boolean
+      winner_ticket_id:
+        type: integer
+        example: 101
+  NftLotteryEndRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - lottery_id
+    properties:
+      op_name:
+        type: string
+        enum:
+          - nft_lottery_end
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      lottery_id:
+        type: string
+        pattern: ^(1.30.)\d+$
+        example: 1.30.0
+  RandomNumberStoreRequest:
+    type: object
+    required:
+      - op_name
+      - fee_asset
+      - account
+      - random_number
+      - data
+    properties:
+      op_name:
+        type: string
+        enum:
+          - random_number_store
+      fee_asset:
+        $ref: '#/definitions/PeerplaysAssetIDType'
+      account:
+        $ref: '#/definitions/PeerplaysAccountIDType'
+      random_number:
+        type: array
+        minItems: 1
+        items:
+          type: integer
+          example: 14
+      data:
+        type: string
+        example: RNG for Rock Paper Scissor
   SuccessResponse:
     type: object
     properties:

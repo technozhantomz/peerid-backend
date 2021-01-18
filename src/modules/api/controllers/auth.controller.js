@@ -103,12 +103,30 @@ const RestError = require('../../../errors/rest.error');
  *      client_secret:
  *        type: string
  *        example: asdf0l0aksf97ja93yh
+ *  AuthROPCUser:
+ *    type: object
+ *    required:
+ *      - login
+ *      - client_id
+ *    properties:
+ *      login:
+ *        type: string
+ *      password:
+ *        type: string
+ *        format: password
+ *      mobile:
+ *        type: string
+ *        example: 999-999-9999
+ *      client_id:
+ *        type: integer
+ *        example: 20
  */
 
 class AuthController {
 
   /**
    * @param {AuthValidator} opts.authValidator
+   * @param {AppValidator} opts.appValidator
    * @param {UserService} opts.userService
    * @param {AppService} opts.appService
    */
@@ -116,6 +134,7 @@ class AuthController {
     this.authValidator = opts.authValidator;
     this.userService = opts.userService;
     this.appService = opts.appService;
+    this.appValidator = opts.appValidator;
   }
 
   /**
@@ -191,7 +210,7 @@ class AuthController {
        *      - Auth
        *    parameters:
        *      - name: token
-       *        in:  path
+       *        in: path
        *        required: true
        *        type: string
        *    responses:
@@ -221,8 +240,7 @@ class AuthController {
        *    tags:
        *      - Auth
        *    parameters:
-       *      - name: token
-       *        in:  body
+       *      - in: body
        *        required: true
        *        schema:
        *          $ref: '#/definitions/AuthSignInUser'
@@ -248,8 +266,7 @@ class AuthController {
        *    tags:
        *      - Auth
        *    parameters:
-       *      - name: token
-       *        in: body
+       *      - in: body
        *        required: true
        *        schema:
        *          $ref: '#/definitions/AuthForgotPassword'
@@ -300,8 +317,7 @@ class AuthController {
        *    tags:
        *      - Auth
        *    parameters:
-       *      - name: token
-       *        in: body
+       *      - in: body
        *        required: true
        *        schema:
        *          $ref: '#/definitions/AuthResetPassword'
@@ -342,8 +358,7 @@ class AuthController {
        *    tags:
        *      - Auth
        *    parameters:
-       *      - name: peerplays
-       *        in: body
+       *      - in: body
        *        required: true
        *        schema:
        *          $ref: '#/definitions/AuthSignInUser'
@@ -374,8 +389,7 @@ class AuthController {
        *    tags:
        *      - Auth
        *    parameters:
-       *      - name: code
-       *        in: body
+       *      - in: body
        *        required: true
        *        schema:
        *          $ref: '#/definitions/ExchangeCode'
@@ -406,8 +420,7 @@ class AuthController {
        *    tags:
        *      - Auth
        *    parameters:
-       *      - name: refreshtoken
-       *        in:  body
+       *      - in: body
        *        required: true
        *        schema:
        *          $ref: '#/definitions/RefreshTokenRequest'
@@ -423,9 +436,40 @@ class AuthController {
        */
       [
         'post',
-        'api/v1/auth/refreshtoken',
+        '/api/v1/auth/refreshtoken',
         this.authValidator.validateRefreshToken,
         this.refreshToken.bind(this)
+      ],
+      /**
+       * @swagger
+       *
+       * /auth/token:
+       *  post:
+       *    description: Get token using Resource Owner Password Credential flow
+       *    produces:
+       *      - application/json
+       *    tags:
+       *      - Auth
+       *    parameters:
+       *      - in: body
+       *        required: true
+       *        schema:
+       *          $ref: '#/definitions/AuthROPCUser'
+       *    responses:
+       *      200:
+       *        description: Access Token response
+       *        schema:
+       *         $ref: '#/definitions/AccessToken'
+       *      400:
+       *        description: Error form validation
+       *        schema:
+       *          $ref: '#/definitions/ValidateError'
+       */
+      [
+        'post',
+        '/api/v1/auth/token',
+        this.appValidator.validateROPCFlow,
+        this.loginAndGetToken.bind(this)
       ]
     ];
   }
@@ -501,12 +545,26 @@ class AuthController {
     return user;
   }
 
-  async exchangeCode(user, {grantCodeId, appId, scope}) {
-    return await this.appService.createAccessToken(grantCodeId, appId, user, scope);
+  async exchangeCode(user, {grantCode, appId, scope}) {
+    return await this.appService.createAccessToken(grantCode, appId, scope);
   }
 
   async refreshToken(user, {app_id, AccessToken}) {
     return await this.appService.refreshAccessToken(user, app_id, AccessToken);
+  }
+
+  async loginAndGetToken(user, {login, password, mobile, AppExists}) {
+    let signedInUser;
+
+    try {
+      signedInUser = await this.userService.getSignInUser(login, password, mobile);
+    } catch (e) {
+      throw new ValidateError(400, 'Validate error', {
+        login: 'Invalid email/username or password'
+      });
+    }
+
+    return await this.appService.getAccessToken(signedInUser, AppExists);
   }
 }
 

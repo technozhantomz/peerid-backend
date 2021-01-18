@@ -40,7 +40,10 @@
       "user": "MAILER_USER",
       "pass": "MAILER_PASS"
     },
-    "sender": "MAILER_SENDER"
+    "sender": "MAILER_SENDER",
+    "tls": {
+       "rejectUnauthorized": false
+    }
   },
   "frontendUrl": "FRONTEND_URL",
   "backendUrl": "BACKEND_URL",

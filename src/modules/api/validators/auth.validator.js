@@ -132,8 +132,10 @@ class AuthValidator extends BaseValidator {
 
       const user = await this.userRepository.getByLogin(login);
 
-      if(user && user.isEmailVerified === false){
-        throw new ValidateError(403, 'Please verify your email address first');
+      if(!user) {
+        throw new ValidateError(400, 'Validate error', {
+          login: 'User not found'
+        });
       }
 
       if(!password && !mobile) {
@@ -218,7 +220,7 @@ class AuthValidator extends BaseValidator {
       }
 
       return {
-        grantCodeId: GrantCodeExists.id,
+        grantCode: GrantCodeExists,
         appId: AppExists.id,
         scope: GrantCodeExists.scope
       };
@@ -291,7 +293,7 @@ class AuthValidator extends BaseValidator {
         });
       }
 
-      return { app_id: client_id, AccessToken: RefreshTokenExists };
+      return {app_id: client_id, AccessToken: RefreshTokenExists};
     });
   }
 }

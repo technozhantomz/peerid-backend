@@ -9,6 +9,7 @@ const psl = require('psl');
 class AppValidator extends BaseValidator {
   /**
    * @param {AppRepository} opts.appRepository
+   * @param {userRepository} opts.userRepository
    * @param {PermissionRepository} opts.permissionRepository
    * @param {AccessTokenRepository} opts.accessTokenRepository
    * @param {OperationRepository} opts.operationRepository
@@ -22,6 +23,7 @@ class AppValidator extends BaseValidator {
     this.accessTokenRepository = opts.accessTokenRepository;
     this.operationRepository = opts.operationRepository;
     this.authorityRepository = opts.authorityRepository;
+    this.userRepository = opts.userRepository;
 
     this.registerApp = this.registerApp.bind(this);
     this.deleteApp = this.deleteApp.bind(this);
@@ -30,6 +32,8 @@ class AppValidator extends BaseValidator {
     this.getAppOperations = this.getAppOperations.bind(this);
     this.unjoinApp = this.unjoinApp.bind(this);
     this.validateOperations = this.validateOperations.bind(this);
+    this.validateBlockchainData = this.validateBlockchainData.bind(this);
+    this.validateROPCFlow = this.validateROPCFlow.bind(this);
   }
 
   registerApp() {
@@ -65,7 +69,7 @@ class AppValidator extends BaseValidator {
         });
       }
 
-      if(operations.find((op) => op === 11)) {
+      if(operations.find((op) => op === 6)) {
         throw new ValidateError(400, 'Validate error', {
           operations: 'Owner key is required for account update'
         });
@@ -176,6 +180,27 @@ class AppValidator extends BaseValidator {
         });
       }
 
+      const AuthCount = await this.authorityRepository.model.count({where: {user_id: req.user.id}});
+
+      if(AuthCount > 15) {
+        throw new ValidateError(400, 'Validate error', {
+          user: 'Max operations that can be linked to this user reached'
+        });
+      }
+
+      const Authorities = await this.authorityRepository.model.findAll({
+        where: {
+          app_id: client_id,
+          user_id: req.user.id
+        }
+      });
+
+      if(Authorities && Authorities.length > 0) {
+        throw new ValidateError(400, 'Validate error', {
+          user: 'You have already joined this app'
+        });
+      }
+
       //validate client id
       const AppExists = await this.appRepository.model.findOne({
         where: {
@@ -186,6 +211,18 @@ class AppValidator extends BaseValidator {
       if(!AppExists) {
         throw new ValidateError(400, 'Validate error', {
           client_id: 'App does not exist'
+        });
+      }
+
+      const Ops = await this.operationRepository.model.count({
+        where: {
+          app_id: client_id
+        }
+      });
+
+      if(AuthCount + Ops > 15) {
+        throw new ValidateError(400, 'Validate error', {
+          user: 'Max operations that can be linked to this user will be reached while joining this app'
         });
       }
 
@@ -320,16 +357,78 @@ class AppValidator extends BaseValidator {
               {is: 'fba_distribute', then: PeerplaysSchemas.fbaDistributeSchema},
               {is: 'tournament_create', then: PeerplaysSchemas.tournamentCreateSchema},
               {is: 'tournament_join', then: PeerplaysSchemas.tournamentJoinSchema},
+              {is: 'game_move', then: PeerplaysSchemas.gameMoveSchema},
+              {is: 'asset_update_dividend', then: PeerplaysSchemas.assetUpdateDividendSchema},
+              {is: 'asset_dividend_distribution', then: PeerplaysSchemas.assetDividendDistributionSchema},
+              {is: 'sport_create', then: PeerplaysSchemas.sportCreateSchema},
+              {is: 'sport_update', then: PeerplaysSchemas.sportUpdateSchema},
+              {is: 'event_group_create', then: PeerplaysSchemas.eventGroupCreateSchema},
+              {is: 'event_group_update', then: PeerplaysSchemas.eventGroupUpdateSchema},
+              {is: 'event_create', then: PeerplaysSchemas.eventCreateSchema},
+              {is: 'event_update', then: PeerplaysSchemas.eventUpdateSchema},
+              {is: 'betting_market_rules_create', then: PeerplaysSchemas.bettingMarketRulesCreateSchema},
+              {is: 'betting_market_rules_update', then: PeerplaysSchemas.bettingMarketRulesUpdateSchema},
+              {is: 'betting_market_group_create', then: PeerplaysSchemas.bettingMarketGroupCreateSchema},
+              {is: 'betting_market_create', then: PeerplaysSchemas.bettingMarketCreateSchema},
+              {is: 'bet_place', then: PeerplaysSchemas.betPlaceSchema},
+              {is: 'betting_market_group_resolve', then: PeerplaysSchemas.bettingMarketGroupResolveSchema},
+              {is: 'betting_market_group_resolved', then: PeerplaysSchemas.bettingMarketGroupResolvedSchema},
+              {is: 'betting_market_group_cancel_unmatched_bets', then: PeerplaysSchemas.bettingMarketGroupCancelUnmatchedBetsSchema},
+              {is: 'bet_matched', then: PeerplaysSchemas.betMatchedSchema},
+              {is: 'bet_cancel', then: PeerplaysSchemas.betCancelSchema},
+              {is: 'bet_canceled', then: PeerplaysSchemas.betCanceledSchema},
+              {is: 'tournament_payout', then: PeerplaysSchemas.tournamentPayoutSchema},
+              {is: 'tournament_leave', then: PeerplaysSchemas.tournamentLeaveSchema},
+              {is: 'betting_market_group_update', then: PeerplaysSchemas.bettingMarketGroupUpdateSchema},
+              {is: 'betting_market_update', then: PeerplaysSchemas.bettingMarketUpdateSchema},
+              {is: 'bet_adjusted', then: PeerplaysSchemas.betAdjustedSchema},
+              {is: 'lottery_asset_create', then: PeerplaysSchemas.lotteryAssetCreateSchema},
+              {is: 'ticket_purchase', then: PeerplaysSchemas.ticketPurchaseSchema},
+              {is: 'lottery_reward', then: PeerplaysSchemas.lotteryRewardSchema},
+              {is: 'lottery_end', then: PeerplaysSchemas.lotteryEndSchema},
+              {is: 'sweeps_vesting_claim', then: PeerplaysSchemas.sweepsVestingClaimSchema},
+              {is: 'custom_permission_create', then: PeerplaysSchemas.customPermissionCreateSchema},
+              {is: 'custom_permission_update', then: PeerplaysSchemas.customPermissionUpdateSchema},
+              {is: 'custom_permission_delete', then: PeerplaysSchemas.customPermissionDeleteSchema},
+              {is: 'custom_account_authority_create', then: PeerplaysSchemas.customAccountAuthorityCreateSchema},
+              {is: 'custom_account_authority_update', then: PeerplaysSchemas.customAccountAuthorityUpdateSchema},
+              {is: 'custom_account_authority_delete', then: PeerplaysSchemas.customAccountAuthorityDeleteSchema},
+              {is: 'offer', then: PeerplaysSchemas.offerSchema},
+              {is: 'bid', then: PeerplaysSchemas.bidSchema},
+              {is: 'cancel_offer', then: PeerplaysSchemas.cancelOfferSchema},
+              {is: 'finalize_offer', then: PeerplaysSchemas.finalizeOfferSchema},
               {is: 'nft_metadata_create', then: PeerplaysSchemas.nftCreateSchema},
               {is: 'nft_metadata_update', then: PeerplaysSchemas.nftUpdateSchema},
               {is: 'nft_mint', then: PeerplaysSchemas.nftMintSchema},
               {is: 'nft_safe_transfer_from', then: PeerplaysSchemas.nftSafeTransferSchema},
               {is: 'nft_approve', then: PeerplaysSchemas.nftApproveSchema},
               {is: 'nft_set_approval_for_all', then: PeerplaysSchemas.nftApproveAllSchema},
-              {is: 'offer', then: PeerplaysSchemas.offerSchema},
-              {is: 'bid', then: PeerplaysSchemas.bidSchema},
-              {is: 'cancel_offer', then: PeerplaysSchemas.cancelOfferSchema},
-              {is: 'nft_lottery_token_purchase', then: PeerplaysSchemas.nftLotteryPurchaseSchema}
+              {is: 'account_role_create', then: PeerplaysSchemas.accountRoleCreateSchema},
+              {is: 'account_role_update', then: PeerplaysSchemas.accountRoleUpdateSchema},
+              {is: 'account_role_delete', then: PeerplaysSchemas.accountRoleDeleteSchema},
+              {is: 'son_create', then: PeerplaysSchemas.sonCreateSchema},
+              {is: 'son_update', then: PeerplaysSchemas.sonUpdateSchema},
+              {is: 'son_deregister', then: PeerplaysSchemas.sonDeregisterSchema},
+              {is: 'son_heartbeat', then: PeerplaysSchemas.sonHeartbeatSchema},
+              {is: 'son_report_down', then: PeerplaysSchemas.sonReportDownSchema},
+              {is: 'son_maintenance', then: PeerplaysSchemas.sonMaintenanceSchema},
+              {is: 'son_wallet_recreate', then: PeerplaysSchemas.sonWalletRecreateSchema},
+              {is: 'son_wallet_update', then: PeerplaysSchemas.sonWalletUpdateSchema},
+              {is: 'son_wallet_deposit_create', then: PeerplaysSchemas.sonWalletDepositCreateSchema},
+              {is: 'son_wallet_deposit_process', then: PeerplaysSchemas.sonWalletDepositProcessSchema},
+              {is: 'son_wallet_withdraw_create', then: PeerplaysSchemas.sonWalletWithdrawCreateSchema},
+              {is: 'son_wallet_withdraw_process', then: PeerplaysSchemas.sonWalletWithdrawProcessSchema},
+              {is: 'sidechain_address_add', then: PeerplaysSchemas.sidechainAddressAddSchema},
+              {is: 'sidechain_address_update', then: PeerplaysSchemas.sidechainAddressUpdateSchema},
+              {is: 'sidechain_address_delete', then: PeerplaysSchemas.sidechainAddressDeleteSchema},
+              {is: 'sidechain_transaction_create', then: PeerplaysSchemas.sidechainTransactionCreateSchema},
+              {is: 'sidechain_transaction_sign', then: PeerplaysSchemas.sidechainTransactionSignSchema},
+              {is: 'sidechain_transaction_send', then: PeerplaysSchemas.sidechainTransactionSendSchema},
+              {is: 'sidechain_transaction_settle', then: PeerplaysSchemas.sidechainTransactionSettleSchema},
+              {is: 'nft_lottery_token_purchase', then: PeerplaysSchemas.nftLotteryPurchaseSchema},
+              {is: 'nft_lottery_reward', then: PeerplaysSchemas.nftLotteryRewardSchema},
+              {is: 'nft_lottery_end', then: PeerplaysSchemas.nftLotteryEndSchema},
+              {is: 'random_number_store', then: PeerplaysSchemas.randomNumberStoreSchema}
             ]
           })
       ).required()
@@ -379,6 +478,103 @@ class AppValidator extends BaseValidator {
       }
 
       return body.operations;
+    });
+  }
+
+  validateBlockchainData() {
+    const querySchema = {
+      api: Joi.string().valid('database','network_broadcast','history','crypto','bookie').required(),
+      method: Joi.string().required(),
+      params: Joi.array().optional()
+    };
+
+    return this.validate(querySchema, null, async (req, query) => query);
+  }
+
+  validateROPCFlow() {
+    const bodySchema = {
+      login: Joi.string().required(),
+      password: Joi.string().optional(),
+      mobile: Joi.string().optional(),
+      client_id: Joi.number().integer().required()
+    };
+
+    return this.validate(null, bodySchema, async (req, query, body) => {
+      const {login, password, mobile, client_id} = body;
+
+      const user = await this.userRepository.getByLogin(login);
+
+      if(!user) {
+        throw new ValidateError(400, 'Validate error', {
+          login: 'User not found'
+        });
+      }
+
+      if(!password && !mobile) {
+        throw new ValidateError(400, 'Validate error', {
+          mobile: 'Either mobile or password is required',
+          password: 'Either mobile or password is required'
+        });
+      }
+
+      const Permission = await this.permissionRepository.model.findOne({where: {user_id: user.id}});
+
+      if(!Permission) {
+        throw new ValidateError(401, 'Unauthorized', {
+          login: 'Permission does not exist for this user'
+        });
+      }
+
+      const AuthCount = await this.authorityRepository.model.count({where: {user_id: user.id}});
+
+      if(AuthCount > 15) {
+        throw new ValidateError(400, 'Validate error', {
+          login: 'Max operations that can be linked to this user reached'
+        });
+      }
+
+      const Authorities = await this.authorityRepository.model.findAll({
+        where: {
+          app_id: client_id,
+          user_id: user.id
+        }
+      });
+
+      if(Authorities && Authorities.length > 0) {
+        throw new ValidateError(400, 'Validate error', {
+          login: 'You have already joined this app'
+        });
+      }
+
+      //validate client id
+      const AppExists = await this.appRepository.model.findOne({
+        where: {
+          id: client_id
+        }
+      });
+
+      if(!AppExists) {
+        throw new ValidateError(400, 'Validate error', {
+          client_id: 'App does not exist'
+        });
+      }
+
+      const Ops = await this.operationRepository.model.count({
+        where: {
+          app_id: client_id
+        }
+      });
+
+      if(AuthCount + Ops > 15) {
+        throw new ValidateError(400, 'Validate error', {
+          login: 'Max operations that can be linked to this user will be reached while joining this app'
+        });
+      }
+
+      return {
+        ...body,
+        AppExists
+      };
     });
   }
 }

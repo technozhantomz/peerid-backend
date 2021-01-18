@@ -3,10 +3,12 @@ const axios = require('axios');
 const {
   Apis,
   ConnectionManager,
-  TransactionBuilder
+  TransactionBuilder,
+  ChainConfig
 } = require('peerplaysjs-lib');
 const {getLogger} = require('log4js');
 const logger = getLogger();
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
 const BaseConnection = require('./abstracts/base.connection');
 
@@ -27,6 +29,10 @@ class PeerplaysConnection extends BaseConnection {
 
     this.config = opts.config;
     this.dbAPI = null;
+    this.networkAPI = null;
+    this.historyAPI = null;
+    this.cryptoAPI = null;
+    this.bookieAPI = null;
     this.asset = null;
     this.apiInstance = null;
     this.reconnectAttempt = 0;
@@ -55,6 +61,7 @@ class PeerplaysConnection extends BaseConnection {
     const endpoint = this.endpoints[this.reconnectAttempt % this.endpoints.length];
     logger.info(`connecting to peerplays endpoint "${endpoint}"`);
     const apiInstance = Apis.instance(endpoint, true);
+    ChainConfig.setPrefix(IS_PRODUCTION ? 'PPY' : 'TEST');
 
     try {
       await apiInstance.init_promise;
@@ -70,6 +77,9 @@ class PeerplaysConnection extends BaseConnection {
     this.apiInstance = apiInstance;
     this.dbAPI = this.apiInstance.db_api();
     this.networkAPI = this.apiInstance.network_api();
+    this.historyAPI = this.apiInstance.history_api();
+    this.cryptoAPI = this.apiInstance.crypto_api();
+    this.bookieAPI = this.apiInstance.bookie_api();
     [this.asset] = await this.dbAPI.exec('get_assets', [['1.3.0']]);
     this.TransactionBuilder = TransactionBuilder;
     

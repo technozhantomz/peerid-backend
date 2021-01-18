@@ -60,7 +60,32 @@
  *        properties:
  *          result:
  *            $ref: '#/definitions/NewApp'
- *  
+ *  BlockchainDataRequest:
+ *    type: object
+ *    required:
+ *      - api
+ *      - method
+ *    properties:
+ *      api:
+ *        type: string
+ *        enum:
+ *          - database
+ *          - network_broadcast
+ *          - history
+ *          - crypto
+ *          - bookie
+ *      method:
+ *        type: string
+ *      params:
+ *        type: array
+ *        items: {}
+ *  BlockchainDataResponse:
+ *    allOf:
+ *      - $ref: '#/definitions/SuccessResponse'
+ *      - type: object
+ *        properties:
+ *          result:
+ *            type: object
  */
 class AppController {
 
@@ -379,6 +404,37 @@ class AppController {
         this.authValidator.loggedOnly,
         this.appValidator.unjoinApp,
         this.unjoinApp.bind(this)
+      ],
+      /**
+       * @swagger
+       *
+       * /app/blockchain-data:
+       *  get:
+       *    description: Get blockchain data
+       *    produces:
+       *      - application/json
+       *    parameters:
+       *      - in: query
+       *        required: true
+       *        schema:
+       *          $ref: '#/definitions/BlockchainDataRequest'
+       *    tags:
+       *      - App
+       *    responses:
+       *      200:
+       *        description: Success response
+       *        schema:
+       *         $ref: '#/definitions/BlockchainDataResponse'
+       *      400:
+       *        description: Error in request validation
+       *        schema:
+       *          $ref: '#/definitions/ValidateError'
+       */
+      [
+        'get',
+        '/api/v1/app/blockchain-data',
+        this.appValidator.validateBlockchainData,
+        this.getBlockchainData.bind(this)
       ]
     ];
   }
@@ -421,6 +477,10 @@ class AppController {
 
   async broadcastOperations(user, op) {
     return await this.appService.broadcastOperations(op);
+  }
+
+  async getBlockchainData(user, query) {
+    return await this.appService.getBlockchainData(query);
   }
 }
 

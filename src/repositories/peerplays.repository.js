@@ -62,6 +62,45 @@ class PeerplaysRepository {
     }
   }
 
+  async getBlockchainData(query) {
+    let res = null;
+    let api = null;
+    let params = [];
+
+    switch(query.api) {
+      case 'database':
+        api = this.peerplaysConnection.dbAPI;
+        break;
+      case 'network_broadcast':
+        api = this.peerplaysConnection.networkAPI;
+        break;
+      case 'history':
+        api = this.peerplaysConnection.historyAPI;
+        break;
+      case 'crypto':
+        api = this.peerplaysConnection.cryptoAPI;
+        break;
+      case 'bookie':
+        api = this.peerplaysConnection.bookieAPI;
+        break;
+      default:
+        api = this.peerplaysConnection.dbAPI;
+    }
+
+    if(query.params) {
+      params = query.params;
+    }
+
+    try {
+      res = await api.exec(query.method, params);
+    } catch (e) {
+      logger.warn('Peerplays returns error', e.message);
+      throw new Error('Peerplays error');
+    }
+
+    return res;
+  }
+
   async broadcastSerializedTx(tr) {
     return new Promise((success, fail) => {
       this.peerplaysConnection.networkAPI
@@ -71,15 +110,28 @@ class PeerplaysRepository {
   }
 
   async getPeerplaysUser(login, password) {
-    const keys = Login.generateKeys(login, password,
-      ['active'],
-      IS_PRODUCTION ? 'PPY' : 'TEST');
-    const publicKey = keys.pubKeys.active;
+    let keys, publicKey, isWIF = false;
+
+    try {
+      keys = PrivateKey.fromWif(password);
+      publicKey = keys.toPublicKey().toPublicKeyString();
+      isWIF = true;
+    } catch(err) {
+      isWIF = false;
+    }
+
+    if(!isWIF) {
+      keys = Login.generateKeys(login, password,
+        ['active'],
+        IS_PRODUCTION ? 'PPY' : 'TEST');
+      publicKey = keys.pubKeys.active;
+    }
+
     const fullAccounts = await this.peerplaysConnection.dbAPI.exec('get_full_accounts',[[login],false]);
 
     if (fullAccounts) {
       return fullAccounts.find((fullAccount) => {
-        return fullAccount[1].account.active.key_auths.find((key_auth)=> { 
+        return fullAccount[1].account.active.key_auths.find((key_auth)=> {
           return key_auth[0] === publicKey;
         });
       });
@@ -122,17 +174,29 @@ class PeerplaysRepository {
 
   async createAndSendTransaction(opName, opJson, peerplaysAccountName, peerplaysPassword) {
     const tr = new TransactionBuilder();
-    let result;
+    let result, keys, activePrivateKey, activePublicKey, isWIF= false;
 
-    const keys = Login.generateKeys(peerplaysAccountName, peerplaysPassword,
-      ['active'],
-      IS_PRODUCTION ? 'PPY' : 'TEST');
+    try {
+      activePrivateKey = PrivateKey.fromWif(peerplaysPassword);
+      activePublicKey = activePrivateKey.toPublicKey().toPublicKeyString();
+      isWIF = true;
+    } catch(err) {
+      isWIF = false;
+    }
+
+    if(!isWIF) {
+      keys = Login.generateKeys(peerplaysAccountName, peerplaysPassword,
+        ['active'],
+        IS_PRODUCTION ? 'PPY' : 'TEST');
+      activePrivateKey = keys.privKeys.active;
+      activePublicKey = keys.pubKeys.active;
+    }
 
     try {
       tr.add_type_operation(opName, opJson);
 
       await tr.set_required_fees();
-      tr.add_signer(keys.privKeys.active, keys.pubKeys.active);
+      tr.add_signer(activePrivateKey, activePublicKey);
       console.trace('serialized transaction:', JSON.stringify(tr.serialize()));
       [result] = await tr.broadcast();
     } catch (e) {
