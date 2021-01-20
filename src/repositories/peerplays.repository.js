@@ -4,6 +4,7 @@ const BigNumber = require('bignumber.js');
 BigNumber.config({ROUNDING_MODE: BigNumber.ROUND_FLOOR});
 
 const PeerplaysNameExistsError = require('./../errors/peerplays-name-exists.error');
+const RestError = require('../errors/rest.error');
 
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
@@ -95,7 +96,7 @@ class PeerplaysRepository {
       res = await api.exec(query.method, params);
     } catch (e) {
       logger.warn('Peerplays returns error', e.message);
-      throw new Error('Peerplays error');
+      throw new RestError(e.message, 500);
     }
 
     return res;
@@ -201,7 +202,7 @@ class PeerplaysRepository {
       [result] = await tr.broadcast();
     } catch (e) {
       console.error(e.message);
-      throw e;
+      throw new RestError(e.message, 500);
     }
 
     return result;
@@ -220,7 +221,7 @@ class PeerplaysRepository {
       [result] = await tr.broadcast();
     } catch (e) {
       console.error(e.message);
-      throw e;
+      throw new RestError(e.message, 500);
     }
 
     return result;
@@ -242,7 +243,7 @@ class PeerplaysRepository {
       [result] = await tr.broadcast();
     } catch (e) {
       console.error(e.message);
-      throw e;
+      throw new RestError(e.message, 500);
     }
 
     return result;

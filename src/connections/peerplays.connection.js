@@ -11,6 +11,7 @@ const logger = getLogger();
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
 const BaseConnection = require('./abstracts/base.connection');
+const RestError = require('./../errors/rest.error');
 
 const HEALTHCHECK_INTERVAL = 1000 * 10; //milliseconds
 const MAX_RETRY_TIMEOUT = 60; //seconds
@@ -95,7 +96,7 @@ class PeerplaysConnection extends BaseConnection {
 
       return res.data;
     }).catch((err) => {
-      throw new Error(err.message);
+      throw new RestError(err.message, 500);
     });
   }
 
