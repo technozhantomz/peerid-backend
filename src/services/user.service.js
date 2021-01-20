@@ -307,7 +307,8 @@ class UserService {
 
     password = await bcrypt.hash(password, 10);
     const User = await this.userRepository.model.create({
-      email, username, password, mobile
+      email, username, password,
+      mobile: this.userRepository.normalizePhoneNumber(mobile)
     });
     const {token} = await this.verificationTokenRepository.createToken(User.id, email);
 
@@ -344,7 +345,7 @@ class UserService {
       throw new Error('Invalid password');
     }
 
-    if (mobile && User.mobile != mobile) {
+    if (mobile && this.userRepository.normalizePhoneNumber(User.mobile) != this.userRepository.normalizePhoneNumber(mobile)) {
       throw new Error('Mobile doesn\'t match email');
     }
 
