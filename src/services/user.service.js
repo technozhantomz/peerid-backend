@@ -502,10 +502,11 @@ class UserService {
       let month = today.getMonth();
       let day = today.getDate();
       let threeMonthsFromNow = new Date(year, month + 3, day);
+      let ops = [];
       const Ops = [85, 86, 87];
 
       for(let i = 0; i < Ops.length; i++) {
-        const customAuth = await this.peerplaysRepository.createAndSendTransaction('custom_account_authority_create', {
+        ops.push(['custom_account_authority_create', {
           fee: {
             amount: 0,
             asset_id: this.config.peerplays.feeAssetId
@@ -516,11 +517,15 @@ class UserService {
           valid_to: Math.floor(new Number(threeMonthsFromNow)/1000),
           owner_account: user.peerplaysAccountId,
           extensions: null
-        }, user.peerplaysAccountName, peerplaysPassword);
+        }]);
+      }
 
+      const customAuths = await this.peerplaysRepository.createAndSendMultipleOperations(ops, user.peerplaysAccountName, peerplaysPassword);
+
+      for(let i = 0; i < Ops.length; i++) {
         await this.authorityRepository.model.create({
           peerplays_permission_id: Permission.peerplays_permission_id,
-          peerplays_account_auth_id: customAuth.trx.operation_results[0][1],
+          peerplays_account_auth_id: customAuths.trx.operation_results[i][1],
           operation: Ops[i],
           expiry: threeMonthsFromNow,
           app_id: null,

@@ -227,6 +227,48 @@ class PeerplaysRepository {
     return result;
   }
 
+  async createAndSendMultipleOperations(ops, peerplaysAccountName, peerplaysPassword) {
+    const tr = new TransactionBuilder();
+    let result, keys, activePrivateKey, activePublicKey, isWIF= false;
+
+    if(peerplaysAccountName && peerplaysPassword) {
+      try {
+        activePrivateKey = PrivateKey.fromWif(peerplaysPassword);
+        activePublicKey = activePrivateKey.toPublicKey().toPublicKeyString();
+        isWIF = true;
+      } catch(err) {
+        isWIF = false;
+      }
+
+      if(!isWIF) {
+        keys = Login.generateKeys(peerplaysAccountName, peerplaysPassword,
+          ['active'],
+          IS_PRODUCTION ? 'PPY' : 'TEST');
+        activePrivateKey = keys.privKeys.active;
+        activePublicKey = keys.pubKeys.active;
+      }
+    } else {
+      activePrivateKey = this.pKey;
+      activePublicKey = this.pKey.toPublicKey().toPublicKeyString();
+    }
+
+    try {
+      for(let i = 0; i < ops.length; i++) {
+        tr.add_type_operation(ops[i][0], ops[i][1]);
+      }
+
+      await tr.set_required_fees();
+      tr.add_signer(activePrivateKey, activePublicKey);
+      console.trace('serialized transaction:', JSON.stringify(tr.serialize()));
+      [result] = await tr.broadcast();
+    } catch (e) {
+      console.error(e.message);
+      throw new RestError(e.message, 500);
+    }
+
+    return result;
+  }
+
   async createTransactionFromOps(opJson) {
     const tr = new TransactionBuilder();
     let result;
