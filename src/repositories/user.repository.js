@@ -68,6 +68,10 @@ class UserRepository extends BasePostgresRepository {
   }
 
   normalizePhoneNumber(mobile) {
+    if(!mobile) {
+      return mobile;
+    }
+
     var number = mobile;
     number = number.replace(/[^\d+]+/g, '');
     number = number.replace(/^00/, '+');
