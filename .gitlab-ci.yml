@@ -4,12 +4,23 @@ include:
   - template: License-Management.gitlab-ci.yml
   - template: SAST.gitlab-ci.yml
   - template: Code-Quality.gitlab-ci.yml
+  - template: DAST.gitlab-ci.yml
+
+variables:
+  SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
+  GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
+  DAST_WEBSITE: $WEBSITE
+
+dast:
+  before_script:
+    - echo "$WEBSITE" > environment_url.txt
 
 # node docker image on which this would be run
 image: node:12
 
 stages:
   - test
+  - dast
 
 # builds app
 build:
@@ -19,9 +30,6 @@ build:
   tags:
     - docker
     
-variables:
- SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
- GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
 sonarcloud-check:
  image:
    name: sonarsource/sonar-scanner-cli:latest
