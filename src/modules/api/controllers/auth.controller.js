@@ -21,6 +21,10 @@ const RestError = require('../../../errors/rest.error');
  *      mobile:
  *        type: string
  *        example: 999-999-9999
+ *      redirect_uri:
+ *        type: string
+ *        format: uri
+ *        example: https://www.abc.com/confirm-email/
  *  AuthSignInUser:
  *    type: object
  *    required:
@@ -479,8 +483,8 @@ class AuthController {
     return true;
   }
 
-  async signUp(user, {email, mobile, password, username}) {
-    return this.userService.signUpWithPassword(email.toLowerCase(), username, password, mobile);
+  async signUp(user, {email, mobile, password, username, redirect_uri}) {
+    return this.userService.signUpWithPassword(email.toLowerCase(), username, password, mobile, redirect_uri);
   }
 
   async confirmEmail(user, ActiveToken, req) {

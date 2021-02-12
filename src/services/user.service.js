@@ -283,7 +283,7 @@ class UserService {
     return result;
   }
 
-  async signUpWithPassword(email, username, unhashedPassword, mobile) {
+  async signUpWithPassword(email, username, unhashedPassword, mobile, redirectUri) {
     let password = unhashedPassword;
 
     if(!unhashedPassword) {
@@ -312,7 +312,7 @@ class UserService {
     });
     const {token} = await this.verificationTokenRepository.createToken(User.id, email);
 
-    await this.mailService.sendMailAfterRegistration(username, email, peerplaysAccountPassword, token);
+    await this.mailService.sendMailAfterRegistration(username, email, peerplaysAccountPassword, token, redirectUri);
 
     await this.peerplaysRepository.createPeerplaysAccount(peerplaysAccountUsername,ownerKey, activeKey);
 

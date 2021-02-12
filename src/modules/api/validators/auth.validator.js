@@ -55,7 +55,8 @@ class AuthValidator extends BaseValidator {
       email: Joi.string().email().required(),
       mobile: Joi.string().regex(/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/).optional(),
       username: Joi.string().regex(/^[a-z][a-z0-9-]+[a-z0-9]$/).min(3).max(60).optional(),
-      password: Joi.string().regex(/^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])[a-zA-Z0-9!@#\$%\^&\*]+$/).min(6).max(60).optional()
+      password: Joi.string().regex(/^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])[a-zA-Z0-9!@#\$%\^&\*]+$/).min(6).max(60).optional(),
+      redirect_uri: Joi.string().uri().optional()
     };
 
     return this.validate(null, bodySchema, async (req, query, body) => {
@@ -98,7 +99,7 @@ class AuthValidator extends BaseValidator {
         }
       }
 
-      return {email, mobile, password, username};
+      return body;
     });
   }
 
