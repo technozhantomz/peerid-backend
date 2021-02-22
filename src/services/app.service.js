@@ -519,6 +519,25 @@ class AppService {
   }
 
   async getAccessToken(user, app) {
+    const Authorities = await this.authorityRepository.model.findAll({
+      where: {
+        app_id: app.id,
+        user_id: user.id
+      }
+    });
+
+    if(Authorities && Authorities.length > 0) {
+      return this.accessTokenRepository.model.findOne({
+        where: {
+          app_id: app.id,
+          user_id: user.id
+        },
+        order: [
+          ['expires', 'DESC']
+        ]
+      });
+    }
+
     const code = await this.joinApp(user, app);
     const grantCode = await this.grantCodeRepository.model.findOne({where:{code}});
 

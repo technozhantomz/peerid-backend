@@ -533,19 +533,6 @@ class AppValidator extends BaseValidator {
         });
       }
 
-      const Authorities = await this.authorityRepository.model.findAll({
-        where: {
-          app_id: client_id,
-          user_id: user.id
-        }
-      });
-
-      if(Authorities && Authorities.length > 0) {
-        throw new ValidateError(400, 'Validate error', {
-          login: 'You have already joined this app'
-        });
-      }
-
       //validate client id
       const AppExists = await this.appRepository.model.findOne({
         where: {
