@@ -474,7 +474,7 @@ class UserService {
     let permissionName = `pid${this.randomizePermissionName()}`;
 
     try {
-      const customPermission = await this.peerplaysRepository.createAndSendTransaction('custom_permission_create',{
+      const permissionJson = {
         fee: {
           amount: 0,
           asset_id: this.config.peerplays.feeAssetId
@@ -487,8 +487,29 @@ class UserService {
           key_auths: [],
           address_auths: []
         },
-        extensions: null
-      }, user.peerplaysAccountName, peerplaysPassword);
+        extensions: []
+      };
+
+      const amt = await this.peerplaysRepository.getOperationFee([[82, permissionJson]], this.config.peerplays.feeAssetId);
+
+      await this.peerplaysRepository.createSendTransaction('transfer', {
+        fee: {
+          amount: 0,
+          asset_id: this.config.peerplays.feeAssetId
+        },
+        from: this.config.peerplays.paymentAccountID,
+        to: user.peerplaysAccountId,
+        amount: {
+          amount: amt * 4,
+          asset_id: this.config.peerplays.feeAssetId
+        }
+      });
+
+      const customPermission = await this.peerplaysRepository.createAndSendTransaction(
+        'custom_permission_create',
+        permissionJson,
+        user.peerplaysAccountName,
+        peerplaysPassword);
 
       const Permission = await this.permissionRepository.model.create({
         peerplays_permission_id: customPermission.trx.operation_results[0][1],
@@ -516,7 +537,7 @@ class UserService {
           valid_from: Math.floor(new Number(today)/1000),
           valid_to: Math.floor(new Number(threeMonthsFromNow)/1000),
           owner_account: user.peerplaysAccountId,
-          extensions: null
+          extensions: []
         }]);
       }
 

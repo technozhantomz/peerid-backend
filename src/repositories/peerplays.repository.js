@@ -275,7 +275,6 @@ class PeerplaysRepository {
 
     try {
       for(let i = 0; i < opJson.length; i++) {
-        console.log('Adding ' + JSON.stringify(opJson[i]));
         tr.add_type_operation(opJson[i][0],opJson[i][1]);
       }
 
@@ -289,6 +288,12 @@ class PeerplaysRepository {
     }
 
     return result;
+  }
+
+  async getOperationFee(opsArr, assetId) {
+    return await this.peerplaysConnection.dbAPI.exec('get_required_fees', [opsArr, assetId]).then((result) => {
+      return result.map(({amount}) => amount).reduce((a,b) => a+b, 0);
+    });
   }
 }
 
