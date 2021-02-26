@@ -6,14 +6,16 @@ class GoogleController {
   /**
    * @param {UserService} opts.userService
    * @param {AppConfig} opts.config
+   * @param {SessionRepository} opts.sessionRepository
    */
   constructor(opts) {
     this.userService = opts.userService;
     this.config = opts.config;
+    this.sessionRepository = opts.sessionRepository;
 
     this.DEFAULT_SCOPE = [
       'https://www.googleapis.com/auth/userinfo.profile',
-      'https://www.googleapis.com/auth/userinfo.email',
+      'https://www.googleapis.com/auth/userinfo.email'
     ];
   }
 
@@ -44,7 +46,7 @@ class GoogleController {
         req.session.redirectURI = req.query.redirect_uri;
 
         if(req.query.state) {
-          req.session.state = req.query.state
+          req.session.state = req.query.state;
         }
 
         req.session.save();
@@ -72,9 +74,11 @@ class GoogleController {
 
         if(req.session.redirectURI) {
           let query = `?client_id=${req.session.appId}&redirect_uri=${req.session.redirectURI}`;
+
           if(req.query.state) {
             query = `${query}&state=${req.session.state}`;
           }
+
           res.redirect(`${this.config.frontendCallbackUrl}/permissions${query}`);
         }else {
           res.redirect(`${this.config.frontendCallbackUrl}`);
@@ -98,6 +102,7 @@ class GoogleController {
         ...profile._json,
         username: profile._json.email.replace(/@.+/, '')
       }, accessToken, req).then((User) => {
+        this.sessionRepository.limitSessions(User.id);
         this.userService.getCleanUser(User).then((user) => done(null, user));
       }).catch((error) => {
         done(error);

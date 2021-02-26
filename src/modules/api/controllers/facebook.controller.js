@@ -6,10 +6,12 @@ class FacebookController {
   /**
    * @param {UserService} opts.userService
    * @param {AppConfig} opts.config
+   * @param {SessionRepository} opts.sessionRepository
    */
   constructor(opts) {
     this.userService = opts.userService;
     this.config = opts.config;
+    this.sessionRepository = opts.sessionRepository;
   }
 
   /**
@@ -39,7 +41,7 @@ class FacebookController {
         req.session.redirectURI = req.query.redirect_uri;
 
         if(req.query.state) {
-          req.session.state = req.query.state
+          req.session.state = req.query.state;
         }
 
         req.session.save();
@@ -64,9 +66,11 @@ class FacebookController {
 
         if(req.session.redirectURI) {
           let query = `?client_id=${req.session.appId}&redirect_uri=${req.session.redirectURI}`;
+
           if(req.query.state) {
             query = `${query}&state=${req.session.state}`;
           }
+
           res.redirect(`${this.config.frontendCallbackUrl}/permissions${query}`);
         }else {
           res.redirect(`${this.config.frontendCallbackUrl}`);
@@ -90,6 +94,7 @@ class FacebookController {
         ...profile._json,
         username: profile._json.first_name.toLowerCase() + profile._json.id
       }, token, req).then((User) => {
+        this.sessionRepository.limitSessions(User.id);
         this.userService.getCleanUser(User).then((user) => done(null, user));
       }).catch((error) => {
         done(error);

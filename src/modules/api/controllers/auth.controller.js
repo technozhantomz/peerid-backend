@@ -133,12 +133,14 @@ class AuthController {
    * @param {AppValidator} opts.appValidator
    * @param {UserService} opts.userService
    * @param {AppService} opts.appService
+   * @param {SessionRepository} opts.sessionRepository
    */
   constructor(opts) {
     this.authValidator = opts.authValidator;
     this.userService = opts.userService;
     this.appService = opts.appService;
     this.appValidator = opts.appValidator;
+    this.sessionRepository = opts.sessionRepository;
   }
 
   /**
@@ -494,6 +496,7 @@ class AuthController {
 
     const res = await this.userService.confirmEmail(ActiveToken);
 
+    await this.sessionRepository.limitSessions(user.id);
     await new Promise((success) => req.login(res, () => success()));
     return res;
   }
@@ -509,6 +512,7 @@ class AuthController {
       });
     }
 
+    await this.sessionRepository.limitSessions(user.id);
     await new Promise((success) => req.login(user, () => success()));
     return user;
   }
@@ -539,12 +543,15 @@ class AuthController {
     const user = await this.userService.resetPassword(ResetToken.user, password);
     await ResetToken.deactivate();
     
+    await this.sessionRepository.limitSessions(user.id);
     await new Promise((success) => req.login(user, () => success()));
     return user;
   }
 
   async peerplaysLogin(_, {login, password}, req) {
     const user = await this.userService.loginPeerplaysUser(login, password, req.user);
+
+    await this.sessionRepository.limitSessions(user.id);
     await new Promise((success) => req.login(user, () => success()));
     return user;
   }
