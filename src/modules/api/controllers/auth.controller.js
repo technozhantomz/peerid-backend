@@ -38,6 +38,17 @@ const RestError = require('../../../errors/rest.error');
  *      mobile:
  *        type: string
  *        example: 999-999-9999
+ *  PeerplaysLogin:
+ *    type: object
+ *    required:
+ *      - login
+ *      - password
+ *    properties:
+ *      login:
+ *        type: string
+ *      password:
+ *        type: string
+ *        format: password
  *  AuthForgotPassword:
  *    type: object
  *    required:
@@ -367,7 +378,7 @@ class AuthController {
        *      - in: body
        *        required: true
        *        schema:
-       *          $ref: '#/definitions/AuthSignInUser'
+       *          $ref: '#/definitions/PeerplaysLogin'
        *    responses:
        *      200:
        *        description: Login response
@@ -476,6 +487,37 @@ class AuthController {
         '/api/v1/auth/token',
         this.appValidator.validateROPCFlow,
         this.loginAndGetToken.bind(this)
+      ],
+      /**
+       * @swagger
+       *
+       * /auth/create-permission:
+       *  post:
+       *    description: Create custom permission and authorities, if they don't exist
+       *    produces:
+       *      - application/json
+       *    tags:
+       *      - Auth
+       *    parameters:
+       *      - in: body
+       *        required: true
+       *        schema:
+       *          $ref: '#/definitions/PeerplaysLogin'
+       *    responses:
+       *      200:
+       *        description: User response
+       *        schema:
+       *         $ref: '#/definitions/UserResponse'
+       *      400:
+       *        description: Error form validation
+       *        schema:
+       *          $ref: '#/definitions/ValidateError'
+       */
+      [
+        'post',
+        '/api/v1/auth/create-permission',
+        this.authValidator.createCustomPermission,
+        this.createCustomPermission.bind(this)
       ]
     ];
   }
@@ -576,6 +618,13 @@ class AuthController {
     }
 
     return await this.appService.getAccessToken(signedInUser, AppExists);
+  }
+
+  async createCustomPermission(user, {User, password}, req) {
+    await this.userService.createCustomPermission(User, password);
+
+    await new Promise((success) => req.login(User, () => success()));
+    return User;
   }
 }
 
