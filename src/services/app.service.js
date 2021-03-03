@@ -314,6 +314,13 @@ class AppService {
       }
     } catch(err) {
       console.error(err);
+
+      if(err.message.indexOf('rbac_max_authorities_per_permission') > -1) {
+        throw new ValidateError(400, 'Validate error', {
+          user: 'Max operations that can be linked to this user reached'
+        });
+      }
+
       throw new Error('Peerplays HRP Error');
     }
 
