@@ -171,14 +171,39 @@ class AppService {
       const Authorities = await this.authorityRepository.model.findAll({where: {user_id: user.id, app_id: appId}});
 
       let today = new Date();
-      let year = today.getFullYear();
-      let month = today.getMonth();
-      let day = today.getDate();
-      let threeMonthsFromNow = new Date(year, month + 3, day);
+      let threeMonthsFromNow = new Date();
+      threeMonthsFromNow.setMonth(today.getMonth() + 3);
 
       let ops = [], customAuths;
 
       try {
+        const authJson = {
+          fee: {
+            amount: 0,
+            asset_id: this.config.peerplays.feeAssetId
+          },
+          auth_id: Authorities[0].peerplays_account_auth_id,
+          new_valid_from: today.toISOString().split('.')[0],
+          new_valid_to: threeMonthsFromNow.toISOString().split('.')[0],
+          owner_account: user.peerplaysAccountId,
+          extensions: []
+        };
+
+        const amt = await this.peerplaysRepository.getOperationFee([[86, authJson]], this.config.peerplays.feeAssetId);
+
+        await this.peerplaysRepository.createSendTransaction('transfer', {
+          fee: {
+            amount: 0,
+            asset_id: this.config.peerplays.feeAssetId
+          },
+          from: this.config.peerplays.paymentAccountID,
+          to: user.peerplaysAccountId,
+          amount: {
+            amount: amt * Authorities.length,
+            asset_id: this.config.peerplays.feeAssetId
+          }
+        });
+
         for(let i = 0; i < Authorities.length; i++) {
           ops.push(['custom_account_authority_update', {
             fee: {
@@ -279,10 +304,36 @@ class AppService {
 
     try{
       let today = new Date();
-      let year = today.getFullYear();
-      let month = today.getMonth();
-      let day = today.getDate();
-      let threeMonthsFromNow = new Date(year, month + 3, day);
+      let threeMonthsFromNow = new Date();
+      threeMonthsFromNow.setMonth(today.getMonth() + 3);
+
+      const authJson = {
+        fee: {
+          amount: 0,
+          asset_id: this.config.peerplays.feeAssetId
+        },
+        permission_id: Permission.peerplays_permission_id,
+        operation_type: Ops[0].operation_requested,
+        valid_from: today.toISOString().split('.')[0],
+        valid_to: threeMonthsFromNow.toISOString().split('.')[0],
+        owner_account: user.peerplaysAccountId,
+        extensions: []
+      };
+
+      const amt = await this.peerplaysRepository.getOperationFee([[85, authJson]], this.config.peerplays.feeAssetId);
+
+      await this.peerplaysRepository.createSendTransaction('transfer', {
+        fee: {
+          amount: 0,
+          asset_id: this.config.peerplays.feeAssetId
+        },
+        from: this.config.peerplays.paymentAccountID,
+        to: user.peerplaysAccountId,
+        amount: {
+          amount: amt * Ops.length,
+          asset_id: this.config.peerplays.feeAssetId
+        }
+      });
 
       for(let i = 0; i < Ops.length; i++) {
         ops.push(['custom_account_authority_create', {
@@ -410,6 +461,31 @@ class AppService {
     try {
       const Authorities = await this.authorityRepository.model.findAll({where: {user_id: user.id, app_id: app.id}});
 
+      const authJson = {
+        fee: {
+          amount: 0,
+          asset_id: this.config.peerplays.feeAssetId
+        },
+        auth_id: Authorities[0].peerplays_account_auth_id,
+        owner_account: user.peerplaysAccountId,
+        extensions: []
+      };
+
+      const amt = await this.peerplaysRepository.getOperationFee([[87, authJson]], this.config.peerplays.feeAssetId);
+
+      await this.peerplaysRepository.createSendTransaction('transfer', {
+        fee: {
+          amount: 0,
+          asset_id: this.config.peerplays.feeAssetId
+        },
+        from: this.config.peerplays.paymentAccountID,
+        to: user.peerplaysAccountId,
+        amount: {
+          amount: amt * Authorities.length,
+          asset_id: this.config.peerplays.feeAssetId
+        }
+      });
+
       for(let i = 0; i < Authorities.length; i++) {
         const customAuth = await this.peerplaysRepository.createSendTransaction('custom_account_authority_delete', {
           fee: {
@@ -465,12 +541,37 @@ class AppService {
     const User = await this.userRepository.findByPk(AccessToken.user_id);
 
     let today = new Date();
-    let year = today.getFullYear();
-    let month = today.getMonth();
-    let day = today.getDate();
-    let threeMonthsFromNow = new Date(year, month + 3, day);
+    let threeMonthsFromNow = new Date();
+    threeMonthsFromNow.setMonth(today.getMonth() + 3);
 
     try {
+      const authJson = {
+        fee: {
+          amount: 0,
+          asset_id: this.config.peerplays.feeAssetId
+        },
+        auth_id: Authorities[0].peerplays_account_auth_id,
+        new_valid_from: today.toISOString().split('.')[0],
+        new_valid_to: threeMonthsFromNow.toISOString().split('.')[0],
+        owner_account: User.peerplaysAccountId,
+        extensions: []
+      };
+
+      const amt = await this.peerplaysRepository.getOperationFee([[86, authJson]], this.config.peerplays.feeAssetId);
+
+      await this.peerplaysRepository.createSendTransaction('transfer', {
+        fee: {
+          amount: 0,
+          asset_id: this.config.peerplays.feeAssetId
+        },
+        from: this.config.peerplays.paymentAccountID,
+        to: User.peerplaysAccountId,
+        amount: {
+          amount: amt * Authorities.length,
+          asset_id: this.config.peerplays.feeAssetId
+        }
+      });
+
       for(let i = 0; i < Authorities.length; i++) {
         ops.push(['custom_account_authority_update', {
           fee: {

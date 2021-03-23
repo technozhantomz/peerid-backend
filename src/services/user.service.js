@@ -519,10 +519,8 @@ class UserService {
       });
 
       let today = new Date();
-      let year = today.getFullYear();
-      let month = today.getMonth();
-      let day = today.getDate();
-      let threeMonthsFromNow = new Date(year, month + 3, day);
+      let threeMonthsFromNow = new Date();
+      threeMonthsFromNow.setMonth(today.getMonth() + 3);
       let ops = [];
       const Ops = [85, 86, 87];
 
