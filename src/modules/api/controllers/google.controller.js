@@ -96,7 +96,7 @@ class GoogleController {
       clientID: this.config.google.clientId,
       clientSecret: this.config.google.clientSecret,
       callbackURL: `${this.config.backendUrl}/api/v1/auth/google/callback`
-    }, (req, accessToken, profile, done) => {
+    }, (req, accessToken, refresh_token, profile, done) => {
       this.userService.getUserBySocialNetworkAccount('google', {
         id: profile.id,
         ...profile._json,

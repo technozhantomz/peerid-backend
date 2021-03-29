@@ -75,9 +75,9 @@ class UserService {
       throw new Error('failed to create peerplays account, too many retries');
     }
 
-    const hash = crypto.createHash('sha256').digest(username).toString('hex').slice(0, 32);
+    const hash = crypto.createHash('sha256').digest(username).toString('hex').slice(0, 20);
     const randomString = `${Math.floor(Math.min(1000 + Math.random() * 9000, 9999))}`; // random 4 digit number
-    const seUsername = numRetries === 0 ? `pi-${hash}` : `pi-${hash}-${randomString}`;
+    const seUsername = numRetries === 0 ? `pi-${username}${hash}` : `pi-${username}${hash}-${randomString}`;
 
     const keys = Login.generateKeys(
       seUsername,

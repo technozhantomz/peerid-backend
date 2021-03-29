@@ -2,8 +2,6 @@ const logger = require('log4js').getLogger('peerplays.repository');
 const {PrivateKey, Login, TransactionBuilder} = require('peerplaysjs-lib');
 const BigNumber = require('bignumber.js');
 BigNumber.config({ROUNDING_MODE: BigNumber.ROUND_FLOOR});
-
-const PeerplaysNameExistsError = require('./../errors/peerplays-name-exists.error');
 const RestError = require('../errors/rest.error');
 
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
@@ -36,12 +34,6 @@ class PeerplaysRepository {
 
       return {name, ...account};
     } catch (err) {
-      if (err.base && err.base[0]) {
-        if (err.base[0] === 'Account exists') {
-          throw new PeerplaysNameExistsError(`an account with name "${name}" already exists`);
-        }
-      }
-
       throw err;
     }
   }
