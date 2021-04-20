@@ -538,7 +538,7 @@ class AuthController {
 
     const res = await this.userService.confirmEmail(ActiveToken);
 
-    await this.sessionRepository.limitSessions(user.id);
+    await this.sessionRepository.limitSessions(user);
     await new Promise((success) => req.login(res, () => success()));
     return res;
   }
