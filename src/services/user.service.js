@@ -75,9 +75,9 @@ class UserService {
       throw new Error('failed to create peerplays account, too many retries');
     }
 
-    const hash = crypto.createHash('sha256').digest(username).toString('hex').slice(0, 32);
+    const hash = crypto.createHash('sha256').digest(username).toString('hex').slice(0, 20);
     const randomString = `${Math.floor(Math.min(1000 + Math.random() * 9000, 9999))}`; // random 4 digit number
-    const seUsername = numRetries === 0 ? `pi-${hash}` : `pi-${hash}-${randomString}`;
+    const seUsername = numRetries === 0 ? `pi-${username}${hash}` : `pi-${username}${hash}-${randomString}`;
 
     const keys = Login.generateKeys(
       seUsername,
@@ -283,7 +283,7 @@ class UserService {
     return result;
   }
 
-  async signUpWithPassword(email, username, unhashedPassword, mobile) {
+  async signUpWithPassword(email, username, unhashedPassword, mobile, redirectUri) {
     let password = unhashedPassword;
 
     if(!unhashedPassword) {
@@ -307,11 +307,12 @@ class UserService {
 
     password = await bcrypt.hash(password, 10);
     const User = await this.userRepository.model.create({
-      email, username, password, mobile
+      email, username, password,
+      mobile: this.userRepository.normalizePhoneNumber(mobile)
     });
     const {token} = await this.verificationTokenRepository.createToken(User.id, email);
 
-    await this.mailService.sendMailAfterRegistration(username, email, peerplaysAccountPassword, token);
+    await this.mailService.sendMailAfterRegistration(username, email, peerplaysAccountPassword, token, redirectUri);
 
     await this.peerplaysRepository.createPeerplaysAccount(peerplaysAccountUsername,ownerKey, activeKey);
 
@@ -344,7 +345,7 @@ class UserService {
       throw new Error('Invalid password');
     }
 
-    if (mobile && User.mobile != mobile) {
+    if (mobile && this.userRepository.normalizePhoneNumber(User.mobile) != this.userRepository.normalizePhoneNumber(mobile)) {
       throw new Error('Mobile doesn\'t match email');
     }
 
@@ -501,10 +502,11 @@ class UserService {
       let month = today.getMonth();
       let day = today.getDate();
       let threeMonthsFromNow = new Date(year, month + 3, day);
+      let ops = [];
       const Ops = [85, 86, 87];
 
       for(let i = 0; i < Ops.length; i++) {
-        const customAuth = await this.peerplaysRepository.createAndSendTransaction('custom_account_authority_create', {
+        ops.push(['custom_account_authority_create', {
           fee: {
             amount: 0,
             asset_id: this.config.peerplays.feeAssetId
@@ -515,11 +517,15 @@ class UserService {
           valid_to: Math.floor(new Number(threeMonthsFromNow)/1000),
           owner_account: user.peerplaysAccountId,
           extensions: null
-        }, user.peerplaysAccountName, peerplaysPassword);
+        }]);
+      }
 
+      const customAuths = await this.peerplaysRepository.createAndSendMultipleOperations(ops, user.peerplaysAccountName, peerplaysPassword);
+
+      for(let i = 0; i < Ops.length; i++) {
         await this.authorityRepository.model.create({
           peerplays_permission_id: Permission.peerplays_permission_id,
-          peerplays_account_auth_id: customAuth.trx.operation_results[0][1],
+          peerplays_account_auth_id: customAuths.trx.operation_results[i][1],
           operation: Ops[i],
           expiry: threeMonthsFromNow,
           app_id: null,

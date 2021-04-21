@@ -11,6 +11,8 @@ const logger = getLogger();
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
 const BaseConnection = require('./abstracts/base.connection');
+const RestError = require('./../errors/rest.error');
+const PeerplaysNameExistsError = require('./../errors/peerplays-name-exists.error');
 
 const HEALTHCHECK_INTERVAL = 1000 * 10; //milliseconds
 const MAX_RETRY_TIMEOUT = 60; //seconds
@@ -93,9 +95,25 @@ class PeerplaysConnection extends BaseConnection {
         throw new Error('Peerplays: Unknown error');
       }
 
+      if(res.data.error) {
+        const err = res.data.error;
+
+        if (err.base && err.base[0]) {
+          if (err.base[0] === 'Account exists') {
+            throw new PeerplaysNameExistsError(`an account with name "${form.name}" already exists`);
+          }
+        }
+
+        throw new RestError(err, 500);
+      }
+
       return res.data;
     }).catch((err) => {
-      throw new Error(err.message);
+      if (err instanceof PeerplaysNameExistsError) {
+        throw err;
+      }
+
+      throw new RestError(err.message, 500);
     });
   }
 

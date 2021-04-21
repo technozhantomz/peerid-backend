@@ -13,27 +13,17 @@ class MailService {
     this.smtpConnection = opts.smtpConnection;
   }
 
-  async sendMailAfterRegistration(username, email, peerplaysPassword, uniqueLink) {
+  async sendMailAfterRegistration(username, email, peerplaysPassword, uniqueLink, redirectUri) {
     const sourceHTML = fs.readFileSync(`${__dirname}/templates/welcome.handlebars`).toString();
     const templateHTML = Handlebars.compile(sourceHTML);
-    const url = `${this.config.frontendCallbackUrl}/confirm-email/${uniqueLink}`;
-    const contact = 'mailto:support@peerid.com';
-    const terms = `${this.config.frontendUrl}/terms`;
-    const resultHtml = templateHTML({username, url, contact, terms, peerplaysPassword});
+    let url;
 
-    const options = {
-      to: email,
-      from: this.config.mailer.sender,
-      subject: 'Peer ID Account Registration',
-      html: resultHtml
-    };
-    await this.smtpConnection.sendMail(options);
-  }
+    if(redirectUri) {
+      url = `${redirectUri}?token=${uniqueLink}`;
+    } else {
+      url = `${this.config.frontendCallbackUrl}/confirm-email/${uniqueLink}`;
+    }
 
-  async sendMailAfterRegistration(username, email, peerplaysPassword, uniqueLink) {
-    const sourceHTML = fs.readFileSync(`${__dirname}/templates/welcome.handlebars`).toString();
-    const templateHTML = Handlebars.compile(sourceHTML);
-    const url = `${this.config.frontendCallbackUrl}/confirm-email/${uniqueLink}`;
     const resultHtml = templateHTML({username, url, peerplaysPassword});
 
     const options = {

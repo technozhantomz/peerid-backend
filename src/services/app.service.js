@@ -176,11 +176,11 @@ class AppService {
       let day = today.getDate();
       let threeMonthsFromNow = new Date(year, month + 3, day);
 
-      let customAuths = [];
+      let ops = [], customAuths;
 
       try {
         for(let i = 0; i < Authorities.length; i++) {
-          const customAuth = await this.peerplaysRepository.createSendTransaction('custom_account_authority_update', {
+          ops.push(['custom_account_authority_update', {
             fee: {
               amount: 0,
               asset_id: this.config.peerplays.feeAssetId
@@ -190,19 +190,21 @@ class AppService {
             new_valid_to: Math.floor(new Number(threeMonthsFromNow)/1000),
             owner_account: user.peerplaysAccountId,
             extensions: null
-          });
+          }]);
+        }
 
-          Authorities[i].expiry = customAuth.trx.operations[0][1].valid_to;
+        customAuths = await this.peerplaysRepository.createAndSendMultipleOperations(ops);
+
+        for(let i = 0; i < Authorities.length; i++) {
+          Authorities[i].expiry = customAuths.trx.operations[i][1].new_valid_to;
           Authorities[i].save();
-
-          customAuths.push(customAuth);
         }
       } catch(err) {
         console.error(err);
         throw new Error('Peerplays HRP Error');
       }
 
-      if(customAuths && customAuths.length > 0) {
+      if(customAuths && customAuths.trx.operations.length > 0) {
         const token = await this.generateUniqueAccessToken();
         const refresh_token = await this.generateUniqueRefreshToken();
         return this.accessTokenRepository.model.create({
@@ -273,7 +275,7 @@ class AppService {
       where: {app_id: app.id}
     });
 
-    let customAuths = [];
+    let ops = [], customAuths;
 
     try{
       let today = new Date();
@@ -283,7 +285,7 @@ class AppService {
       let threeMonthsFromNow = new Date(year, month + 3, day);
 
       for(let i = 0; i < Ops.length; i++) {
-        const customAuth = await this.peerplaysRepository.createSendTransaction('custom_account_authority_create', {
+        ops.push(['custom_account_authority_create', {
           fee: {
             amount: 0,
             asset_id: this.config.peerplays.feeAssetId
@@ -294,28 +296,37 @@ class AppService {
           valid_to: Math.floor(new Number(threeMonthsFromNow)/1000),
           owner_account: user.peerplaysAccountId,
           extensions: null
-        });
+        }]);
+      }
 
+      customAuths = await this.peerplaysRepository.createAndSendMultipleOperations(ops);
+
+      for(let i = 0; i < Ops.length; i++) {
         await this.authorityRepository.model.create({
-          peerplays_permission_id: customAuth.trx.operations[0][1].permission_id,
-          peerplays_account_auth_id: customAuth.trx.operation_results[0][1],
-          operation: customAuth.trx.operations[0][1].operation_type,
-          expiry: customAuth.trx.operations[0][1].valid_to,
+          peerplays_permission_id: customAuths.trx.operations[i][1].permission_id,
+          peerplays_account_auth_id: customAuths.trx.operation_results[i][1],
+          operation: customAuths.trx.operations[i][1].operation_type,
+          expiry: customAuths.trx.operations[i][1].valid_to,
           app_id: app.id,
           user_id: user.id,
           permission_id: Permission.id
         });
-
-        customAuths.push(customAuth);
       }
     } catch(err) {
       console.error(err);
+
+      if(err.message.indexOf('rbac_max_authorities_per_permission') > -1) {
+        throw new ValidateError(400, 'Validate error', {
+          user: 'Max operations that can be linked to this user reached'
+        });
+      }
+
       throw new Error('Peerplays HRP Error');
     }
 
     let code = '';
 
-    if(customAuths && customAuths.length > 0) {
+    if(customAuths && customAuths.trx.operations.length > 0) {
       code = await this.getGrantCode(app, user);
     }
 
@@ -454,7 +465,7 @@ class AppService {
   }
 
   async refreshAccessToken(user, app_id, AccessToken) {
-    let customAuths = [];
+    let customAuths, ops = [];
 
     const Authorities = await this.authorityRepository.model.findAll({where: {user_id: AccessToken.user_id, app_id}});
 
@@ -468,7 +479,7 @@ class AppService {
 
     try {
       for(let i = 0; i < Authorities.length; i++) {
-        const customAuth = await this.peerplaysRepository.createSendTransaction('custom_account_authority_update', {
+        ops.push(['custom_account_authority_update', {
           fee: {
             amount: 0,
             asset_id: this.config.peerplays.feeAssetId
@@ -478,19 +489,21 @@ class AppService {
           new_valid_to: Math.floor(new Number(threeMonthsFromNow)/1000),
           owner_account: User.peerplaysAccountId,
           extensions: null
-        });
+        }]);
+      }
 
-        Authorities[i].expiry = customAuth.trx.operations[0][1].new_valid_to;
+      customAuths = await this.peerplaysRepository.createAndSendMultipleOperations(ops);
+
+      for(let i = 0; i < Authorities.length; i++) {
+        Authorities[i].expiry = customAuths.trx.operations[i][1].new_valid_to;
         Authorities[i].save();
-
-        customAuths.push(customAuth);
       }
     } catch(err) {
       console.error(err);
       throw new Error('Peerplays HRP Error');
     }
 
-    if(customAuths && customAuths.length > 0) {
+    if(customAuths && customAuths.trx.operations.length > 0) {
       const token = await this.generateUniqueAccessToken();
       const refresh_token = await this.generateUniqueRefreshToken();
 
@@ -513,6 +526,25 @@ class AppService {
   }
 
   async getAccessToken(user, app) {
+    const Authorities = await this.authorityRepository.model.findAll({
+      where: {
+        app_id: app.id,
+        user_id: user.id
+      }
+    });
+
+    if(Authorities && Authorities.length > 0) {
+      return this.accessTokenRepository.model.findOne({
+        where: {
+          app_id: app.id,
+          user_id: user.id
+        },
+        order: [
+          ['expires', 'DESC']
+        ]
+      });
+    }
+
     const code = await this.joinApp(user, app);
     const grantCode = await this.grantCodeRepository.model.findOne({where:{code}});
 

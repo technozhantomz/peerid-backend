@@ -66,7 +66,7 @@ class BaseValidator {
 
       if (error) {
         /* eslint-disable-next-line prefer-destructuring */
-        errors[key] = error.message.match(/\[(.+)\]/) ? error.message.match(/\[(.+)\]/)[1] : error.message;
+        errors[key] = error.message;
       } else if (typeof value !== 'undefined') {
         result[key] = value;
       }

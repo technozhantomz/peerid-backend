@@ -21,6 +21,10 @@ const RestError = require('../../../errors/rest.error');
  *      mobile:
  *        type: string
  *        example: 999-999-9999
+ *      redirect_uri:
+ *        type: string
+ *        format: uri
+ *        example: https://www.abc.com/confirm-email/
  *  AuthSignInUser:
  *    type: object
  *    required:
@@ -34,6 +38,17 @@ const RestError = require('../../../errors/rest.error');
  *      mobile:
  *        type: string
  *        example: 999-999-9999
+ *  PeerplaysLogin:
+ *    type: object
+ *    required:
+ *      - login
+ *      - password
+ *    properties:
+ *      login:
+ *        type: string
+ *      password:
+ *        type: string
+ *        format: password
  *  AuthForgotPassword:
  *    type: object
  *    required:
@@ -129,12 +144,14 @@ class AuthController {
    * @param {AppValidator} opts.appValidator
    * @param {UserService} opts.userService
    * @param {AppService} opts.appService
+   * @param {SessionRepository} opts.sessionRepository
    */
   constructor(opts) {
     this.authValidator = opts.authValidator;
     this.userService = opts.userService;
     this.appService = opts.appService;
     this.appValidator = opts.appValidator;
+    this.sessionRepository = opts.sessionRepository;
   }
 
   /**
@@ -361,7 +378,7 @@ class AuthController {
        *      - in: body
        *        required: true
        *        schema:
-       *          $ref: '#/definitions/AuthSignInUser'
+       *          $ref: '#/definitions/PeerplaysLogin'
        *    responses:
        *      200:
        *        description: Login response
@@ -470,6 +487,37 @@ class AuthController {
         '/api/v1/auth/token',
         this.appValidator.validateROPCFlow,
         this.loginAndGetToken.bind(this)
+      ],
+      /**
+       * @swagger
+       *
+       * /auth/create-permission:
+       *  post:
+       *    description: Create custom permission and authorities, if they don't exist
+       *    produces:
+       *      - application/json
+       *    tags:
+       *      - Auth
+       *    parameters:
+       *      - in: body
+       *        required: true
+       *        schema:
+       *          $ref: '#/definitions/PeerplaysLogin'
+       *    responses:
+       *      200:
+       *        description: User response
+       *        schema:
+       *         $ref: '#/definitions/UserResponse'
+       *      400:
+       *        description: Error form validation
+       *        schema:
+       *          $ref: '#/definitions/ValidateError'
+       */
+      [
+        'post',
+        '/api/v1/auth/create-permission',
+        this.authValidator.createCustomPermission,
+        this.createCustomPermission.bind(this)
       ]
     ];
   }
@@ -479,8 +527,8 @@ class AuthController {
     return true;
   }
 
-  async signUp(user, {email, mobile, password, username}) {
-    return this.userService.signUpWithPassword(email.toLowerCase(), username, password, mobile);
+  async signUp(user, {email, mobile, password, username, redirect_uri}) {
+    return this.userService.signUpWithPassword(email.toLowerCase(), username, password, mobile, redirect_uri);
   }
 
   async confirmEmail(user, ActiveToken, req) {
@@ -490,6 +538,7 @@ class AuthController {
 
     const res = await this.userService.confirmEmail(ActiveToken);
 
+    await this.sessionRepository.limitSessions(user);
     await new Promise((success) => req.login(res, () => success()));
     return res;
   }
@@ -505,6 +554,7 @@ class AuthController {
       });
     }
 
+    await this.sessionRepository.limitSessions(user.id);
     await new Promise((success) => req.login(user, () => success()));
     return user;
   }
@@ -535,12 +585,15 @@ class AuthController {
     const user = await this.userService.resetPassword(ResetToken.user, password);
     await ResetToken.deactivate();
     
+    await this.sessionRepository.limitSessions(user.id);
     await new Promise((success) => req.login(user, () => success()));
     return user;
   }
 
   async peerplaysLogin(_, {login, password}, req) {
     const user = await this.userService.loginPeerplaysUser(login, password, req.user);
+
+    await this.sessionRepository.limitSessions(user.id);
     await new Promise((success) => req.login(user, () => success()));
     return user;
   }
@@ -565,6 +618,13 @@ class AuthController {
     }
 
     return await this.appService.getAccessToken(signedInUser, AppExists);
+  }
+
+  async createCustomPermission(user, {User, password}, req) {
+    await this.userService.createCustomPermission(User, password);
+
+    await new Promise((success) => req.login(User, () => success()));
+    return User;
   }
 }
 

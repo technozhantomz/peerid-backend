@@ -525,27 +525,6 @@ class AppValidator extends BaseValidator {
         });
       }
 
-      const AuthCount = await this.authorityRepository.model.count({where: {user_id: user.id}});
-
-      if(AuthCount > 15) {
-        throw new ValidateError(400, 'Validate error', {
-          login: 'Max operations that can be linked to this user reached'
-        });
-      }
-
-      const Authorities = await this.authorityRepository.model.findAll({
-        where: {
-          app_id: client_id,
-          user_id: user.id
-        }
-      });
-
-      if(Authorities && Authorities.length > 0) {
-        throw new ValidateError(400, 'Validate error', {
-          login: 'You have already joined this app'
-        });
-      }
-
       //validate client id
       const AppExists = await this.appRepository.model.findOne({
         where: {
@@ -556,18 +535,6 @@ class AppValidator extends BaseValidator {
       if(!AppExists) {
         throw new ValidateError(400, 'Validate error', {
           client_id: 'App does not exist'
-        });
-      }
-
-      const Ops = await this.operationRepository.model.count({
-        where: {
-          app_id: client_id
-        }
-      });
-
-      if(AuthCount + Ops > 15) {
-        throw new ValidateError(400, 'Validate error', {
-          login: 'Max operations that can be linked to this user will be reached while joining this app'
         });
       }
 

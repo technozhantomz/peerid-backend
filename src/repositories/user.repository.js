@@ -67,6 +67,26 @@ class UserRepository extends BasePostgresRepository {
     });
   }
 
+  normalizePhoneNumber(mobile) {
+    if(!mobile) {
+      return mobile;
+    }
+
+    var number = mobile;
+    number = number.replace(/[^\d+]+/g, '');
+    number = number.replace(/^00/, '+');
+
+    if (number.match(/^1/)) { 
+      number = '+' + number;
+    }
+
+    if (!number.match(/^\+/)) {
+      number = '+1' + number;
+    }
+
+    return number;
+  }
+
   async setAccountId(userId, accountId) {
     return this.model.update(
       {peerplaysAccountId: accountId},

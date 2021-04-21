@@ -2,8 +2,7 @@ const logger = require('log4js').getLogger('peerplays.repository');
 const {PrivateKey, Login, TransactionBuilder} = require('peerplaysjs-lib');
 const BigNumber = require('bignumber.js');
 BigNumber.config({ROUNDING_MODE: BigNumber.ROUND_FLOOR});
-
-const PeerplaysNameExistsError = require('./../errors/peerplays-name-exists.error');
+const RestError = require('../errors/rest.error');
 
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
@@ -35,12 +34,6 @@ class PeerplaysRepository {
 
       return {name, ...account};
     } catch (err) {
-      if (err.base && err.base[0]) {
-        if (err.base[0] === 'Account exists') {
-          throw new PeerplaysNameExistsError(`an account with name "${name}" already exists`);
-        }
-      }
-
       throw err;
     }
   }
@@ -95,7 +88,7 @@ class PeerplaysRepository {
       res = await api.exec(query.method, params);
     } catch (e) {
       logger.warn('Peerplays returns error', e.message);
-      throw new Error('Peerplays error');
+      throw new RestError(e.message, 500);
     }
 
     return res;
@@ -201,7 +194,7 @@ class PeerplaysRepository {
       [result] = await tr.broadcast();
     } catch (e) {
       console.error(e.message);
-      throw e;
+      throw new RestError(e.message, 500);
     }
 
     return result;
@@ -220,7 +213,49 @@ class PeerplaysRepository {
       [result] = await tr.broadcast();
     } catch (e) {
       console.error(e.message);
-      throw e;
+      throw new RestError(e.message, 500);
+    }
+
+    return result;
+  }
+
+  async createAndSendMultipleOperations(ops, peerplaysAccountName, peerplaysPassword) {
+    const tr = new TransactionBuilder();
+    let result, keys, activePrivateKey, activePublicKey, isWIF= false;
+
+    if(peerplaysAccountName && peerplaysPassword) {
+      try {
+        activePrivateKey = PrivateKey.fromWif(peerplaysPassword);
+        activePublicKey = activePrivateKey.toPublicKey().toPublicKeyString();
+        isWIF = true;
+      } catch(err) {
+        isWIF = false;
+      }
+
+      if(!isWIF) {
+        keys = Login.generateKeys(peerplaysAccountName, peerplaysPassword,
+          ['active'],
+          IS_PRODUCTION ? 'PPY' : 'TEST');
+        activePrivateKey = keys.privKeys.active;
+        activePublicKey = keys.pubKeys.active;
+      }
+    } else {
+      activePrivateKey = this.pKey;
+      activePublicKey = this.pKey.toPublicKey().toPublicKeyString();
+    }
+
+    try {
+      for(let i = 0; i < ops.length; i++) {
+        tr.add_type_operation(ops[i][0], ops[i][1]);
+      }
+
+      await tr.set_required_fees();
+      tr.add_signer(activePrivateKey, activePublicKey);
+      console.trace('serialized transaction:', JSON.stringify(tr.serialize()));
+      [result] = await tr.broadcast();
+    } catch (e) {
+      console.error(e.message);
+      throw new RestError(e.message, 500);
     }
 
     return result;
@@ -242,7 +277,7 @@ class PeerplaysRepository {
       [result] = await tr.broadcast();
     } catch (e) {
       console.error(e.message);
-      throw e;
+      throw new RestError(e.message, 500);
     }
 
     return result;

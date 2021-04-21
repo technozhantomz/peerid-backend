@@ -15,6 +15,7 @@ class AuthValidator extends BaseValidator {
    * @param {VerificationTokenRepository} opts.verificationTokenRepository
    * @param {ResetTokenRepository} opts.resetTokenRepository
    * @param {PeerplaysRepository} opts.peerplaysRepository
+   * @param {PermissionRepository} opts.permissionRepository
    */
   constructor(opts) {
     super();
@@ -26,6 +27,7 @@ class AuthValidator extends BaseValidator {
     this.verificationTokenRepository = opts.verificationTokenRepository;
     this.resetTokenRepository = opts.resetTokenRepository;
     this.peerplaysRepository = opts.peerplaysRepository;
+    this.permissionRepository = opts.permissionRepository;
 
     this.validateSignUp = this.validateSignUp.bind(this);
     this.validateConfirmEmail = this.validateConfirmEmail.bind(this);
@@ -37,6 +39,7 @@ class AuthValidator extends BaseValidator {
     this.validateCode = this.validateCode.bind(this);
     this.validateAccessToken = this.validateAccessToken.bind(this);
     this.validateRefreshToken = this.validateRefreshToken.bind(this);
+    this.createCustomPermission = this.createCustomPermission.bind(this);
   }
 
   loggedOnly() {
@@ -55,7 +58,8 @@ class AuthValidator extends BaseValidator {
       email: Joi.string().email().required(),
       mobile: Joi.string().regex(/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/).optional(),
       username: Joi.string().regex(/^[a-z][a-z0-9-]+[a-z0-9]$/).min(3).max(60).optional(),
-      password: Joi.string().regex(/^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])[a-zA-Z0-9!@#\$%\^&\*]+$/).min(6).max(60).optional()
+      password: Joi.string().regex(/^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])[a-zA-Z0-9!@#\$%\^&\*]+$/).min(6).max(60).optional(),
+      redirect_uri: Joi.string().uri().optional()
     };
 
     return this.validate(null, bodySchema, async (req, query, body) => {
@@ -98,7 +102,7 @@ class AuthValidator extends BaseValidator {
         }
       }
 
-      return {email, mobile, password, username};
+      return body;
     });
   }
 
@@ -294,6 +298,38 @@ class AuthValidator extends BaseValidator {
       }
 
       return {app_id: client_id, AccessToken: RefreshTokenExists};
+    });
+  }
+
+  createCustomPermission() {
+    const bodySchema = {
+      login: Joi.string().required(),
+      password: Joi.string().required().min(12)
+    };
+    
+    return this.validate(null, bodySchema, async (req, query, body) => {
+      const {login, password} = body;
+      const User = await this.userRepository.getByLogin(login);
+
+      if(!User) {
+        throw new ValidateError(400, 'Validate error', {
+          login: 'User not found'
+        });
+      }
+
+      const permission = await this.permissionRepository.model.findOne({
+        where: {
+          user_id: User.id
+        }
+      });
+
+      if(permission) {
+        throw new ValidateError(400, 'Validate error', {
+          login: 'Custom Permission already exists'
+        });
+      }
+
+      return {User, password};
     });
   }
 }
