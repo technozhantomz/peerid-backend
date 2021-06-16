@@ -349,6 +349,27 @@ class UserService {
       throw new Error('Mobile doesn\'t match email');
     }
 
+    if(!User.peerplaysAccountId || User.peerplaysAccountId === '') {
+      const peerplaysAccountUsername = `pi-${User.username}`.toLowerCase();
+      const peerplaysAccountPassword = await bcrypt.hash(`pi-${User.password}${(new Date()).getTime()}`, 10);
+      const keys = Login.generateKeys(
+        peerplaysAccountUsername,
+        peerplaysAccountPassword,
+        ['owner', 'active'],
+        IS_PRODUCTION ? 'PPY' : 'TEST'
+      );
+      const ownerKey = keys.pubKeys.owner;
+      const activeKey = keys.pubKeys.active;
+
+      await this.peerplaysRepository.createPeerplaysAccount(peerplaysAccountUsername,ownerKey, activeKey);
+
+      User.peerplaysAccountName = peerplaysAccountUsername;
+      User.peerplaysAccountId = await this.peerplaysRepository.getAccountId(peerplaysAccountUsername);
+      await User.save();
+
+      await this.createCustomPermission(User, peerplaysAccountPassword);
+    }
+
     return this.getCleanUser(User);
   }
 
