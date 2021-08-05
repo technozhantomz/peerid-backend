@@ -79,6 +79,21 @@ class MailService {
     await this.smtpConnection.sendMail(options);
   }
 
+  async sendMailForAppDeleteConfirmation(username, email, appName, uniqueLink) {
+    const sourceHTML = fs.readFileSync(`${__dirname}/templates/app-delete.handlebars`).toString();
+    const templateHTML = Handlebars.compile(sourceHTML);
+    const url = `${this.config.frontendCallbackUrl}/app-delete/${uniqueLink}`;
+    const resultHtml = templateHTML({username, url, appName});
+
+    const options = {
+      to: email,
+      from: this.config.mailer.sender,
+      subject: `${appName} - Delete App Confirmation from PeerID`,
+      html: resultHtml
+    };
+    await this.smtpConnection.sendMail(options);
+  }
+
 }
 
 module.exports = MailService;

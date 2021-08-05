@@ -26,7 +26,9 @@ class AppService {
     this.peerplaysRepository = opts.peerplaysRepository;
     this.permissionRepository = opts.permissionRepository;
     this.grantCodeRepository = opts.grantCodeRepository;
+    this.deleteTokenRepository = opts.deleteTokenRepository;
     this.peerplaysConnection = opts.peerplaysConnection;
+    this.mailService = opts.mailService;
   }
 
   async registerApp(data, user_id) {
@@ -102,37 +104,49 @@ class AppService {
     return Apps;
   }
 
-  async deleteApp(id) {
+  async sendDeleteConfirmation(user, app) {
+    try{
+      const {token} = await this.deleteTokenRepository.createToken(user.id, app.id);
+      await this.mailService.sendMailForAppDeleteConfirmation(user.username, user.email, app.appname, token);
+      return true;
+    } catch(err) {
+      return false;
+    }
+  }
+
+  async deleteApp(tokenExists) {
+    await tokenExists.deactivate();
+
     const deleted = await this.appRepository.model.destroy({
-      where: {id},
+      where: {id: tokenExists.appId},
       force: true
     });
 
     if(deleted !== 0) {
       await this.operationRepository.model.destroy({
         where: {
-          app_id: id
+          app_id: tokenExists.appId
         },
         force: true
       });
 
       await this.authorityRepository.model.destroy({
         where: {
-          app_id: id
+          app_id: tokenExists.appId
         },
         force: true
       });
 
       await this.grantCodeRepository.model.destroy({
         where: {
-          app_id: id
+          app_id: tokenExists.appId
         },
         force: true
       });
 
       await this.accessTokenRepository.model.destroy({
         where: {
-          app_id: id
+          app_id: tokenExists.appId
         },
         force: true
       });
@@ -207,6 +221,8 @@ class AppService {
       if(customAuths && customAuths.trx.operations.length > 0) {
         const token = await this.generateUniqueAccessToken();
         const refresh_token = await this.generateUniqueRefreshToken();
+        grantCode.active = false;
+        await grantCode.save();
         return this.accessTokenRepository.model.create({
           app_id: appId,
           grantcode_id: grantCode.id,
@@ -220,6 +236,8 @@ class AppService {
     } else {
       const token = await this.generateUniqueAccessToken();
       const refresh_token = await this.generateUniqueRefreshToken();
+      grantCode.active = false;
+      await grantCode.save();
       return this.accessTokenRepository.model.create({
         app_id: appId,
         grantcode_id: grantCode.id,
@@ -269,6 +287,18 @@ class AppService {
   }
 
   async joinApp(user, app) {
+    const grantCode = await this.grantCodeRepository.model.findOne({
+      where: {
+        user_id: user.id,
+        app_id: app.id,
+        active: true
+      }
+    });
+
+    if(grantCode) {
+      return grantCode.code;
+    }
+
     const Permission = await this.permissionRepository.model.findOne({where: {user_id: user.id}});
 
     const Ops = await this.operationRepository.model.findAll({

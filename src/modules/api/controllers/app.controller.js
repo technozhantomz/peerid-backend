@@ -172,11 +172,11 @@ class AppController {
        *    produces:
        *      - application/json
        *    parameters:
-       *      - name: id
+       *      - name: token
        *        in: query
        *        required: true
        *        description: id of the app to be deleted
-       *        type: integer
+       *        type: string
        *    tags:
        *      - App
        *    responses:
@@ -192,7 +192,6 @@ class AppController {
       [
         'delete',
         '/api/v1/app',
-        this.authValidator.loggedOnly,
         this.appValidator.deleteApp,
         this.deleteApp.bind(this)
       ],
@@ -226,7 +225,7 @@ class AppController {
         'get',
         '/api/v1/app/secret',
         this.authValidator.loggedOnly,
-        this.appValidator.deleteApp,
+        this.appValidator.validateAppId,
         this.getAppSecret.bind(this)
       ],
       [
@@ -408,6 +407,38 @@ class AppController {
       /**
        * @swagger
        *
+       * /app/delete:
+       *  post:
+       *    description: Send confirmation email for app delete
+       *    produces:
+       *      - application/json
+       *    parameters:
+       *      - in: body
+       *        required: true
+       *        schema:
+       *          $ref: '#/definitions/UnjoinAppRequest'
+       *    tags:
+       *      - App
+       *    responses:
+       *      200:
+       *        description: Send delete app email response
+       *        schema:
+       *         $ref: '#/definitions/SuccessResponse'
+       *      400:
+       *        description: Error in id validation
+       *        schema:
+       *          $ref: '#/definitions/ValidateError'
+       */
+      [
+        'post',
+        '/api/v1/app/delete',
+        this.authValidator.loggedOnly,
+        this.appValidator.sendDeleteAppEmail,
+        this.sendDeleteEmail.bind(this)
+      ],
+      /**
+       * @swagger
+       *
        * /app/blockchain-data:
        *  get:
        *    description: Get blockchain data
@@ -447,8 +478,8 @@ class AppController {
     return await this.appService.getApps(user.id);
   }
 
-  async deleteApp(user, app) {
-    return await this.appService.deleteApp(app.id);
+  async deleteApp(user, token) {
+    return await this.appService.deleteApp(token);
   }
 
   getAppSecret(user, app) {
@@ -481,6 +512,10 @@ class AppController {
 
   async getBlockchainData(user, query) {
     return await this.appService.getBlockchainData(query);
+  }
+
+  async sendDeleteEmail(user, app) {
+    return await this.appService.sendDeleteConfirmation(user, app);
   }
 }
 
