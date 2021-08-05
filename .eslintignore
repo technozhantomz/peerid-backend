@@ -8,3 +8,4 @@ docs/
 migrations/
 node_modules/
 sonar-scanner/
+**/dist/*.min.js
