@@ -24,6 +24,7 @@ class AppValidator extends BaseValidator {
     this.operationRepository = opts.operationRepository;
     this.authorityRepository = opts.authorityRepository;
     this.userRepository = opts.userRepository;
+    this.deleteTokenRepository = opts.deleteTokenRepository;
 
     this.registerApp = this.registerApp.bind(this);
     this.deleteApp = this.deleteApp.bind(this);
@@ -34,6 +35,8 @@ class AppValidator extends BaseValidator {
     this.validateOperations = this.validateOperations.bind(this);
     this.validateBlockchainData = this.validateBlockchainData.bind(this);
     this.validateROPCFlow = this.validateROPCFlow.bind(this);
+    this.sendDeleteAppEmail = this.sendDeleteAppEmail.bind(this);
+    this.validateAppId = this.validateAppId.bind(this);
   }
 
   registerApp() {
@@ -106,7 +109,59 @@ class AppValidator extends BaseValidator {
     });
   }
 
+  sendDeleteAppEmail() {
+    const bodySchema = {
+      app_id: Joi.number().integer().required()
+    };
+
+    return this.validate(null, bodySchema, async (req, query, body) => {
+      const {app_id} = body;
+
+      const AppExists = await this.appRepository.model.findOne({
+        where: {
+          id: app_id
+        }
+      });
+
+      if(!AppExists) {
+        throw new ValidateError(400, 'Validate error', {
+          app_id: 'App does not exist'
+        });
+      }
+
+      if(AppExists.registrar_id !== req.user.id) {
+        throw new ValidateError(400, 'Validate error', {
+          app_id: 'App does not belong to this user'
+        });
+      }
+
+      return AppExists;
+    });
+  }
+
   deleteApp() {
+    const querySchema = {
+      token: Joi.string().required()
+    };
+
+    return this.validate(querySchema, null, async (req, query) => {
+      const {token} = query;
+
+      const tokenExists = await this.deleteTokenRepository.model.findOne({
+        where: {token, isActive: true}
+      });
+
+      if(!tokenExists) {
+        throw new ValidateError(400, 'Validate error', {
+          token: 'Invalid token'
+        });
+      }
+
+      return tokenExists;
+    });
+  }
+
+  validateAppId() {
     const querySchema = {
       id: Joi.number().integer().required()
     };
@@ -123,6 +178,12 @@ class AppValidator extends BaseValidator {
       if(!AppExists) {
         throw new ValidateError(400, 'Validate error', {
           id: 'App does not exist'
+        });
+      }
+
+      if(AppExists.registrar_id !== req.user.id) {
+        throw new ValidateError(400, 'Validate error', {
+          id: 'App does not belong to this user'
         });
       }
 
@@ -185,19 +246,6 @@ class AppValidator extends BaseValidator {
       if(AuthCount > 15) {
         throw new ValidateError(400, 'Validate error', {
           user: 'Max operations that can be linked to this user reached'
-        });
-      }
-
-      const Authorities = await this.authorityRepository.model.findAll({
-        where: {
-          app_id: client_id,
-          user_id: req.user.id
-        }
-      });
-
-      if(Authorities && Authorities.length > 0) {
-        throw new ValidateError(400, 'Validate error', {
-          user: 'You have already joined this app'
         });
       }
 
