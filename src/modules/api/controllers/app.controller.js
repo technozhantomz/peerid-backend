@@ -172,10 +172,10 @@ class AppController {
        *    produces:
        *      - application/json
        *    parameters:
-       *      - name: id
+       *      - name: token
        *        in: query
        *        required: true
-       *        description: id of the app to be deleted
+       *        description: token received in email to confirm app deletion
        *        type: string
        *    tags:
        *      - App
