@@ -172,7 +172,7 @@ class AppController {
        *    produces:
        *      - application/json
        *    parameters:
-       *      - name: token
+       *      - name: id
        *        in: query
        *        required: true
        *        description: id of the app to be deleted
@@ -278,6 +278,50 @@ class AppController {
         this.authValidator.validateAccessToken,
         this.appValidator.validateOperations,
         this.broadcastOperations.bind(this)
+      ],
+      /**
+       * @swagger
+       *
+       * /app/transaction-token:
+       *  post:
+       *    description: Confirm the transaction
+       *    produces:
+       *      - application/json
+       *    parameters:
+       *      - in: header
+       *        name: Authorization
+       *        schema:
+       *          type: string
+       *          format: uuid
+       *        required: true
+       *      - in: header
+       *        name: ClientID
+       *        schema:
+       *          type: integer
+       *        required: true
+       *      - name: token
+       *        in: query
+       *        required: true
+       *        type: string
+       *    tags:
+       *      - App
+       *      - Operations
+       *    responses:
+       *      200:
+       *        description: Transaction result response
+       *        schema:
+       *         $ref: '#/definitions/TransactionResponse'
+       *      400:
+       *        description: Error in token validation
+       *        schema:
+       *          $ref: '#/definitions/ValidateError'
+       */
+      [
+        'post',
+        '/api/v1/app/transaction-token',
+        this.authValidator.validateAccessToken,
+        this.appValidator.validateTransactionToken,
+        this.confirmTransaction.bind(this)
       ],
       /**
        * @swagger
@@ -506,8 +550,12 @@ class AppController {
     return await this.appService.unjoinApp(user, app);
   }
 
-  async broadcastOperations(user, op) {
-    return await this.appService.broadcastOperations(op);
+  async broadcastOperations(user, {op, app_id}) {
+    return await this.appService.broadcastOperations(op, app_id, user.id);
+  }
+
+  async confirmTransaction(user, token) {
+    return await this.appService.confirmTransaction(token);
   }
 
   async getBlockchainData(user, query) {

@@ -13,8 +13,11 @@ class AppService {
      * @param {AccessTokenRepository} opts.accessTokenRepository
      * @param {PeerplaysRepository} opts.peerplaysRepository
      * @param {PermissionRepository} opts.permissionRepository
+     * @param {DeleteTokenRepository} opts.deleteTokenRepository
+     * @param {TransactionTokenRepository} opts.transactionTokenRepository
      * @param {GrantCodeRepository} opts.grantCodeRepository
      * @param {PeerplaysConnection} opts.peerplaysConnection
+     * @param {MailService} opts.mailService
      */
   constructor(opts) {
     this.config = opts.config;
@@ -27,6 +30,7 @@ class AppService {
     this.permissionRepository = opts.permissionRepository;
     this.grantCodeRepository = opts.grantCodeRepository;
     this.deleteTokenRepository = opts.deleteTokenRepository;
+    this.transactionTokenRepository = opts.transactionTokenRepository;
     this.peerplaysConnection = opts.peerplaysConnection;
     this.mailService = opts.mailService;
   }
@@ -546,9 +550,21 @@ class AppService {
     return AccessToken;
   }
 
-  async broadcastOperations(op) {
+  async broadcastOperations(op, app_id, user_id) {
+    const app = await this.appRepository.model.findByPk(app_id);
     const opJson = OperationUtil.queryToOperationJson(op);
+
+    if(app.signing_request_required) {
+      return this.transactionTokenRepository.createToken(user_id, app_id, JSON.stringify(opJson));
+    }
+
     return this.peerplaysRepository.createTransactionFromOps(opJson);
+  }
+
+  async confirmTransaction(token) {
+    token.isActive = false;
+    await token.save();
+    return this.peerplaysRepository.createTransactionFromOps(JSON.parse(token.transaction));
   }
 
   async getBlockchainData(query) {

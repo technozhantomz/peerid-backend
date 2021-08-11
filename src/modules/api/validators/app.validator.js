@@ -25,6 +25,7 @@ class AppValidator extends BaseValidator {
     this.authorityRepository = opts.authorityRepository;
     this.userRepository = opts.userRepository;
     this.deleteTokenRepository = opts.deleteTokenRepository;
+    this.transactionTokenRepository = opts.transactionTokenRepository;
 
     this.registerApp = this.registerApp.bind(this);
     this.deleteApp = this.deleteApp.bind(this);
@@ -37,6 +38,7 @@ class AppValidator extends BaseValidator {
     this.validateROPCFlow = this.validateROPCFlow.bind(this);
     this.sendDeleteAppEmail = this.sendDeleteAppEmail.bind(this);
     this.validateAppId = this.validateAppId.bind(this);
+    this.validateTransactionToken = this.validateTransactionToken.bind(this);
   }
 
   registerApp() {
@@ -55,7 +57,8 @@ class AppValidator extends BaseValidator {
       contactname: Joi.string().min(2).max(255).required(),
       phone: Joi.string().regex(/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/).required(),
       domains: Joi.array().items(Joi.string()).required(),
-      operations: Joi.array().items(Joi.number().integer().min(0).max(150)).required()
+      operations: Joi.array().items(Joi.number().integer().min(0).max(150)).required(),
+      signing_request_required: Joi.boolean().required()
     };
     
     return this.validate(null, bodySchema, async (req, query, body) => {
@@ -525,7 +528,27 @@ class AppValidator extends BaseValidator {
         });
       }
 
-      return body.operations;
+      return {op: body.operations, app_id};
+    });
+  }
+
+  validateTransactionToken() {
+    const querySchema = {
+      token: Joi.string().required()
+    };
+
+    return this.validate(querySchema, null, async (req, query) => {
+      const {token} = query;
+
+      const tokenExists = await this.transactionTokenRepository.findActive(token);
+
+      if(!tokenExists) {
+        throw new ValidateError(400, 'Validate error', {
+          token: 'Invalid token'
+        });
+      }
+
+      return tokenExists;
     });
   }
 

@@ -163,6 +163,10 @@ const attributes = {
   registrar_id: {
     type: Sequelize.INTEGER,
     allowNull: false
+  },
+  signing_request_required: {
+    type: Sequelize.BOOLEAN,
+    default: false
   }
 };
 
