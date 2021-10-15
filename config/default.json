@@ -50,7 +50,7 @@
   "frontendCallbackUrl": "http://localhost:8082/callback",
   "peerplays": {
     "peerplaysWS": "wss://irona.peerplays.download/api",
-    "peerplaysFaucetURL": "https:/irona-faucet.peerplays.download/api/v1/accounts",
+    "peerplaysFaucetURL": "https://irona-faucet.peerplays.download/api/v1/accounts",
     "referrer": "1.2.0",
     "feeAssetId": "1.3.0",
     "paymentAccountID": "1.2.21",
