@@ -51,9 +51,9 @@
   "peerplays": {
     "peerplaysWS": "wss://login.commodity.llc/ws",
     "peerplaysFaucetURL": "https://create.commodity.llc/api/v1/accounts",
-    "referrer": "1.2.11",
+    "referrer": "1.2.9",
     "feeAssetId": "1.3.0",
-    "paymentAccountID": "1.2.11",
+    "paymentAccountID": "1.2.9",
     "paymentAccountWIF": "5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3"
   }
 }
