@@ -47,7 +47,7 @@
   },
   "frontendUrl": "https://register.commodity.llc",
   "backendUrl": "https://api.commodity.llc",
-  "frontendCallbackUrl": "https://register.commodity.llc/callback",
+  "frontendCallbackUrl": "https://api.commodity.llc/callback",
   "peerplays": {
     "peerplaysWS": "wss://login.commodity.llc/ws",
     "peerplaysFaucetURL": "https://create.commodity.llc/api/v1/accounts",
