@@ -38,7 +38,7 @@
     "secure": false,
     "auth": {
       "user": "extraqa@gmail.com",
-      "pass": "NewNew321$$"
+      "pass": "NewNew321321$$"
     },
     "sender": "Commodity-LLC",
     "tls": {
@@ -47,7 +47,7 @@
   },
   "frontendUrl": "https://register.commodity.llc",
   "backendUrl": "https://api.commodity.llc",
-  "frontendCallbackUrl": "https://api.commodity.llc/callback",
+  "frontendCallbackUrl": "https://register.commodity.llc/callback",
   "peerplays": {
     "peerplaysWS": "wss://login.commodity.llc/ws",
     "peerplaysFaucetURL": "https://create.commodity.llc/api/v1/accounts",

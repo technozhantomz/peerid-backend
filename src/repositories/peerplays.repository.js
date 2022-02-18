@@ -116,7 +116,7 @@ class PeerplaysRepository {
     if(!isWIF) {
       keys = Login.generateKeys(login, password,
         ['active'],
-        IS_PRODUCTION ? 'LLC' : 'TEST');
+        IS_PRODUCTION ? 'LLC' : 'LLC');
       publicKey = keys.pubKeys.active;
     }
 
@@ -180,7 +180,7 @@ class PeerplaysRepository {
     if(!isWIF) {
       keys = Login.generateKeys(peerplaysAccountName, peerplaysPassword,
         ['active'],
-        IS_PRODUCTION ? 'LLC' : 'TEST');
+        IS_PRODUCTION ? 'LLC' : 'LLC');
       activePrivateKey = keys.privKeys.active;
       activePublicKey = keys.pubKeys.active;
     }
@@ -235,7 +235,7 @@ class PeerplaysRepository {
       if(!isWIF) {
         keys = Login.generateKeys(peerplaysAccountName, peerplaysPassword,
           ['active'],
-          IS_PRODUCTION ? 'LLC' : 'TEST');
+          IS_PRODUCTION ? 'LLC' : 'LLC');
         activePrivateKey = keys.privKeys.active;
         activePublicKey = keys.pubKeys.active;
       }
