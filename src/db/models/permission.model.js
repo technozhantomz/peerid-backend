@@ -68,7 +68,7 @@ module.exports = {
     });
   },
   associate: (models) => {
-    PermissionModel.belongsTo(models.User.model, {foreignKey : 'user_id', targetKey: 'id'});
+    PermissionModel.belongsTo(models.User.model, {foreignKey: 'user_id', targetKey: 'id'});
   },
   get model() {
     return PermissionModel;

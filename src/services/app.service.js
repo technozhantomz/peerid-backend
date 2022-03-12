@@ -122,35 +122,35 @@ class AppService {
     await tokenExists.deactivate();
 
     const deleted = await this.appRepository.model.destroy({
-      where: {id: tokenExists.app_id},
+      where: {id: tokenExists.appId},
       force: true
     });
 
     if(deleted !== 0) {
       await this.operationRepository.model.destroy({
         where: {
-          app_id: tokenExists.app_id
+          app_id: tokenExists.appId
         },
         force: true
       });
 
       await this.authorityRepository.model.destroy({
         where: {
-          app_id: tokenExists.app_id
+          app_id: tokenExists.appId
         },
         force: true
       });
 
       await this.grantCodeRepository.model.destroy({
         where: {
-          app_id: tokenExists.app_id
+          app_id: tokenExists.appId
         },
         force: true
       });
 
       await this.accessTokenRepository.model.destroy({
         where: {
-          app_id: tokenExists.app_id
+          app_id: tokenExists.appId
         },
         force: true
       });

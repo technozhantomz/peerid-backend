@@ -99,9 +99,9 @@ module.exports = {
     });
   },
   associate: (models) => {
-    AccessTokenModel.belongsTo(models.App.model, {foreignKey : 'app_id', targetKey: 'id'});
-    AccessTokenModel.belongsTo(models.User.model, {foreignKey : 'user_id', targetKey: 'id'});
-    AccessTokenModel.belongsTo(models.GrantCode.model, {foreignKey : 'grantcode_id', targetKey: 'id'});
+    AccessTokenModel.belongsTo(models.App.model, {foreignKey: 'app_id', targetKey: 'id'});
+    AccessTokenModel.belongsTo(models.User.model, {foreignKey: 'user_id', targetKey: 'id'});
+    AccessTokenModel.belongsTo(models.GrantCode.model, {foreignKey: 'grantcode_id', targetKey: 'id'});
   },
   get model() {
     return AccessTokenModel;

@@ -76,8 +76,8 @@ module.exports = {
     });
   },
   associate: (models) => {
-    GrantCodeModel.belongsTo(models.App.model, {foreignKey : 'app_id', targetKey: 'id'});
-    GrantCodeModel.belongsTo(models.User.model, {foreignKey : 'user_id', targetKey: 'id'});
+    GrantCodeModel.belongsTo(models.App.model, {foreignKey: 'app_id', targetKey: 'id'});
+    GrantCodeModel.belongsTo(models.User.model, {foreignKey: 'user_id', targetKey: 'id'});
   },
   get model() {
     return GrantCodeModel;

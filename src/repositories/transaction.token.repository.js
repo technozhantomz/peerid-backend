@@ -11,8 +11,8 @@ class TransactionTokenRepository extends BasePostgresRepository {
 
   async createToken(userId, appId, transaction) {
     return this.model.create({
-      userId,
-      appId,
+      user_id: userId,
+      app_id: appId,
       token: crypto({length: 26}),
       transaction
     });

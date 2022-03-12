@@ -98,8 +98,8 @@ module.exports = {
     });
   },
   associate: (models) => {
-    AuthorityModel.belongsTo(models.User.model, {foreignKey : 'user_id', targetKey: 'id'});
-    AuthorityModel.belongsTo(models.App.model, {foreignKey : 'app_id', targetKey: 'id'});
+    AuthorityModel.belongsTo(models.User.model, {foreignKey: 'user_id', targetKey: 'id'});
+    AuthorityModel.belongsTo(models.App.model, {foreignKey: 'app_id', targetKey: 'id'});
     AuthorityModel.belongsTo(models.Permission.model, {foreignKey: 'permission_id', targetKey: 'id'});
   },
   get model() {

@@ -13,7 +13,7 @@ class ResetTokenRepository extends BasePostgresRepository {
 
   async createToken(userId) {
     return this.model.create({
-      userId,
+      user_id: userId,
       token: crypto({length: 26})
     });
   }

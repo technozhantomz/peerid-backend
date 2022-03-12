@@ -54,8 +54,8 @@ module.exports = {
     });
   },
   associate: (models) => {
-    DeleteTokenModel.belongsTo(models.User.model);
-    DeleteTokenModel.belongsTo(models.App.model);
+    DeleteTokenModel.belongsTo(models.User.model, {foreignKey: 'user_id', targetKey: 'id'});
+    DeleteTokenModel.belongsTo(models.App.model, {foreignKey: 'app_id', targetKey: 'id'});
   },
   get model() {
     return DeleteTokenModel;

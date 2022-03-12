@@ -56,8 +56,8 @@ module.exports = {
     });
   },
   associate: (models) => {
-    TransactionTokenModel.belongsTo(models.User.model);
-    TransactionTokenModel.belongsTo(models.App.model);
+    TransactionTokenModel.belongsTo(models.User.model, {foreignKey: 'user_id', targetKey: 'id'});
+    TransactionTokenModel.belongsTo(models.App.model, {foreignKey: 'app_id', targetKey: 'id'});
   },
   get model() {
     return TransactionTokenModel;

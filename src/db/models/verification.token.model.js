@@ -54,7 +54,7 @@ module.exports = {
     });
   },
   associate: (models) => {
-    VerificationTokenModel.belongsTo(models.User.model);
+    VerificationTokenModel.belongsTo(models.User.model, {foreignKey: 'user_id', targetKey: 'id'});
   },
   get model() {
     return VerificationTokenModel;

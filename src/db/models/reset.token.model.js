@@ -50,7 +50,7 @@ module.exports = {
     });
   },
   associate: (models) => {
-    ResetTokenModel.belongsTo(models.User.model);
+    ResetTokenModel.belongsTo(models.User.model, {foreignKey: 'user_id', targetKey: 'id'});
   },
   get model() {
     return ResetTokenModel;

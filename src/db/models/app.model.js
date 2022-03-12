@@ -178,7 +178,7 @@ module.exports = {
     });
   },
   associate: (models) => {
-    AppModel.belongsTo(models.User.model, {foreignKey : 'registrar_id', targetKey: 'id', as: 'registrar'});
+    AppModel.belongsTo(models.User.model, {foreignKey: 'registrar_id', targetKey: 'id', as: 'registrar'});
   },
   get model() {
     return AppModel;

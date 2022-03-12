@@ -15,8 +15,8 @@ class DeleteTokenRepository extends BasePostgresRepository {
     const tokenExists = await this.model.findOne({
       where: {
         isActive: true,
-        userId,
-        appId
+        user_id: userId,
+        app_id: appId
       }
     });
 
@@ -25,8 +25,8 @@ class DeleteTokenRepository extends BasePostgresRepository {
     }
 
     return this.model.create({
-      userId,
-      appId,
+      user_id: userId,
+      app_id: appId,
       token: crypto({length: 26})
     });
   }

@@ -52,7 +52,7 @@ module.exports = {
     });
   },
   associate: (models) => {
-    OperationModel.belongsTo(models.App.model, {foreignKey : 'app_id', targetKey: 'id'});
+    OperationModel.belongsTo(models.App.model, {foreignKey: 'app_id', targetKey: 'id'});
   },
   get model() {
     return OperationModel;

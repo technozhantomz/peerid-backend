@@ -12,7 +12,7 @@ class VerificationTokenRepository extends BasePostgresRepository {
 
   async createToken(userId, email) {
     return this.model.create({
-      userId,
+      user_id: userId,
       token: crypto({length: 26}),
       email: email
     });
@@ -33,7 +33,7 @@ class VerificationTokenRepository extends BasePostgresRepository {
   async makeDeactive(userId) {
     return this.model.update(
       {isActive: false},
-      {where: {userId: userId}}
+      {where: {user_id: userId}}
     );
   }
 
