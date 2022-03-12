@@ -122,28 +122,28 @@ class AppService {
     await tokenExists.deactivate();
 
     const deleted = await this.appRepository.model.destroy({
-      where: {id: tokenExists.appId},
+      where: {id: tokenExists.app_id},
       force: true
     });
 
     if(deleted !== 0) {
       await this.operationRepository.model.destroy({
         where: {
-          app_id: tokenExists.appId
+          app_id: tokenExists.app_id
         },
         force: true
       });
 
       await this.authorityRepository.model.destroy({
         where: {
-          app_id: tokenExists.appId
+          app_id: tokenExists.app_id
         },
         force: true
       });
 
       await this.grantCodeRepository.model.destroy({
         where: {
-          app_id: tokenExists.appId
+          app_id: tokenExists.app_id
         },
         force: true
       });
@@ -550,12 +550,12 @@ class AppService {
     return AccessToken;
   }
 
-  async broadcastOperations(op, app_id, user_id) {
+  async broadcastOperations(op, app_id, user) {
     const app = await this.appRepository.model.findByPk(app_id);
     const opJson = OperationUtil.queryToOperationJson(op);
 
     if(app.signing_request_required) {
-      return this.transactionTokenRepository.createToken(user_id, app_id, JSON.stringify(opJson));
+      return this.transactionTokenRepository.createToken(user.id, app_id, JSON.stringify(opJson));
     }
 
     return this.peerplaysRepository.createTransactionFromOps(opJson);
