@@ -551,7 +551,7 @@ class AppController {
   }
 
   async broadcastOperations(user, {op, app_id}) {
-    return await this.appService.broadcastOperations(op, app_id, user.id);
+    return await this.appService.broadcastOperations(op, app_id, user);
   }
 
   async confirmTransaction(user, token) {
