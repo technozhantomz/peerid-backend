@@ -150,7 +150,7 @@ class AppService {
 
       await this.accessTokenRepository.model.destroy({
         where: {
-          app_id: tokenExists.appId
+          app_id: tokenExists.app_id
         },
         force: true
       });

@@ -2,9 +2,9 @@ const config = require('config');
 
 module.exports = {
   info: {
-    title: 'PeerID',
+    title: 'commodityIDENTITY',
     version: '1',
-    description: 'APIs for PeerID'
+    description: 'APIs for commodityIDENTITY'
   },
   host: config.swagger.host,
   apis: [

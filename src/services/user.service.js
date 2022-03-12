@@ -426,7 +426,7 @@ class UserService {
     const PeerplaysUser = await this.peerplaysRepository.getPeerplaysUser(login, password);
 
     if (!PeerplaysUser) {
-      throw new RestError('', 400, {login: [{message: 'Invalid peerplays account'}]});
+      throw new RestError('', 400, {login: [{message: 'Invalid commodityLLC account'}]});
     }
 
     const userWithPeerplaysAccount = await this.userRepository.getByPeerplaysAccountName(login);
