@@ -58,34 +58,6 @@ The following tools are used:
 To run all pending migrations
 ```npm run db-migrate-all```
 
-`sequelize db:migrate:undo:all`  dennis
-
- `sequelize db:migrate`  dennis
-
-  `sequelize db:seed:all`  dennis
-
-   `sequelize db:seed:undo:all`  dennis
-
-
-`NODE_ENV=test NODE_APP_INSTANCE=test nyc node_modules/.bin/mocha --exit --timeout 120000 && nyc report --reporter=text-summary
-  build:doc
-    swagger-jsdoc -d src/modules/api/swagger-definition.js -o docs/swagger.yaml
-  db-migrate-all
-    sequelize db:migrate
-  db-migrate-undo
-    sequelize db:migrate:undo
-  db-migrate-undo-all
-    sequelize db:migrate:undo:all
-  db-seed-all
-    sequelize db:seed:all
-  db-seed-undo
-    sequelize db:seed:undo
-  db-seed-undo-all
-    sequelize db:seed:undo:all`
-
-
- 
-
 To undo single migrations
 ```npm run db-migrate-undo```
 

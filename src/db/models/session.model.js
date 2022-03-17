@@ -23,7 +23,7 @@ module.exports = {
     });
   },
   associate: (models) => {
-    SessionModel.belongsTo(models.User.model, {foreignKey: 'user_id', targetKey: 'id'});
+    SessionModel.belongsTo(models.User.model, {foreignKey: 'userId', targetKey: 'id'});
   },
   get model() {
     return SessionModel;

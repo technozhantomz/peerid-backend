@@ -43,7 +43,7 @@ class MailService {
     const options = {
       to: email,
       from: this.config.mailer.sender,
-      subject: 'CommodityLLC Account Registration',
+      subject: 'commodityIDENTITY Account Registration',
       html: resultHtml
     };
     await this.smtpConnection.sendMail(options);
