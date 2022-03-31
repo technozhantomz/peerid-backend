@@ -83,7 +83,7 @@ class UserService {
       seUsername,
       password,
       ['owner', 'active'],
-      IS_PRODUCTION ? 'USD' : 'USD'
+      IS_PRODUCTION ? 'PPY' : 'USD'
     );
 
     const ownerKey = keys.pubKeys.owner;
@@ -300,7 +300,7 @@ class UserService {
       peerplaysAccountUsername,
       peerplaysAccountPassword,
       ['owner', 'active'],
-      IS_PRODUCTION ? 'USD' : 'USD'
+      IS_PRODUCTION ? 'PPY' : 'USD'
     );
     const ownerKey = keys.pubKeys.owner;
     const activeKey = keys.pubKeys.active;
@@ -356,7 +356,7 @@ class UserService {
         peerplaysAccountUsername,
         peerplaysAccountPassword,
         ['owner', 'active'],
-        IS_PRODUCTION ? 'USD' : 'USD'
+        IS_PRODUCTION ? 'PPY' : 'USD'
       );
       const ownerKey = keys.pubKeys.owner;
       const activeKey = keys.pubKeys.active;
@@ -426,7 +426,7 @@ class UserService {
     const PeerplaysUser = await this.peerplaysRepository.getPeerplaysUser(login, password);
 
     if (!PeerplaysUser) {
-      throw new RestError('', 400, {login: [{message: 'Invalid commodityLLC account'}]});
+      throw new RestError('', 400, {login: [{message: 'Invalid peerplays account'}]});
     }
 
     const userWithPeerplaysAccount = await this.userRepository.getByPeerplaysAccountName(login);

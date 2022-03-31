@@ -29,7 +29,7 @@ class MailService {
     const options = {
       to: email,
       from: this.config.mailer.sender,
-      subject: 'commodityIDENTITY Account Registration',
+      subject: 'Peer ID Account Registration',
       html: resultHtml
     };
     await this.smtpConnection.sendMail(options);
@@ -43,7 +43,7 @@ class MailService {
     const options = {
       to: email,
       from: this.config.mailer.sender,
-      subject: 'commodityIDENTITY Account Registration',
+      subject: 'Peer ID Account Registration',
       html: resultHtml
     };
     await this.smtpConnection.sendMail(options);
