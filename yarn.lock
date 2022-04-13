@@ -5454,7 +5454,6 @@ pause@0.0.1:
   integrity sha1-HUCLP9t2kjuVQ9lvtMnf1TXZy10=
 
 "peerplaysjs-lib@https://github.com/technozhantomz/peerplaysjs-lib.git":
-  version "0.6.5"
   resolved "https://github.com/technozhantomz/peerplaysjs-lib.git"
   dependencies:
     assert "^2.0.0"

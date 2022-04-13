@@ -40,7 +40,7 @@
       "user": "extraqa@gmail.com",
       "pass": "NewNew321321##"
     },
-    "sender": "Dennis Satia",
+    "sender": "commodity-llc",
     "tls": {
         "rejectUnauthorized": false
     }
@@ -51,7 +51,7 @@
   "peerplays": {
     "peerplaysWS": "wss://wss.commodity.llc/api",
     "peerplaysFaucetURL": "https://agent.commodity.llc/api/v1/accounts",
-    "referrer": "1.2.8",
+    "referrer": "1.2.0",
     "feeAssetId": "1.3.0",
     "paymentAccountID": "1.2.20",
     "paymentAccountWIF": "5HuCDiMeESd86xrRvTbexLjkVg2BEoKrb7BAA5RLgXizkgV3shs"
