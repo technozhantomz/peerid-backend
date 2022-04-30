@@ -45,9 +45,9 @@
         "rejectUnauthorized": false
     }
   },
-  "frontendUrl": "https://kyc.commodity.llc",
-  "backendUrl": "https://pi.commodity.llc",
-  "frontendCallbackUrl": "https://kyc.commodity.llc/callback",
+  "frontendUrl": "http://localhost:8082",
+  "backendUrl": "http://localhost:3000",
+  "frontendCallbackUrl": "http://localhost:8082/callback",
   "peerplays": {
     "peerplaysWS": "wss://wss.commodity.llc/api",
     "peerplaysFaucetURL": "https://agent.commodity.llc/api/v1/accounts",

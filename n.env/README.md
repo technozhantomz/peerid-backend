@@ -1,8 +1,0 @@
-DB_USER=peerid
-DB_PASSWORD=Sdennis2021
-DB_HOST=127.0.0.1
-DB_PORT=5432
-DB_DATABASE=peerid
-MAILER_HOST=smtp.gmail.com
-MAILER_AUTH_USER=extraqa@gmail.com
-MAILER_AUTH_PASS=NewNew321321##
