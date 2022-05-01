@@ -15,7 +15,7 @@
   },
   "sessionSecret": "sessionSecret",
   "cors": true,
-  "port": 3000,
+  "port": 3001,
   "google": {
     "clientId": "457241315847-53tlujrnj4oj66sehd37rqqjjmgdh1r6.apps.googleusercontent.com",
     "clientSecret": "1vkXPzTcNew4Q4pKmiPgVFFp"
@@ -45,9 +45,9 @@
         "rejectUnauthorized": false
     }
   },
-  "frontendUrl": "http://localhost:8082",
-  "backendUrl": "http://localhost:3000",
-  "frontendCallbackUrl": "http://localhost:8082/callback",
+  "frontendUrl": "https://kyc.commodity.llc",
+  "backendUrl": "https://pi.commodity.llc",
+  "frontendCallbackUrl": "https://kyc.commodity.llc/callback",
   "peerplays": {
     "peerplaysWS": "wss://wss.commodity.llc/api",
     "peerplaysFaucetURL": "https://agent.commodity.llc/api/v1/accounts",
