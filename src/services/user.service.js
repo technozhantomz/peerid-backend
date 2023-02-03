@@ -83,7 +83,7 @@ class UserService {
       seUsername,
       password,
       ['owner', 'active'],
-      IS_PRODUCTION ? 'PPY' : 'USD'
+      IS_PRODUCTION ? 'PPY' : 'KSH'
     );
 
     const ownerKey = keys.pubKeys.owner;
@@ -300,7 +300,7 @@ class UserService {
       peerplaysAccountUsername,
       peerplaysAccountPassword,
       ['owner', 'active'],
-      IS_PRODUCTION ? 'PPY' : 'USD'
+      IS_PRODUCTION ? 'PPY' : 'KSH'
     );
     const ownerKey = keys.pubKeys.owner;
     const activeKey = keys.pubKeys.active;
@@ -356,7 +356,7 @@ class UserService {
         peerplaysAccountUsername,
         peerplaysAccountPassword,
         ['owner', 'active'],
-        IS_PRODUCTION ? 'PPY' : 'USD'
+        IS_PRODUCTION ? 'PPY' : 'KSH'
       );
       const ownerKey = keys.pubKeys.owner;
       const activeKey = keys.pubKeys.active;
