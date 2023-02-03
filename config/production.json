@@ -45,9 +45,9 @@
         "rejectUnauthorized": false
     }
   },
-  "frontendUrl": "https://kyc.commodity.llc",
-  "backendUrl": "https://pi.commodity.llc",
-  "frontendCallbackUrl": "https://kyc.commodity.llc/callback",
+  "frontendUrl": "https://ui.homepesa.org",
+  "backendUrl": "https://peerid.homepesa.org",
+  "frontendCallbackUrl": "https://ui.homepesa.org/callback",
   "peerplays": {
     "peerplaysWS": "wss://wss.commodity.llc/api",
     "peerplaysFaucetURL": "https://agent.commodity.llc/api/v1/accounts",
