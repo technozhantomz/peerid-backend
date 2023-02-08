@@ -1,11 +1,11 @@
 {
   "logLevel": "trace",
   "db": {
-    "user": "peerid01",
+    "user": "peerid2",
     "password": "Sdennis2023",
     "host": "127.0.0.1",
     "port": "5432",
-    "database": "peerid01"
+    "database": "peerid2"
   },
   "swagger": {
     "host": "virtserver.swaggerhub.com",
@@ -46,7 +46,7 @@
     }
   },
   "frontendUrl": "http://localhost:8082",
-  "backendUrl": "http://localhost:3001",
+  "backendUrl": "https://peerid.homepesa.org",
   "frontendCallbackUrl": "http://localhost:8082/callback",
   "peerplays": {
     "peerplaysWS": "wss://wss.homepesa.org/api",
