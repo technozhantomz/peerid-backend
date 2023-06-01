@@ -12,7 +12,7 @@ class VerificationTokenRepository extends BasePostgresRepository {
 
   async createToken(userId, email) {
     return this.model.create({
-      userId: userId,
+      user_id: userId,
       token: crypto({length: 26}),
       email: email
     });

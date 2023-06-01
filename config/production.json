@@ -1,11 +1,11 @@
 {
   "logLevel": "trace",
   "db": {
-    "user": "peerid2",
+    "user": "alya3023",
     "password": "Sdennis2023",
     "host": "127.0.0.1",
     "port": "5432",
-    "database": "peerid2"
+    "database": "alya3023"
   },
   "swagger": {
     "host": "virtserver.swaggerhub.com",
@@ -45,12 +45,12 @@
         "rejectUnauthorized": false
     }
   },
-  "frontendUrl": "http://localhost:8082",
+  "frontendUrl": "https://peerid.acloudbank.com",
   "backendUrl": "https://peerid.homepesa.org",
-  "frontendCallbackUrl": "http://localhost:8082/callback",
+  "frontendCallbackUrl": "https://peerid.acloudbank.com/callback",
   "peerplays": {
     "peerplaysWS": "wss://wss.homepesa.org/api",
-    "peerplaysFaucetURL": "https://dennis.homepesa.org/api/v1/accounts",
+    "peerplaysFaucetURL": "https://registra.homepesa.org/api/v1/accounts",
     "referrer": "1.2.0",
     "feeAssetId": "1.3.0",
     "paymentAccountID": "1.2.20",

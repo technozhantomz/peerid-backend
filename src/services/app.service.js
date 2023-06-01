@@ -129,28 +129,28 @@ class AppService {
     if(deleted !== 0) {
       await this.operationRepository.model.destroy({
         where: {
-          app_id: tokenExists.appId
+          app_id: tokenExists.app_id
         },
         force: true
       });
 
       await this.authorityRepository.model.destroy({
         where: {
-          app_id: tokenExists.appId
+          app_id: tokenExists.app_id
         },
         force: true
       });
 
       await this.grantCodeRepository.model.destroy({
         where: {
-          app_id: tokenExists.appId
+          app_id: tokenExists.app_id
         },
         force: true
       });
 
       await this.accessTokenRepository.model.destroy({
         where: {
-          app_id: tokenExists.appId
+          app_id: tokenExists.app_id
         },
         force: true
       });
