@@ -63,7 +63,7 @@ class PeerplaysConnection extends BaseConnection {
     const endpoint = this.endpoints[this.reconnectAttempt % this.endpoints.length];
     logger.info(`connecting to peerplays endpoint "${endpoint}"`);
     const apiInstance = Apis.instance(endpoint, true);
-    ChainConfig.setPrefix(IS_PRODUCTION ? 'KSH' : 'KSH');
+    ChainConfig.setPrefix(IS_PRODUCTION ? 'ACB' : 'ACB');
 
     try {
       await apiInstance.init_promise;
